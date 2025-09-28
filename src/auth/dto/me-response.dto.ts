@@ -1,6 +1,6 @@
 import { UserRole } from "../auth.types";
 
-export type ClubLite = {
+export type ChelterLite = {
   id: string;
   number: number;
   weekday: string;
@@ -9,13 +9,13 @@ export type ClubLite = {
 export type TeacherProfileLite = {
   id: string;
   active: boolean;
-  club: ClubLite | null;
+  club: ChelterLite | null;
 };
 
 export type CoordinatorProfileLite = {
   id: string;
   active: boolean;
-  clubs: ClubLite[];
+  clubs: ChelterLite[];
 };
 
 export class MeResponseDto {
@@ -29,5 +29,5 @@ export class MeResponseDto {
   role!: UserRole;
 
   teacherProfile!: TeacherProfileLite | null;
-  coordinatorProfile!: CoordinatorProfileLite | null;
+  leaderProfile!: CoordinatorProfileLite | null;
 }

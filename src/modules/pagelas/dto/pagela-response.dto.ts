@@ -5,16 +5,14 @@ export class PagelaResponseDto {
   createdAt: string;
   updatedAt: string;
 
-  childId: string;
-  teacherProfileId: string | null;
+  shelteredId: string;
+  teacherProfileId: string;
 
   referenceDate: string;
   year: number;
-  week: number;
+  visit: number;
 
   present: boolean;
-  didMeditation: boolean;
-  recitedVerse: boolean;
   notes: string | null;
 
   static fromEntity(e: PagelaEntity): PagelaResponseDto {
@@ -22,14 +20,12 @@ export class PagelaResponseDto {
       id: e.id,
       createdAt: (e as any).createdAt?.toISOString?.() ?? (e as any).createdAt,
       updatedAt: (e as any).updatedAt?.toISOString?.() ?? (e as any).updatedAt,
-      childId: e.child?.id,
-      teacherProfileId: e.teacher?.id ?? null,
+      shelteredId: e.sheltered?.id,
+      teacherProfileId: e.teacher?.id,
       referenceDate: e.referenceDate,
       year: e.year,
-      week: e.week,
+      visit: e.visit,
       present: e.present,
-      didMeditation: e.didMeditation,
-      recitedVerse: e.recitedVerse,
       notes: e.notes ?? null,
     };
   }

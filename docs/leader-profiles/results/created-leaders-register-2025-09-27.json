@@ -1,0 +1,84 @@
+{
+  "timestamp": "2025-09-27T21:42:51.296Z",
+  "config": {
+    "baseUrl": "http://localhost:3000",
+    "leaders": 10,
+    "delayBetweenRequests": 200
+  },
+  "summary": {
+    "totalRegistered": 10,
+    "leaders": 10
+  },
+  "users": [
+    {
+      "name": "Paulo Rocha 0",
+      "email": "paulo.rocha.leader.0@example.com",
+      "phone": "+5511926697075",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Quitéria Alves 1",
+      "email": "quitéria.alves.leader.1@example.com",
+      "phone": "+5511858428735",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Roberto Pereira 2",
+      "email": "roberto.pereira.leader.2@example.com",
+      "phone": "+5511770402138",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Sandra Martins 3",
+      "email": "sandra.martins.leader.3@example.com",
+      "phone": "+5511692319390",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Tadeu Ferreira 4",
+      "email": "tadeu.ferreira.leader.4@example.com",
+      "phone": "+5511554263696",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Úrsula Souza 5",
+      "email": "úrsula.souza.leader.5@example.com",
+      "phone": "+5511964771101",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Valter Barbosa 6",
+      "email": "valter.barbosa.leader.6@example.com",
+      "phone": "+5511820926083",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Wagner Rodrigues 7",
+      "email": "wagner.rodrigues.leader.7@example.com",
+      "phone": "+5511794156293",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Ximena Gomes 8",
+      "email": "ximena.gomes.leader.8@example.com",
+      "phone": "+5511627911824",
+      "password": "password123",
+      "role": "leader"
+    },
+    {
+      "name": "Yago Nunes 9",
+      "email": "yago.nunes.leader.9@example.com",
+      "phone": "+5511541650996",
+      "password": "password123",
+      "role": "leader"
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserEntity } from '../user.entity';
 
 import { TeacherProfilesService } from 'src/modules/teacher-profiles/services/teacher-profiles.service';
-import { CoordinatorProfilesService } from 'src/modules/coordinator-profiles/services/coordinator-profiles.service';
+import { LeaderProfilesService } from 'src/modules/leader-profiles/services/leader-profiles.service';
 import { UserRole } from 'src/auth/auth.types';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class UpdateUserService {
   constructor(
     private readonly userRepo: UserRepository,
     private readonly teacherService: TeacherProfilesService,
-    private readonly coordinatorService: CoordinatorProfilesService,
+    private readonly leaderService: LeaderProfilesService,
   ) { }
 
   async update(id: string, dto: Partial<UpdateUserDto>): Promise<UserEntity> {
@@ -42,7 +42,7 @@ export class UpdateUserService {
       this.logger.debug(`Role change: ${current.role} -> ${nextRole} (active alvo: ${nextActive})`);
 
       if (nextRole === UserRole.TEACHER) {
-        await this.coordinatorService.removeByUserId(id);
+        await this.leaderService.removeByUserId(id);
         if (nextActive) {
           try {
             await this.teacherService.createForUser(id);
@@ -55,15 +55,15 @@ export class UpdateUserService {
         await this.teacherService.removeByUserId(id);
         if (nextActive) {
           try {
-            await this.coordinatorService.createForUser(id);
+            await this.leaderService.createForUser(id);
           } catch {
           }
         } else {
-          await this.coordinatorService.removeByUserId(id);
+          await this.leaderService.removeByUserId(id);
         }
       } else if (nextRole === UserRole.ADMIN) {
         await this.teacherService.removeByUserId(id);
-        await this.coordinatorService.removeByUserId(id);
+        await this.leaderService.removeByUserId(id);
       }
     }
 
@@ -82,11 +82,11 @@ export class UpdateUserService {
       } else if (nextRole === UserRole.COORDINATOR) {
         if (nextActive) {
           try {
-            await this.coordinatorService.createForUser(id);
+            await this.leaderService.createForUser(id);
           } catch {
           }
         } else {
-          await this.coordinatorService.removeByUserId(id);
+          await this.leaderService.removeByUserId(id);
         }
       } else {
       }

@@ -1,98 +1,201 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🏠 Orfanato API - Documentação Completa
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 📋 Visão Geral
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Esta API foi desenvolvida para gerenciar um sistema completo de orfanato, incluindo usuários, abrigos (shelters), crianças abrigadas (sheltered), perfis de líderes e professores.
 
-## Description
+## 🏗️ Arquitetura
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Módulos Principais
+- **Auth** - Autenticação e autorização
+- **Users** - Gerenciamento de usuários
+- **Shelters** - Gerenciamento de abrigos
+- **Sheltered** - Crianças abrigadas
+- **Leader Profiles** - Perfis de líderes/coordenadores
+- **Teacher Profiles** - Perfis de professores
 
-## Project setup
+## 📁 Estrutura do Projeto
 
-```bash
-$ npm install
+```
+orfanatonib-api/
+├── 📚 docs/                    # Documentação completa
+│   ├── auth/                   # Documentação do módulo Auth
+│   ├── users/                   # Documentação do módulo Users
+│   ├── shelters/               # Documentação do módulo Shelters
+│   ├── sheltered/              # Documentação do módulo Sheltered
+│   ├── leader-profiles/        # Documentação do módulo Leader Profiles
+│   ├── teacher-profiles/       # Documentação do módulo Teacher Profiles
+│   ├── *_API_Collection.postman_collection.json
+│   ├── *_API_Documentation.md
+│   ├── *_API_Environment.postman_environment.json
+│   └── *_Usage_Examples.md
+├── 🧪 tests/                   # Scripts de teste
+│   ├── auth/                   # Testes do módulo Auth
+│   ├── users/                  # Testes do módulo Users
+│   ├── shelters/               # Testes do módulo Shelters
+│   ├── sheltered/              # Testes do módulo Sheltered
+│   ├── leader-profiles/        # Testes do módulo Leader Profiles
+│   └── teacher-profiles/       # Testes do módulo Teacher Profiles
+├── 🤖 automations/             # Scripts de automação
+│   ├── auth/                   # Automações do módulo Auth
+│   ├── users/                  # Automações do módulo Users
+│   ├── shelters/               # Automações do módulo Shelters
+│   ├── sheltered/              # Automações do módulo Sheltered
+│   ├── leader-profiles/        # Automações do módulo Leader Profiles
+│   └── teacher-profiles/       # Automações do módulo Teacher Profiles
+└── src/                        # Código fonte da aplicação
 ```
 
-## Compile and run the project
+## 🚀 Início Rápido
 
+### Pré-requisitos
+- Node.js 18+
+- PostgreSQL
+- npm ou yarn
+
+### Instalação
 ```bash
-# development
-$ npm run start
+# Instalar dependências
+npm install
 
-# watch mode
-$ npm run start:dev
+# Configurar variáveis de ambiente
+cp .env.example .env
 
-# production mode
-$ npm run start:prod
+# Executar migrações
+npm run migration:run
+
+# Iniciar aplicação
+npm run start:dev
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+### Credenciais de Teste
+```json
+{
+  "email": "joao@example.com",
+  "password": "password123"
+}
 ```
 
-## Deployment
+## 📖 Documentação por Módulo
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### 🔐 [Auth Module](docs/auth/README.md)
+- Autenticação JWT
+- Registro de usuários
+- Login/Logout
+- Refresh tokens
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 👥 [Users Module](docs/users/README.md)
+- Gerenciamento de usuários
+- Perfis e roles
+- Ativação/Desativação
 
+### 🏠 [Shelters Module](docs/shelters/README.md)
+- CRUD de abrigos
+- Vinculação com líderes
+- Paginação e filtros
+
+### 👶 [Sheltered Module](docs/sheltered/README.md)
+- Crianças abrigadas
+- Vinculação com abrigos
+- Dados pessoais e responsáveis
+
+### 👨‍💼 [Leader Profiles Module](docs/leader-profiles/README.md)
+- Perfis de líderes
+- Vinculação com abrigos
+- Gerenciamento de professores
+
+### 👨‍🏫 [Teacher Profiles Module](docs/teacher-profiles/README.md)
+- Perfis de professores
+- Vinculação com abrigos
+- Atribuição de responsabilidades
+
+## 🧪 Testes
+
+### Executar Testes
 ```bash
-$ npm install -g mau
-$ mau deploy
+# Testes unitários
+npm run test
+
+# Testes e2e
+npm run test:e2e
+
+# Scripts de teste específicos
+node tests/[module]/[test-file].js
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Automações Disponíveis
+```bash
+# Criar usuários em massa
+node automations/users/create-users-automation.js
 
-## Resources
+# Criar abrigos
+node automations/shelters/create-shelters-automation.js
 
-Check out a few resources that may come in handy when working with NestJS:
+# Criar perfis de líderes
+node automations/leader-profiles/create-leader-profiles-smart.js
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Criar perfis de professores
+node automations/teacher-profiles/create-teacher-profiles-automation.js
+```
 
-## Support
+### Resultados de Automações
+Os resultados das execuções são salvos na documentação de cada módulo:
+- `docs/[module]/results/created-*-YYYY-MM-DD.json` - Arquivos de resultado das automações
+- Contém dados criados, estatísticas e logs de execução
+- Útil para auditoria e análise de dados por módulo
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 📊 Postman Collections
 
-## Stay in touch
+Todas as collections estão disponíveis na pasta `docs/`:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- `Auth_API_Collection.postman_collection.json`
+- `User_API_Collection.postman_collection.json`
+- `Shelters_API_Collection.postman_collection.json`
+- `Sheltered_API_Collection.postman_collection.json`
+- `Leader_Profiles_API_Collection.postman_collection.json`
+- `Teacher_Profiles_API_Collection.postman_collection.json`
 
-## License
+### Ambiente Postman
+Use o arquivo `General_API_Environment.postman_environment.json` para configurar as variáveis de ambiente.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 🔧 Tecnologias Utilizadas
+
+- **Backend:** NestJS, TypeScript
+- **Database:** PostgreSQL, TypeORM
+- **Auth:** JWT, Passport
+- **Validation:** class-validator, class-transformer
+- **Testing:** Jest, Supertest
+- **Documentation:** Postman Collections
+
+## 📝 Convenções
+
+### Roles de Usuário
+- `admin` - Acesso total ao sistema
+- `coordinator` (leader) - Gerencia abrigos e professores
+- `teacher` - Acesso limitado aos seus dados
+
+### Padrões de API
+- RESTful endpoints
+- Paginação padrão: `page=1&limit=12`
+- Filtros por query parameters
+- Respostas padronizadas com status codes HTTP
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 📞 Suporte
+
+Para dúvidas ou suporte, entre em contato através dos issues do GitHub.
+
+---
+
+**Desenvolvido com ❤️ para o sistema de orfanato**

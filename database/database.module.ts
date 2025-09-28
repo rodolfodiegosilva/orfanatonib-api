@@ -20,11 +20,11 @@ import { IdeasSectionEntity } from 'src/pages/ideas-page/entities/ideas-section.
 import { IdeasPageEntity } from 'src/pages/ideas-page/entities/ideas-page.entity';
 import { InformativeEntity } from 'src/informative/entities/informative.entity';
 import { SiteFeedbackEntity } from 'src/feedback/entity/site-feedback.entity';
-import { ClubEntity } from 'src/modules/clubs/entities/club.entity/club.entity';
+import { ShelterEntity } from 'src/modules/shelters/entities/shelter.entity/shelter.entity';
 import { TeacherProfileEntity } from 'src/modules/teacher-profiles/entities/teacher-profile.entity/teacher-profile.entity';
-import { CoordinatorProfileEntity } from 'src/modules/coordinator-profiles/entities/coordinator-profile.entity/coordinator-profile.entity';
+import { LeaderProfileEntity } from 'src/modules/leader-profiles/entities/leader-profile.entity/leader-profile.entity';
 import { AddressEntity } from 'src/modules/addresses/entities/address.entity/address.entity';
-import { ChildEntity } from 'src/modules/children/entities/child.entity';
+import { ShelteredEntity } from 'src/modules/sheltered/entities/sheltered.entity';
 import { PagelaEntity } from 'src/modules/pagelas/entities/pagela.entity';
 import { AcceptedChristEntity } from 'src/modules/accepted-christs/entities/accepted-christ.entity';
 ;
@@ -64,11 +64,11 @@ import { AcceptedChristEntity } from 'src/modules/accepted-christs/entities/acce
             IdeasSectionEntity,
             InformativeEntity,
             SiteFeedbackEntity,
-            ClubEntity,
+            ShelterEntity,
             TeacherProfileEntity,
-            CoordinatorProfileEntity,
+            LeaderProfileEntity,
             AddressEntity,
-            ChildEntity,
+            ShelteredEntity,
             PagelaEntity,
             AcceptedChristEntity
           ],

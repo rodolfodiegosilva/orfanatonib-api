@@ -38,13 +38,12 @@ export class TeacherProfilesQueryDto {
   @IsOptional()
   @Transform(({ value }) => toBool(value))
   @IsBoolean()
-  hasClub?: boolean;
+  hasShelter?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => toInt(value))
-  @Type(() => Number)
-  @IsInt()
-  clubNumber?: number;
+  @Transform(({ value }) => trimOrUndef(value))
+  @IsString()
+  shelterId?: string;
 
   @IsOptional()
   @Transform(({ value }) => toInt(value))
@@ -62,8 +61,8 @@ export class TeacherProfilesQueryDto {
   limit: number = 12;
 
   @IsOptional()
-  @IsIn(['updatedAt', 'createdAt', 'name', 'clubNumber'])
-  sort: 'updatedAt' | 'createdAt' | 'name' | 'clubNumber' = 'updatedAt';
+  @IsIn(['updatedAt', 'createdAt', 'name'])
+  sort: 'updatedAt' | 'createdAt' | 'name' = 'updatedAt';
 
   @IsOptional()
   @IsIn(['asc', 'desc'])

@@ -1,0 +1,664 @@
+{
+  "info": {
+    "name": "Pagelas API Collection",
+    "description": "Collection para todos os endpoints do módulo Pagelas - ✅ TESTADA E VALIDADA - Sistema de controle de presença e atividades dos sheltered",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Pagelas",
+      "item": [
+        {
+          "name": "Criar Pagela",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shelteredId\": \"{{sheltered_id}}\",\n  \"teacherProfileId\": \"{{teacher_profile_id}}\",\n  \"referenceDate\": \"2025-01-15\",\n  \"visit\": 3,\n  \"year\": 2025,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pagelas",
+              "host": ["{{base_url}}"],
+              "path": ["pagelas"]
+            },
+            "description": "Cria uma nova pagela para controle de presença e atividades de um sheltered"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Pagela Criada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelteredId\": \"uuid-sheltered\",\n  \"teacherProfileId\": \"uuid-teacher\",\n  \"referenceDate\": \"2025-01-15\",\n  \"visit\": 3,\n  \"year\": 2025,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/pagelas",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-pagela\",\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n  \"shelteredId\": \"uuid-sheltered\",\n  \"teacherProfileId\": \"uuid-teacher\",\n  \"referenceDate\": \"2025-01-15\",\n  \"year\": 2025,\n  \"visit\": 3,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
+            },
+            {
+              "name": "Erro - Pagela Duplicada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelteredId\": \"uuid-sheltered\",\n  \"referenceDate\": \"2025-01-15\",\n  \"visit\": 3,\n  \"year\": 2025,\n  \"present\": true,\n  \"didMeditation\": false,\n  \"recitedVerse\": false\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/pagelas",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Já existe Pagela para este abrigado nesta semana/ano\",\n  \"error\": \"Bad Request\"\n}"
+            },
+            {
+              "name": "Erro - Sheltered Não Encontrado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelteredId\": \"invalid-sheltered-id\",\n  \"referenceDate\": \"2025-01-15\",\n  \"visit\": 3,\n  \"year\": 2025,\n  \"present\": true,\n  \"didMeditation\": false,\n  \"recitedVerse\": false\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/pagelas",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Sheltered não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Listar Pagelas (Simples)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pagelas",
+              "host": ["{{base_url}}"],
+              "path": ["pagelas"]
+            },
+            "description": "Lista todas as pagelas em formato simples"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Lista Simples",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/pagelas",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"uuid-pagela\",\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n    \"shelteredId\": \"uuid-sheltered\",\n    \"teacherProfileId\": \"uuid-teacher\",\n    \"referenceDate\": \"2025-01-15\",\n    \"year\": 2025,\n    \"visit\": 3,\n    \"present\": true,\n    \"didMeditation\": true,\n    \"recitedVerse\": false,\n    \"notes\": \"Participou ativamente da aula\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Listar Pagelas (Paginada)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pagelas/paginated?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["pagelas", "paginated"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Número da página (opcional, padrão: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Itens por página (opcional, padrão: 20, máx: 200)"
+                },
+                {
+                  "key": "shelteredId",
+                  "value": "",
+                  "description": "Filtrar por sheltered (UUID)"
+                },
+                {
+                  "key": "year",
+                  "value": "",
+                  "description": "Filtrar por ano"
+                },
+                {
+                  "key": "visit",
+                  "value": "",
+                  "description": "Filtrar por visita"
+                },
+                {
+                  "key": "present",
+                  "value": "",
+                  "description": "Filtrar por presença (true/false)"
+                },
+                {
+                  "key": "searchString",
+                  "value": "",
+                  "description": "Busca por texto nas notas"
+                }
+              ]
+            },
+            "description": "Lista pagelas com paginação"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Lista Paginada",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/pagelas/paginated?page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas", "paginated"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-pagela\",\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n      \"shelteredId\": \"uuid-sheltered\",\n      \"teacherProfileId\": \"uuid-teacher\",\n      \"referenceDate\": \"2025-01-15\",\n      \"year\": 2025,\n      \"visit\": 3,\n      \"present\": true,\n      \"didMeditation\": true,\n      \"recitedVerse\": false,\n      \"notes\": \"Participou ativamente da aula\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "Filtros Avançados - Pagelas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pagelas?shelteredId={{sheltered_id}}&year=2025&present=true&didMeditation=true",
+              "host": ["{{base_url}}"],
+              "path": ["pagelas"],
+              "query": [
+                {
+                  "key": "shelteredId",
+                  "value": "{{sheltered_id}}",
+                  "description": "Filtrar por ID do sheltered"
+                },
+                {
+                  "key": "year",
+                  "value": "2025",
+                  "description": "Filtrar por ano"
+                },
+                {
+                  "key": "visit",
+                  "value": "",
+                  "description": "Filtrar por visita (1+)"
+                },
+                {
+                  "key": "present",
+                  "value": "true",
+                  "description": "Filtrar por presença (true/false)"
+                },
+                {
+                  "key": "searchString",
+                  "value": "",
+                  "description": "Busca por texto nas notas"
+                }
+              ]
+            },
+            "description": "Exemplo de filtros combinados para pagelas"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Filtros Combinados",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/pagelas?shelteredId=uuid-sheltered&year=2025&present=true",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas"],
+                  "query": [
+                    {
+                      "key": "shelteredId",
+                      "value": "uuid-sheltered"
+                    },
+                    {
+                      "key": "year",
+                      "value": "2025"
+                    },
+                    {
+                      "key": "present",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"uuid-pagela\",\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n    \"shelteredId\": \"uuid-sheltered\",\n    \"teacherProfileId\": \"uuid-teacher\",\n    \"referenceDate\": \"2025-01-15\",\n      \"year\": 2025,\n      \"visit\": 3,\n      \"present\": true,\n      \"didMeditation\": true,\n      \"recitedVerse\": false,\n      \"notes\": \"Participou ativamente da aula\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Paginação com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pagelas/paginated?page=1&limit=5&year=2025&present=true",
+              "host": ["{{base_url}}"],
+              "path": ["pagelas", "paginated"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Número da página"
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "description": "Itens por página"
+                },
+                {
+                  "key": "year",
+                  "value": "2025",
+                  "description": "Filtrar por ano"
+                },
+                {
+                  "key": "present",
+                  "value": "true",
+                  "description": "Filtrar apenas presentes"
+                }
+              ]
+            },
+            "description": "Exemplo de paginação com filtros combinados"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Paginação com Filtros",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/pagelas/paginated?page=1&limit=5&year=2025&present=true",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas", "paginated"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5"
+                    },
+                    {
+                      "key": "year",
+                      "value": "2025"
+                    },
+                    {
+                      "key": "present",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-pagela\",\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n      \"shelteredId\": \"uuid-sheltered\",\n      \"teacherProfileId\": \"uuid-teacher\",\n      \"referenceDate\": \"2025-01-15\",\n      \"year\": 2025,\n      \"visit\": 3,\n      \"present\": true,\n      \"notes\": \"Participou ativamente da aula\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 5\n}"
+            }
+          ]
+        },
+        {
+          "name": "Buscar Pagela por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pagelas/{{pagela_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["pagelas", "{{pagela_id}}"],
+              "variable": [
+                {
+                  "key": "pagela_id",
+                  "value": "{{pagela_id}}",
+                  "description": "UUID da pagela"
+                }
+              ]
+            },
+            "description": "Busca uma pagela específica por ID"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Pagela Encontrada",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/pagelas/uuid-pagela",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas", "uuid-pagela"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-pagela\",\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n  \"shelteredId\": \"uuid-sheltered\",\n  \"teacherProfileId\": \"uuid-teacher\",\n  \"referenceDate\": \"2025-01-15\",\n  \"year\": 2025,\n  \"visit\": 3,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
+            },
+            {
+              "name": "Erro - Pagela Não Encontrada",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/pagelas/invalid-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas", "invalid-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Pagela não encontrada\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar Pagela",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacherProfileId\": \"{{teacher_profile_id}}\",\n  \"referenceDate\": \"2025-01-16\",\n  \"visit\": 3,\n  \"year\": 2025,\n  \"present\": false,\n  \"notes\": \"Atualizada pela automação\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pagelas/{{pagela_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["pagelas", "{{pagela_id}}"],
+              "variable": [
+                {
+                  "key": "pagela_id",
+                  "value": "{{pagela_id}}",
+                  "description": "UUID da pagela"
+                }
+              ]
+            },
+            "description": "Atualiza uma pagela existente"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Pagela Atualizada",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"present\": false,\n  \"notes\": \"Atualizada pela automação\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/pagelas/uuid-pagela",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas", "uuid-pagela"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-pagela\",\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:05:00.000Z\",\n  \"shelteredId\": \"uuid-sheltered\",\n  \"teacherProfileId\": \"uuid-teacher\",\n  \"referenceDate\": \"2025-01-15\",\n  \"year\": 2025,\n  \"visit\": 3,\n  \"present\": false,\n  \"didMeditation\": false,\n  \"recitedVerse\": true,\n  \"notes\": \"Atualizada pela automação\"\n}"
+            },
+            {
+              "name": "Erro - Pagela Não Encontrada",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"present\": false\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/pagelas/invalid-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas", "invalid-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Pagela não encontrada\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Deletar Pagela",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pagelas/{{pagela_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["pagelas", "{{pagela_id}}"],
+              "variable": [
+                {
+                  "key": "pagela_id",
+                  "value": "{{pagela_id}}",
+                  "description": "UUID da pagela"
+                }
+              ]
+            },
+            "description": "Remove uma pagela do sistema"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Pagela Deletada",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/pagelas/uuid-pagela",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas", "uuid-pagela"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "Erro - Pagela Não Encontrada",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/pagelas/invalid-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["pagelas", "invalid-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Pagela não encontrada\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Endpoints para gerenciamento de Pagelas - Sistema de controle de presença e atividades dos sheltered"
+    }
+  ]
+}

@@ -1,0 +1,548 @@
+{
+  "info": {
+    "name": "Sheltered API Collection",
+    "description": "Collection para todos os endpoints do módulo Sheltered - Atualizada com campos opcionais guardianName e guardianPhone",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.1.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Sheltered",
+      "item": [
+        {
+          "name": "Listar Sheltered (Paginação)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC",
+              "host": ["{{base_url}}"],
+              "path": ["sheltered"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Número da página (padrão: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Itens por página (padrão: 20)"
+                },
+                {
+                  "key": "orderBy",
+                  "value": "name",
+                  "description": "Campo para ordenação (name, birthDate, joinedAt, createdAt)"
+                },
+                {
+                  "key": "order",
+                  "value": "ASC",
+                  "description": "Ordem da ordenação (ASC, DESC)"
+                },
+                {
+                  "key": "searchString",
+                  "value": "",
+                  "description": "Busca geral por nome ou responsável"
+                },
+                {
+                  "key": "shelterId",
+                  "value": "",
+                  "description": "Filtrar por ID do shelter"
+                },
+                {
+                  "key": "shelterName",
+                  "value": "",
+                  "description": "Filtrar por nome do shelter"
+                },
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "Filtrar por cidade"
+                },
+                {
+                  "key": "state",
+                  "value": "",
+                  "description": "Filtrar por estado"
+                },
+                {
+                  "key": "gender",
+                  "value": "",
+                  "description": "Filtrar por gênero"
+                },
+                {
+                  "key": "birthDate",
+                  "value": "",
+                  "description": "Filtrar por data de nascimento específica (YYYY-MM-DD)"
+                },
+                {
+                  "key": "birthDateFrom",
+                  "value": "",
+                  "description": "Filtrar por data de nascimento a partir de (YYYY-MM-DD)"
+                },
+                {
+                  "key": "birthDateTo",
+                  "value": "",
+                  "description": "Filtrar por data de nascimento até (YYYY-MM-DD)"
+                },
+                {
+                  "key": "joinedAt",
+                  "value": "",
+                  "description": "Filtrar por data de ingresso específica (YYYY-MM-DD)"
+                },
+                {
+                  "key": "joinedFrom",
+                  "value": "",
+                  "description": "Filtrar por data de ingresso a partir de (YYYY-MM-DD)"
+                },
+                {
+                  "key": "joinedTo",
+                  "value": "",
+                  "description": "Filtrar por data de ingresso até (YYYY-MM-DD)"
+                }
+              ]
+            },
+            "description": "Lista todos os sheltered com paginação e filtros opcionais"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Lista Paginada",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/sheltered?page=1&limit=5&orderBy=name&order=ASC",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered"],
+                  "query": [
+                    {"key": "page", "value": "1"},
+                    {"key": "limit", "value": "5"},
+                    {"key": "orderBy", "value": "name"},
+                    {"key": "order", "value": "ASC"}
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"uuid-sheltered-1\",\n      \"name\": \"Ana Silva\",\n      \"birthDate\": \"2010-05-15\",\n      \"guardianName\": \"Maria Silva\",\n      \"gender\": \"Feminino\",\n      \"guardianPhone\": \"+5511999999999\",\n      \"joinedAt\": \"2024-01-15\",\n      \"shelter\": {\n        \"id\": \"uuid-shelter-1\",\n        \"name\": \"Abrigo Central\"\n      },\n      \"address\": {\n        \"id\": \"uuid-address-1\",\n        \"street\": \"Rua das Flores\",\n        \"number\": \"123\",\n        \"district\": \"Centro\",\n        \"city\": \"São Paulo\",\n        \"state\": \"SP\",\n        \"postalCode\": \"01234-567\",\n        \"complement\": \"Apto 45\"\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    },\n    {\n      \"id\": \"uuid-sheltered-2\",\n      \"name\": \"João Sem Responsável\",\n      \"birthDate\": \"2012-03-20\",\n      \"guardianName\": null,\n      \"gender\": \"Masculino\",\n      \"guardianPhone\": null,\n      \"joinedAt\": \"2024-02-01\",\n      \"shelter\": {\n        \"id\": \"uuid-shelter-2\",\n        \"name\": \"Abrigo Jardins\"\n      },\n      \"address\": {\n        \"id\": \"uuid-address-2\",\n        \"street\": \"Rua Sem Responsável\",\n        \"number\": \"456\",\n        \"district\": \"Jardins\",\n        \"city\": \"Rio de Janeiro\",\n        \"state\": \"RJ\",\n        \"postalCode\": \"20000-000\",\n        \"complement\": \"Casa 2\"\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 5,\n    \"totalItems\": 20,\n    \"totalPages\": 4,\n    \"orderBy\": \"name\",\n    \"order\": \"ASC\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Listar Sheltered Simples",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sheltered/simple",
+              "host": ["{{base_url}}"],
+              "path": ["sheltered", "simple"]
+            },
+            "description": "Lista todos os sheltered em formato simplificado"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Lista Simples",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/sheltered/simple",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered", "simple"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"uuid-sheltered-1\",\n    \"name\": \"Ana Silva\",\n    \"guardianName\": \"Maria Silva\",\n    \"gender\": \"Feminino\",\n    \"guardianPhone\": \"+5511999999999\",\n    \"shelterId\": \"uuid-shelter-1\",\n    \"acceptedChrists\": []\n  },\n  {\n    \"id\": \"uuid-sheltered-2\",\n    \"name\": \"João Sem Responsável\",\n    \"guardianName\": null,\n    \"gender\": \"Masculino\",\n    \"guardianPhone\": null,\n    \"shelterId\": \"uuid-shelter-2\",\n    \"acceptedChrists\": []\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Buscar Sheltered por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sheltered/:id",
+              "host": ["{{base_url}}"],
+              "path": ["sheltered", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{sheltered_id}}",
+                  "description": "UUID do sheltered"
+                }
+              ]
+            },
+            "description": "Busca um sheltered específico por ID"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Sheltered Encontrado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/sheltered/uuid-sheltered-1",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered", "uuid-sheltered-1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"Ana Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"Feminino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+            },
+            {
+              "name": "Erro - Sheltered Não Encontrado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/sheltered/uuid-inexistente",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered", "uuid-inexistente"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Sheltered não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Criar Sheltered",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"11999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelterId\": \"{{shelter_id}}\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sheltered",
+              "host": ["{{base_url}}"],
+              "path": ["sheltered"]
+            },
+            "description": "Cria um novo sheltered"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Sheltered Criado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"Masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelterId\": \"uuid-shelter-1\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/sheltered",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-sheltered-novo\",\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"Masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-novo\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+            },
+            {
+              "name": "Erro - Dados Inválidos",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"\",\n  \"birthDate\": \"data-invalida\",\n  \"guardianName\": \"\",\n  \"gender\": \"\",\n  \"guardianPhone\": \"123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/sheltered",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": [\n    \"name should not be empty\",\n    \"birthDate must be a valid ISO 8601 date string\",\n    \"gender should not be empty\"\n  ],\n  \"error\": \"Bad Request\"\n}"
+            },
+            {
+              "name": "Sucesso - Sheltered Criado sem Responsável",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"João Sem Responsável\",\n  \"birthDate\": \"2012-03-20\",\n  \"gender\": \"Masculino\",\n  \"joinedAt\": \"2024-02-01\",\n  \"address\": {\n    \"street\": \"Rua Sem Responsável\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"Rio de Janeiro\",\n    \"state\": \"RJ\",\n    \"postalCode\": \"20000-000\",\n    \"complement\": \"Casa 2\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/sheltered",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-sheltered-sem-responsavel\",\n  \"name\": \"João Sem Responsável\",\n  \"birthDate\": \"2012-03-20\",\n  \"guardianName\": null,\n  \"gender\": \"Masculino\",\n  \"guardianPhone\": null,\n  \"joinedAt\": \"2024-02-01\",\n  \"shelter\": null,\n  \"address\": {\n    \"id\": \"uuid-address-sem-responsavel\",\n    \"street\": \"Rua Sem Responsável\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"Rio de Janeiro\",\n    \"state\": \"RJ\",\n    \"postalCode\": \"20000-000\",\n    \"complement\": \"Casa 2\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar Sheltered",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"João Silva Santos\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva Santos\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"11999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelterId\": \"{{shelter_id}}\",\n  \"address\": {\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sheltered/:id",
+              "host": ["{{base_url}}"],
+              "path": ["sheltered", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{sheltered_id}}",
+                  "description": "UUID do sheltered"
+                }
+              ]
+            },
+            "description": "Atualiza um sheltered existente"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Sheltered Atualizado",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"João Silva Santos\",\n  \"guardianName\": \"Maria Silva Santos\",\n  \"gender\": \"Masculino\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/sheltered/uuid-sheltered-1",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered", "uuid-sheltered-1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"João Silva Santos\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva Santos\",\n  \"gender\": \"Masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:30:00.000Z\"\n}"
+            },
+            {
+              "name": "Erro - Sheltered Não Encontrado",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"João Silva Santos\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/sheltered/uuid-inexistente",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered", "uuid-inexistente"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Sheltered não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Deletar Sheltered",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sheltered/:id",
+              "host": ["{{base_url}}"],
+              "path": ["sheltered", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{sheltered_id}}",
+                  "description": "UUID do sheltered"
+                }
+              ]
+            },
+            "description": "Remove um sheltered"
+          },
+          "response": [
+            {
+              "name": "Sucesso - Sheltered Removido",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/sheltered/uuid-sheltered-1",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered", "uuid-sheltered-1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "Erro - Sheltered Não Encontrado",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/sheltered/uuid-inexistente",
+                  "host": ["{{base_url}}"],
+                  "path": ["sheltered", "uuid-inexistente"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Sheltered não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Endpoints para gerenciamento de Sheltered"
+    }
+  ]
+}
