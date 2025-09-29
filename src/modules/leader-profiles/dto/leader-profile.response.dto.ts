@@ -34,6 +34,7 @@ export class TeacherMiniDto {
 @Exclude()
 export class ShelterWithTeachersDto {
   @Expose() id!: string;
+  @Expose() name!: string;
   @Expose() number!: number;
   @Expose() weekday!: Weekday;
 
