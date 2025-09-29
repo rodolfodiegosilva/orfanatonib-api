@@ -37,20 +37,12 @@ class TeacherWithUserDto {
 export class ChelterMiniDto {
   @Expose() id!: string;
   @Expose() name!: string;
-
-  @Expose()
-  @Transform(({ value }) => (typeof value === 'string' ? value.slice(0, 5) : null))
-  time!: string | null;
 }
 
 @Exclude()
 export class ShelterSimpleResponseDto {
   @Expose() id!: string;
   @Expose() name!: string;
-
-  @Expose()
-  @Transform(({ value }) => (typeof value === 'string' ? value.slice(0, 5) : null))
-  time!: string | null;
 
   @Expose()
   @Type(() => AddressResponseDto)
@@ -64,10 +56,6 @@ export class ShelterSimpleResponseDto {
 export class ShelterResponseDto {
   @Expose() id!: string;
   @Expose() name!: string;
-
-  @Expose()
-  @Transform(({ value }) => (typeof value === 'string' ? value.slice(0, 5) : null))
-  time!: string | null;
 
   @Expose()
   @Type(() => AddressResponseDto)

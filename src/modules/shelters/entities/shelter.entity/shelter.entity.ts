@@ -10,17 +10,6 @@ export class ShelterEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
-  @Column({
-    name: 'time',
-    type: 'time',
-    nullable: true,
-    transformer: {
-      to: (v?: string | null) => (v ? (v.length === 5 ? `${v}:00` : v) : v),
-      from: (v?: string | null) => (typeof v === 'string' ? v.slice(0, 5) : v),
-    },
-  })
-  time?: string | null;
-
   @OneToOne(() => AddressEntity, { cascade: true, eager: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'address_id' })
   address: AddressEntity;

@@ -5,7 +5,6 @@ import {
   IsString,
   IsArray,
   ArrayUnique,
-  Matches,
   Length,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -24,9 +23,6 @@ export class CreateShelterDto {
   @IsString() @Length(2, 255)
   name!: string;
 
-  @IsOptional()
-  @Matches(/^([01]?\d|2[0-3]):([0-5]\d)$/, { message: 'time deve ser H:mm ou HH:mm (0:00–23:59)' })
-  time?: string;
 
   @ValidateNested()
   @Type(() => AddressInputDto)

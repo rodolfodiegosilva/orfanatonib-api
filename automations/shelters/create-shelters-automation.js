@@ -80,10 +80,6 @@ function generateShelterData(index) {
   const state = STATES[index % STATES.length];
   const street = STREETS[index % STREETS.length];
   
-  // Gerar horário aleatório entre 18:00 e 22:00
-  const hour = Math.floor(Math.random() * 5) + 18; // 18-22
-  const minute = Math.random() < 0.5 ? '00' : '30';
-  const time = `${hour}:${minute}`;
   
   // Gerar número de endereço aleatório
   const streetNumber = Math.floor(Math.random() * 999) + 1;
@@ -93,7 +89,6 @@ function generateShelterData(index) {
   
   return {
     name: `${name} ${index + 1}`,
-    time: time,
     address: {
       street: street,
       number: streetNumber.toString(),
@@ -243,7 +238,7 @@ function listCreatedShelters() {
   
   console.log(`\n🏠 SHELTERS (${createdShelters.length}):`);
   createdShelters.forEach((shelter, index) => {
-    console.log(`${index + 1}. ${shelter.name} - ${shelter.address.city}/${shelter.address.state} - ${shelter.time || 'Sem horário'}`);
+    console.log(`${index + 1}. ${shelter.name} - ${shelter.address.city}/${shelter.address.state}`);
   });
   
   console.log('\n' + '=' .repeat(80));

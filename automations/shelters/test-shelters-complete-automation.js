@@ -131,7 +131,6 @@ async function testFindOne(shelterId) {
     console.log(`  ✅ Status: ${response.status}`);
     console.log(`  🏠 Shelter: ${response.data.name}`);
     console.log(`  📍 Endereço: ${response.data.address.city}/${response.data.address.state}`);
-    console.log(`  ⏰ Horário: ${response.data.time || 'N/A'}`);
     return response.data;
   } catch (error) {
     console.error('  ❌ Erro no teste de busca por ID:', error.response?.status);
@@ -145,7 +144,6 @@ async function testCreate() {
   
   const shelterData = {
     name: `Abrigo Teste ${Date.now()}`,
-    time: '19:30',
     address: {
       street: 'Rua Teste',
       number: '123',
@@ -175,7 +173,6 @@ async function testUpdate(shelterId) {
   
   const updateData = {
     name: `Abrigo Atualizado ${Date.now()}`,
-    time: '20:00',
     address: {
       street: 'Rua Atualizada',
       city: 'Rio de Janeiro',
@@ -188,7 +185,6 @@ async function testUpdate(shelterId) {
     console.log(`  ✅ Status: ${response.status}`);
     console.log(`  🏠 Shelter atualizado: ${response.data.name}`);
     console.log(`  📍 Novo endereço: ${response.data.address.city}/${response.data.address.state}`);
-    console.log(`  ⏰ Novo horário: ${response.data.time}`);
     return response.data;
   } catch (error) {
     console.error('  ❌ Erro no teste de atualização:', error.response?.status);

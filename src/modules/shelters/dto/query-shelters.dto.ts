@@ -18,8 +18,8 @@ export class QuerySheltersDto {
   leaderId?: string;
 
   @IsOptional()
-  @IsIn(['name', 'time', 'createdAt', 'updatedAt', 'city', 'state'])
-  sort?: 'name' | 'time' | 'createdAt' | 'updatedAt' | 'city' | 'state' = 'name';
+  @IsIn(['name', 'createdAt', 'updatedAt', 'city', 'state'])
+  sort?: 'name' | 'createdAt' | 'updatedAt' | 'city' | 'state' = 'name';
 
   @IsOptional() @IsIn(['ASC', 'DESC', 'asc', 'desc'])
   order?: 'ASC' | 'DESC' | 'asc' | 'desc' = 'ASC';

@@ -35,7 +35,7 @@ Shelter -> TeacherProfile (1:N) - Um abrigo pode ter múltiplos professores
 ### Query Parameters
 - `page` - Número da página (padrão: 1)
 - `limit` - Itens por página (padrão: 12, máximo: 100)
-- `sort` - Campo de ordenação (`name`, `time`, `createdAt`, `updatedAt`, `city`, `state`)
+- `sort` - Campo de ordenação (`name`, `createdAt`, `updatedAt`, `city`, `state`)
 - `order` - Direção (`asc`, `desc`)
 - `addressSearchString` - Busca por endereço
 - `userSearchString` - Busca por usuários (líderes/professores)
@@ -78,7 +78,6 @@ Content-Type: application/json
 
 {
   "name": "Abrigo Nova Esperança",
-  "time": "19:00",
   "address": {
     "street": "Rua das Flores, 123",
     "district": "Centro",
@@ -95,8 +94,7 @@ PATCH /shelters/uuid-shelter-id
 Content-Type: application/json
 
 {
-  "name": "Abrigo Nova Esperança Atualizado",
-  "time": "20:00"
+  "name": "Abrigo Nova Esperança Atualizado"
 }
 ```
 
@@ -109,7 +107,6 @@ Content-Type: application/json
     {
       "id": "uuid-shelter",
       "name": "Abrigo Central",
-      "time": "19:00",
       "address": {
         "id": "uuid-address",
         "street": "Rua das Flores, 123",
@@ -159,7 +156,6 @@ Content-Type: application/json
 {
   "id": "uuid-shelter",
   "name": "Abrigo Nova Esperança",
-  "time": "19:00",
   "address": {
     "id": "uuid-address",
     "street": "Rua das Flores, 123",
@@ -190,7 +186,7 @@ Content-Type: application/json
   "statusCode": 400,
   "message": [
     "name should not be empty",
-    "time must be a valid time format"
+    "name should not be empty"
   ],
   "error": "Bad Request"
 }
@@ -255,7 +251,6 @@ node automations/shelters/create-shelters-automation.js
 ### ShelterEntity
 - `id` - UUID único
 - `name` - Nome do abrigo (obrigatório)
-- `time` - Horário de funcionamento (formato HH:mm)
 - `address` - Relacionamento com AddressEntity
 - `leader` - Relacionamento com LeaderProfileEntity
 - `teachers` - Relacionamento com TeacherProfileEntity[]

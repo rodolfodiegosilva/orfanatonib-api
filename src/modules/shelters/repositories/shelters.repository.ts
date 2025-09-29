@@ -50,8 +50,8 @@ export class SheltersRepository {
       .leftJoinAndSelect('shelter.address', 'address')
       .leftJoinAndSelect('shelter.leader', 'leader')
       .leftJoinAndSelect('shelter.teachers', 'teachers')
-      .leftJoin('leader.user', 'leader_user')
-      .leftJoin('teachers.user', 'teacher_user');
+      .leftJoinAndSelect('leader.user', 'leaderUser')
+      .leftJoinAndSelect('teachers.user', 'teacherUser');
   }
 
   private applyRoleFilter(qb: SelectQueryBuilder<ShelterEntity>, ctx?: RoleCtx) {
@@ -60,9 +60,9 @@ export class SheltersRepository {
     if (!role || role === 'admin' || !userId) return;
 
     if (role === 'leader') {
-      qb.andWhere('leader_user.id = :uid', { uid: userId }).distinct(true);
+      qb.andWhere('leaderUser.id = :uid', { uid: userId }).distinct(true);
     } else if (role === 'teacher') {
-      qb.andWhere('teacher_user.id = :uid', { uid: userId }).distinct(true);
+      qb.andWhere('teacherUser.id = :uid', { uid: userId }).distinct(true);
     } else {
       qb.andWhere('1 = 0');
     }
@@ -110,7 +110,6 @@ export class SheltersRepository {
 
     const sortMap: Record<string, string> = {
       name: 'shelter.name',
-      time: 'shelter.time',
       createdAt: 'shelter.createdAt',
       updatedAt: 'shelter.updatedAt',
       city: 'address.city',
@@ -131,7 +130,6 @@ export class SheltersRepository {
       .select([
         'shelter.id',
         'shelter.name',
-        'shelter.time',
         'address.id',
         'address.city',
         'address.state',
@@ -196,7 +194,6 @@ export class SheltersRepository {
 
       const shelter = shelterRepo.create({
         name: dto.name,
-        time: dto.time ?? null,
         address,
         leader: leader ?? null,
       });
@@ -254,9 +251,6 @@ export class SheltersRepository {
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
       if (dto.name !== undefined) shelter.name = dto.name as any;
-      if (dto.time !== undefined) {
-        shelter.time = dto.time as any;
-      }
 
       if (dto.address) {
         if (shelter.address) {
@@ -486,9 +480,9 @@ export class SheltersRepository {
     const qb = this.shelterRepo
       .createQueryBuilder('shelter')
       .leftJoin('shelter.leader', 'leader')
-      .leftJoin('leader.user', 'leader_user')
+      .leftJoin('leader.user', 'leaderUser')
       .where('shelter.id = :shelterId', { shelterId })
-      .andWhere('leader_user.id = :uid', { uid: userId });
+      .andWhere('leaderUser.id = :uid', { uid: userId });
 
     const hasGetExists = typeof (qb as any).getExists === 'function';
     return hasGetExists ? !!(await (qb as any).getExists()) : (await qb.getCount()) > 0;

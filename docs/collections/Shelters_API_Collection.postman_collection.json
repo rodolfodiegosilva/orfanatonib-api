@@ -49,7 +49,7 @@
                 {
                   "key": "sort",
                   "value": "name",
-                  "description": "Campo para ordenação (name, time, createdAt, updatedAt, city, state)"
+                  "description": "Campo para ordenação (name, createdAt, updatedAt, city, state)"
                 },
                 {
                   "key": "order",
