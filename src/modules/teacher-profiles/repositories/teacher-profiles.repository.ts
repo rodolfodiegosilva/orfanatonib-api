@@ -100,7 +100,7 @@ export class TeacherProfilesRepository {
     params: TeacherProfilesQueryDto,
   ) {
     const text = (params.searchString ?? params.q)?.trim();
-    const { active, hasShelter } = params;
+    const { active, hasShelter, shelterName } = params;
     const shelterId = (params as any).shelterId;
 
     if (text) {
@@ -125,6 +125,10 @@ export class TeacherProfilesRepository {
 
     if (shelterId) {
       qb.andWhere('shelter.id = :shelterId', { shelterId });
+    }
+
+    if (shelterName) {
+      qb.andWhere('LOWER(shelter.name) LIKE LOWER(:shelterName)', { shelterName: `%${shelterName}%` });
     }
 
     if (hasShelter !== undefined) {

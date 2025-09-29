@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Teacher Profiles API Collection",
-    "description": "Collection para todos os endpoints do módulo Teacher Profiles - ✅ TESTADA E VALIDADA - Todos os endpoints funcionando perfeitamente",
+    "description": "Collection completa para todos os endpoints do módulo Teacher Profiles - Atualizada com estrutura real dos DTOs, filtros completos e autenticação",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "2.0.0"
+    "version": "3.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -54,31 +54,41 @@
                 {
                   "key": "order",
                   "value": "desc",
-                  "description": "Direção da ordenação (asc, desc)"
+                  "description": "Ordem da ordenação (asc, desc)"
                 },
                 {
                   "key": "searchString",
                   "value": "",
-                  "description": "Busca por nome, email ou telefone"
+                  "description": "Busca por nome, email, telefone do teacher ou leader"
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "Alias para searchString"
                 },
                 {
                   "key": "active",
                   "value": "",
-                  "description": "Filtrar por status ativo (true/false)"
+                  "description": "Filtrar por status ativo (true, false)"
                 },
                 {
                   "key": "hasShelter",
                   "value": "",
-                  "description": "Filtrar por teachers com shelters (true/false)"
+                  "description": "Filtrar por teachers com shelter (true, false)"
                 },
                 {
                   "key": "shelterId",
-                  "value": "{{shelter_id}}",
+                  "value": "",
                   "description": "Filtrar por ID do shelter"
+                },
+                {
+                  "key": "shelterName",
+                  "value": "",
+                  "description": "Filtrar por nome do shelter"
                 }
               ]
             },
-            "description": "Lista todos os teacher profiles com paginação e filtros opcionais"
+            "description": "Lista todos os teacher profiles com paginação e filtros opcionais. Disponível apenas para admin e leader (teachers não têm acesso)."
           },
           "response": [
             {
@@ -87,18 +97,14 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles?page=1&limit=12",
+                  "raw": "{{base_url}}/teacher-profiles?page=1&limit=12&sort=updatedAt&order=desc",
                   "host": ["{{base_url}}"],
                   "path": ["teacher-profiles"],
                   "query": [
-                    {
-                      "key": "page",
-                      "value": "1"
-                    },
-                    {
-                      "key": "limit",
-                      "value": "12"
-                    }
+                    {"key": "page", "value": "1"},
+                    {"key": "limit", "value": "12"},
+                    {"key": "sort", "value": "updatedAt"},
+                    {"key": "order", "value": "desc"}
                   ]
                 }
               },
@@ -112,7 +118,34 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-teacher-profile\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      },\n      \"shelter\": {\n        \"id\": \"uuid-shelter\",\n        \"name\": \"Abrigo Central\",\n        \"time\": \"19:00\",\n        \"leader\": {\n          \"id\": \"uuid-leader\",\n          \"user\": {\n            \"id\": \"uuid-leader-user\",\n            \"name\": \"Maria Santos\",\n            \"email\": \"maria@example.com\",\n            \"phone\": \"+5511888888888\",\n            \"active\": true,\n            \"completed\": true,\n            \"commonUser\": false\n          }\n        }\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 12\n}"
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-teacher-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-1\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao.silva@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      },\n      \"shelter\": {\n        \"id\": \"uuid-shelter-1\",\n        \"name\": \"Abrigo Central\",\n        \"leader\": {\n          \"id\": \"uuid-leader-1\",\n          \"active\": true,\n          \"user\": {\n            \"id\": \"uuid-leader-user-1\",\n            \"name\": \"Maria Santos\",\n            \"email\": \"maria.santos@example.com\",\n            \"phone\": \"+5511888888888\",\n            \"active\": true,\n            \"completed\": true,\n            \"commonUser\": false\n          }\n        }\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 12\n}"
+            },
+            {
+              "name": "Erro - Acesso Negado (Teacher)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles?page=1&limit=12",
+                  "host": ["{{base_url}}"],
+                  "path": ["teacher-profiles"],
+                  "query": [
+                    {"key": "page", "value": "1"},
+                    {"key": "limit", "value": "12"}
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 403,\n  \"message\": \"Acesso negado\",\n  \"error\": \"Forbidden\"\n}"
             }
           ]
         },
@@ -126,7 +159,7 @@
               "host": ["{{base_url}}"],
               "path": ["teacher-profiles", "simple"]
             },
-            "description": "Lista teacher profiles em formato simplificado"
+            "description": "Lista todos os teacher profiles em formato simplificado. Disponível apenas para admin e leader."
           },
           "response": [
             {
@@ -150,7 +183,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"uuid-teacher-profile\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"active\": true,\n    \"shelter\": {\n      \"id\": \"uuid-shelter\",\n      \"name\": \"Abrigo Central\"\n    }\n  }\n]"
+              "body": "[\n  {\n    \"teacherProfileId\": \"uuid-teacher-1\",\n    \"name\": \"João Silva\",\n    \"vinculado\": true\n  },\n  {\n    \"teacherProfileId\": \"uuid-teacher-2\",\n    \"name\": \"Ana Santos\",\n    \"vinculado\": false\n  },\n  {\n    \"teacherProfileId\": \"uuid-teacher-3\",\n    \"name\": \"Pedro Costa\",\n    \"vinculado\": true\n  }\n]"
             }
           ]
         },
@@ -160,18 +193,18 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/teacher-profiles/{{teacher_profile_id}}",
+              "raw": "{{base_url}}/teacher-profiles/:id",
               "host": ["{{base_url}}"],
-              "path": ["teacher-profiles", "{{teacher_profile_id}}"],
+              "path": ["teacher-profiles", ":id"],
               "variable": [
                 {
-                  "key": "teacher_profile_id",
+                  "key": "id",
                   "value": "{{teacher_profile_id}}",
                   "description": "UUID do teacher profile"
                 }
               ]
             },
-            "description": "Busca um teacher profile específico por ID"
+            "description": "Busca um teacher profile específico por ID. Disponível apenas para admin e leader."
           },
           "response": [
             {
@@ -180,9 +213,9 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-profile",
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-1",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "uuid-teacher-profile"]
+                  "path": ["teacher-profiles", "uuid-teacher-1"]
                 }
               },
               "status": "OK",
@@ -195,7 +228,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-teacher-profile\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelter\": {\n    \"id\": \"uuid-shelter\",\n    \"name\": \"Abrigo Central\",\n    \"time\": \"19:00\",\n    \"leader\": {\n      \"id\": \"uuid-leader\",\n      \"user\": {\n        \"id\": \"uuid-leader-user\",\n        \"name\": \"Maria Santos\",\n        \"email\": \"maria@example.com\",\n        \"phone\": \"+5511888888888\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-teacher-1\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-1\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\",\n    \"leader\": {\n      \"id\": \"uuid-leader-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-leader-user-1\",\n        \"name\": \"Maria Santos\",\n        \"email\": \"maria.santos@example.com\",\n        \"phone\": \"+5511888888888\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             },
             {
               "name": "Erro - Teacher Profile Não Encontrado",
@@ -203,9 +236,9 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/invalid-id",
+                  "raw": "{{base_url}}/teacher-profiles/uuid-inexistente",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "invalid-id"]
+                  "path": ["teacher-profiles", "uuid-inexistente"]
                 }
               },
               "status": "Not Found",
@@ -223,111 +256,23 @@
           ]
         },
         {
-          "name": "Filtros Avançados - Teacher Profiles",
+          "name": "Buscar Teachers por Shelter ID",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/teacher-profiles?hasShelter=true&active=true&page=1&limit=5&sort=name&order=asc",
+              "raw": "{{base_url}}/teacher-profiles/by-shelter/:shelterId",
               "host": ["{{base_url}}"],
-              "path": ["teacher-profiles"],
-              "query": [
-                {
-                  "key": "hasShelter",
-                  "value": "true",
-                  "description": "Filtrar apenas teachers com shelter vinculado"
-                },
-                {
-                  "key": "active",
-                  "value": "true",
-                  "description": "Filtrar apenas teachers ativos"
-                },
-                {
-                  "key": "page",
-                  "value": "1",
-                  "description": "Número da página"
-                },
-                {
-                  "key": "limit",
-                  "value": "5",
-                  "description": "Itens por página"
-                },
-                {
-                  "key": "sort",
-                  "value": "name",
-                  "description": "Ordenar por nome"
-                },
-                {
-                  "key": "order",
-                  "value": "asc",
-                  "description": "Ordem crescente"
-                }
-              ]
-            },
-            "description": "Exemplo de filtros combinados - Teachers com shelter + ativos + paginação + ordenação"
-          },
-          "response": [
-            {
-              "name": "Sucesso - Filtros Combinados",
-              "originalRequest": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/teacher-profiles?hasShelter=true&active=true&page=1&limit=5",
-                  "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles"],
-                  "query": [
-                    {
-                      "key": "hasShelter",
-                      "value": "true"
-                    },
-                    {
-                      "key": "active",
-                      "value": "true"
-                    },
-                    {
-                      "key": "page",
-                      "value": "1"
-                    },
-                    {
-                      "key": "limit",
-                      "value": "5"
-                    }
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-teacher-profile\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      },\n      \"shelter\": {\n        \"id\": \"uuid-shelter\",\n        \"name\": \"Abrigo Central\",\n        \"time\": \"19:00\",\n        \"leader\": {\n          \"id\": \"uuid-leader\",\n          \"user\": {\n            \"id\": \"uuid-leader-user\",\n            \"name\": \"Maria Santos\",\n            \"email\": \"maria@example.com\",\n            \"phone\": \"+5511888888888\",\n            \"active\": true,\n            \"completed\": true,\n            \"commonUser\": false\n          }\n        }\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 5\n}"
-            }
-          ]
-        },
-        {
-          "name": "Buscar Teachers por Shelter",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/teacher-profiles/by-shelter/{{shelter_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["teacher-profiles", "by-shelter", "{{shelter_id}}"],
+              "path": ["teacher-profiles", "by-shelter", ":shelterId"],
               "variable": [
                 {
-                  "key": "shelter_id",
+                  "key": "shelterId",
                   "value": "{{shelter_id}}",
                   "description": "UUID do shelter"
                 }
               ]
             },
-            "description": "Busca todos os teachers vinculados a um shelter específico"
+            "description": "Lista todos os teachers vinculados a um shelter específico. Disponível apenas para admin e leader com acesso ao shelter."
           },
           "response": [
             {
@@ -336,9 +281,9 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/by-shelter/uuid-shelter",
+                  "raw": "{{base_url}}/teacher-profiles/by-shelter/uuid-shelter-1",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "by-shelter", "uuid-shelter"]
+                  "path": ["teacher-profiles", "by-shelter", "uuid-shelter-1"]
                 }
               },
               "status": "OK",
@@ -351,7 +296,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"uuid-teacher-profile\",\n    \"active\": true,\n    \"user\": {\n      \"id\": \"uuid-user\",\n      \"name\": \"João Silva\",\n      \"email\": \"joao@example.com\",\n      \"phone\": \"+5511999999999\",\n      \"active\": true,\n      \"completed\": true,\n      \"commonUser\": false\n    },\n    \"shelter\": {\n      \"id\": \"uuid-shelter\",\n      \"name\": \"Abrigo Central\",\n      \"time\": \"19:00\",\n      \"leader\": {\n        \"id\": \"uuid-leader\",\n        \"user\": {\n          \"id\": \"uuid-leader-user\",\n          \"name\": \"Maria Santos\",\n          \"email\": \"maria@example.com\",\n          \"phone\": \"+5511888888888\",\n          \"active\": true,\n          \"completed\": true,\n          \"commonUser\": false\n        }\n      }\n    },\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"uuid-teacher-1\",\n    \"active\": true,\n    \"user\": {\n      \"id\": \"uuid-user-1\",\n      \"name\": \"João Silva\",\n      \"email\": \"joao.silva@example.com\",\n      \"phone\": \"+5511999999999\",\n      \"active\": true,\n      \"completed\": true,\n      \"commonUser\": false\n    },\n    \"shelter\": {\n      \"id\": \"uuid-shelter-1\",\n      \"name\": \"Abrigo Central\",\n      \"leader\": {\n        \"id\": \"uuid-leader-1\",\n        \"active\": true,\n        \"user\": {\n          \"id\": \"uuid-leader-user-1\",\n          \"name\": \"Maria Santos\",\n          \"email\": \"maria.santos@example.com\",\n          \"phone\": \"+5511888888888\",\n          \"active\": true,\n          \"completed\": true,\n          \"commonUser\": false\n        }\n      }\n    },\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n  }\n]"
             },
             {
               "name": "Erro - Shelter Não Encontrado",
@@ -359,9 +304,9 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/by-shelter/invalid-shelter-id",
+                  "raw": "{{base_url}}/teacher-profiles/by-shelter/uuid-inexistente",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "by-shelter", "invalid-shelter-id"]
+                  "path": ["teacher-profiles", "by-shelter", "uuid-inexistente"]
                 }
               },
               "status": "Not Found",
@@ -379,90 +324,7 @@
           ]
         },
         {
-          "name": "Criar Teacher Profile",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/teacher-profiles/create-for-user/{{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["teacher-profiles", "create-for-user", "{{user_id}}"],
-              "variable": [
-                {
-                  "key": "user_id",
-                  "value": "{{user_id}}",
-                  "description": "UUID do usuário"
-                }
-              ]
-            },
-            "description": "Cria um teacher profile para um usuário existente"
-          },
-          "response": [
-            {
-              "name": "Sucesso - Teacher Profile Criado",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/teacher-profiles/create-for-user/uuid-user-id",
-                  "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "create-for-user", "uuid-user-id"]
-                }
-              },
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": \"uuid-teacher-profile\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-id\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelter\": null,\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
-            },
-            {
-              "name": "Erro - Usuário Não Encontrado",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/teacher-profiles/create-for-user/invalid-user-id",
-                  "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "create-for-user", "invalid-user-id"]
-                }
-              },
-              "status": "Not Found",
-              "code": 404,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"User não encontrado\",\n  \"error\": \"Not Found\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "Atribuir Shelter ao Teacher",
+          "name": "Atribuir Teacher a Shelter",
           "request": {
             "method": "PATCH",
             "header": [
@@ -487,11 +349,11 @@
                 }
               ]
             },
-            "description": "Atribui um shelter a um teacher profile"
+            "description": "Atribui um teacher a um shelter. Disponível apenas para admin e leader com acesso ao shelter."
           },
           "response": [
             {
-              "name": "Sucesso - Shelter Vinculado",
+              "name": "Sucesso - Teacher Atribuído",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -502,12 +364,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"uuid-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-id/assign-shelter",
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-1/assign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "uuid-teacher-id", "assign-shelter"]
+                  "path": ["teacher-profiles", "uuid-teacher-1", "assign-shelter"]
                 }
               },
               "status": "OK",
@@ -523,6 +385,38 @@
               "body": "{\n  \"message\": \"Teacher atribuído ao shelter com sucesso\"\n}"
             },
             {
+              "name": "Erro - Teacher Não Encontrado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles/uuid-inexistente/assign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["teacher-profiles", "uuid-inexistente", "assign-shelter"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"TeacherProfile não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            },
+            {
               "name": "Erro - Shelter Não Encontrado",
               "originalRequest": {
                 "method": "PATCH",
@@ -534,12 +428,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"invalid-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-inexistente\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-id/assign-shelter",
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-1/assign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "uuid-teacher-id", "assign-shelter"]
+                  "path": ["teacher-profiles", "uuid-teacher-1", "assign-shelter"]
                 }
               },
               "status": "Not Found",
@@ -566,12 +460,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"uuid-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-2\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-id/assign-shelter",
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-1/assign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "uuid-teacher-id", "assign-shelter"]
+                  "path": ["teacher-profiles", "uuid-teacher-1", "assign-shelter"]
                 }
               },
               "status": "Bad Request",
@@ -585,11 +479,43 @@
               ],
               "cookie": [],
               "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Teacher já está vinculado a outro Shelter\",\n  \"error\": \"Bad Request\"\n}"
+            },
+            {
+              "name": "Erro - Sem Acesso ao Shelter",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-sem-acesso\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-1/assign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["teacher-profiles", "uuid-teacher-1", "assign-shelter"]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 403,\n  \"message\": \"Sem acesso ao shelter informado\",\n  \"error\": \"Forbidden\"\n}"
             }
           ]
         },
         {
-          "name": "Remover Shelter do Teacher",
+          "name": "Desatribuir Teacher de Shelter",
           "request": {
             "method": "PATCH",
             "header": [
@@ -614,11 +540,11 @@
                 }
               ]
             },
-            "description": "Remove um shelter de um teacher profile"
+            "description": "Remove um teacher de um shelter. Disponível apenas para admin e leader com acesso ao shelter."
           },
           "response": [
             {
-              "name": "Sucesso - Shelter Desvinculado",
+              "name": "Sucesso - Teacher Desatribuído",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -629,12 +555,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"uuid-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-id/unassign-shelter",
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-1/unassign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "uuid-teacher-id", "unassign-shelter"]
+                  "path": ["teacher-profiles", "uuid-teacher-1", "unassign-shelter"]
                 }
               },
               "status": "OK",
@@ -650,6 +576,70 @@
               "body": "{\n  \"message\": \"Teacher removido do shelter com sucesso\"\n}"
             },
             {
+              "name": "Sucesso - Desatribuir Sem Shelter ID",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-1/unassign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["teacher-profiles", "uuid-teacher-1", "unassign-shelter"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Teacher removido do shelter com sucesso\"\n}"
+            },
+            {
+              "name": "Erro - Teacher Não Encontrado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles/uuid-inexistente/unassign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["teacher-profiles", "uuid-inexistente", "unassign-shelter"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"TeacherProfile não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            },
+            {
               "name": "Erro - Teacher Não Pertence ao Shelter",
               "originalRequest": {
                 "method": "PATCH",
@@ -661,12 +651,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"wrong-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-diferente\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-id/unassign-shelter",
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-1/unassign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["teacher-profiles", "uuid-teacher-id", "unassign-shelter"]
+                  "path": ["teacher-profiles", "uuid-teacher-1", "unassign-shelter"]
                 }
               },
               "status": "Bad Request",
@@ -680,11 +670,43 @@
               ],
               "cookie": [],
               "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Teacher não pertence ao shelter informado\",\n  \"error\": \"Bad Request\"\n}"
+            },
+            {
+              "name": "Erro - Teacher Sem Shelter",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles/uuid-teacher-sem-shelter/unassign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["teacher-profiles", "uuid-teacher-sem-shelter", "unassign-shelter"]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 403,\n  \"message\": \"Teacher não possui shelter para desvincular\",\n  \"error\": \"Forbidden\"\n}"
             }
           ]
         }
       ],
-      "description": "Endpoints para gerenciamento de Teacher Profiles"
+      "description": "Endpoints para gerenciamento completo de Teacher Profiles com autenticação JWT e controle de acesso baseado em roles."
     }
   ]
 }

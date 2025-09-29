@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Sheltered API Collection",
-    "description": "Collection para todos os endpoints do módulo Sheltered - Atualizada com campos opcionais guardianName e guardianPhone",
+    "description": "Collection completa para todos os endpoints do módulo Sheltered - Atualizada com estrutura real dos DTOs, filtros completos e autenticação",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "2.1.0"
+    "version": "3.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -59,7 +59,7 @@
                 {
                   "key": "searchString",
                   "value": "",
-                  "description": "Busca geral por nome ou responsável"
+                  "description": "Busca geral por nome, nome do responsável ou telefone"
                 },
                 {
                   "key": "shelterId",
@@ -74,12 +74,12 @@
                 {
                   "key": "city",
                   "value": "",
-                  "description": "Filtrar por cidade"
+                  "description": "Filtrar por cidade do endereço"
                 },
                 {
                   "key": "state",
                   "value": "",
-                  "description": "Filtrar por estado"
+                  "description": "Filtrar por estado do endereço"
                 },
                 {
                   "key": "gender",
@@ -89,7 +89,7 @@
                 {
                   "key": "birthDate",
                   "value": "",
-                  "description": "Filtrar por data de nascimento específica (YYYY-MM-DD)"
+                  "description": "Filtrar por data de nascimento exata (YYYY-MM-DD)"
                 },
                 {
                   "key": "birthDateFrom",
@@ -104,21 +104,21 @@
                 {
                   "key": "joinedAt",
                   "value": "",
-                  "description": "Filtrar por data de ingresso específica (YYYY-MM-DD)"
+                  "description": "Filtrar por data de entrada exata (YYYY-MM-DD)"
                 },
                 {
                   "key": "joinedFrom",
                   "value": "",
-                  "description": "Filtrar por data de ingresso a partir de (YYYY-MM-DD)"
+                  "description": "Filtrar por data de entrada a partir de (YYYY-MM-DD)"
                 },
                 {
                   "key": "joinedTo",
                   "value": "",
-                  "description": "Filtrar por data de ingresso até (YYYY-MM-DD)"
+                  "description": "Filtrar por data de entrada até (YYYY-MM-DD)"
                 }
               ]
             },
-            "description": "Lista todos os sheltered com paginação e filtros opcionais"
+            "description": "Lista todos os sheltered com paginação e filtros opcionais. Disponível para todos os roles com controle de acesso."
           },
           "response": [
             {
@@ -127,12 +127,12 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/sheltered?page=1&limit=5&orderBy=name&order=ASC",
+                  "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC",
                   "host": ["{{base_url}}"],
                   "path": ["sheltered"],
                   "query": [
                     {"key": "page", "value": "1"},
-                    {"key": "limit", "value": "5"},
+                    {"key": "limit", "value": "20"},
                     {"key": "orderBy", "value": "name"},
                     {"key": "order", "value": "ASC"}
                   ]
@@ -148,7 +148,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"data\": [\n    {\n      \"id\": \"uuid-sheltered-1\",\n      \"name\": \"Ana Silva\",\n      \"birthDate\": \"2010-05-15\",\n      \"guardianName\": \"Maria Silva\",\n      \"gender\": \"Feminino\",\n      \"guardianPhone\": \"+5511999999999\",\n      \"joinedAt\": \"2024-01-15\",\n      \"shelter\": {\n        \"id\": \"uuid-shelter-1\",\n        \"name\": \"Abrigo Central\"\n      },\n      \"address\": {\n        \"id\": \"uuid-address-1\",\n        \"street\": \"Rua das Flores\",\n        \"number\": \"123\",\n        \"district\": \"Centro\",\n        \"city\": \"São Paulo\",\n        \"state\": \"SP\",\n        \"postalCode\": \"01234-567\",\n        \"complement\": \"Apto 45\"\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    },\n    {\n      \"id\": \"uuid-sheltered-2\",\n      \"name\": \"João Sem Responsável\",\n      \"birthDate\": \"2012-03-20\",\n      \"guardianName\": null,\n      \"gender\": \"Masculino\",\n      \"guardianPhone\": null,\n      \"joinedAt\": \"2024-02-01\",\n      \"shelter\": {\n        \"id\": \"uuid-shelter-2\",\n        \"name\": \"Abrigo Jardins\"\n      },\n      \"address\": {\n        \"id\": \"uuid-address-2\",\n        \"street\": \"Rua Sem Responsável\",\n        \"number\": \"456\",\n        \"district\": \"Jardins\",\n        \"city\": \"Rio de Janeiro\",\n        \"state\": \"RJ\",\n        \"postalCode\": \"20000-000\",\n        \"complement\": \"Casa 2\"\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 5,\n    \"totalItems\": 20,\n    \"totalPages\": 4,\n    \"orderBy\": \"name\",\n    \"order\": \"ASC\"\n  }\n}"
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"uuid-sheltered-1\",\n      \"name\": \"João Silva\",\n      \"birthDate\": \"2010-05-15\",\n      \"guardianName\": \"Maria Silva\",\n      \"gender\": \"masculino\",\n      \"guardianPhone\": \"+5511999999999\",\n      \"joinedAt\": \"2023-01-15\",\n      \"shelter\": {\n        \"id\": \"uuid-shelter-1\",\n        \"name\": \"Abrigo Central\"\n      },\n      \"address\": {\n        \"id\": \"uuid-address-1\",\n        \"street\": \"Rua das Flores\",\n        \"number\": \"123\",\n        \"district\": \"Centro\",\n        \"city\": \"São Paulo\",\n        \"state\": \"SP\",\n        \"postalCode\": \"01234-567\",\n        \"complement\": \"Apto 45\"\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalItems\": 1,\n    \"totalPages\": 1,\n    \"orderBy\": \"name\",\n    \"order\": \"ASC\"\n  }\n}"
             }
           ]
         },
@@ -162,7 +162,7 @@
               "host": ["{{base_url}}"],
               "path": ["sheltered", "simple"]
             },
-            "description": "Lista todos os sheltered em formato simplificado"
+            "description": "Lista todos os sheltered em formato simplificado. Disponível para todos os roles."
           },
           "response": [
             {
@@ -186,7 +186,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"uuid-sheltered-1\",\n    \"name\": \"Ana Silva\",\n    \"guardianName\": \"Maria Silva\",\n    \"gender\": \"Feminino\",\n    \"guardianPhone\": \"+5511999999999\",\n    \"shelterId\": \"uuid-shelter-1\",\n    \"acceptedChrists\": []\n  },\n  {\n    \"id\": \"uuid-sheltered-2\",\n    \"name\": \"João Sem Responsável\",\n    \"guardianName\": null,\n    \"gender\": \"Masculino\",\n    \"guardianPhone\": null,\n    \"shelterId\": \"uuid-shelter-2\",\n    \"acceptedChrists\": []\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"uuid-sheltered-1\",\n    \"name\": \"João Silva\",\n    \"guardianName\": \"Maria Silva\",\n    \"gender\": \"masculino\",\n    \"guardianPhone\": \"+5511999999999\",\n    \"shelterId\": \"uuid-shelter-1\",\n    \"acceptedChrists\": []\n  },\n  {\n    \"id\": \"uuid-sheltered-2\",\n    \"name\": \"Ana Santos\",\n    \"guardianName\": null,\n    \"gender\": \"feminino\",\n    \"guardianPhone\": null,\n    \"shelterId\": null,\n    \"acceptedChrists\": [\n      {\n        \"id\": \"uuid-accepted-christ-1\",\n        \"decision\": \"Sim\",\n        \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n        \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n      }\n    ]\n  }\n]"
             }
           ]
         },
@@ -207,7 +207,7 @@
                 }
               ]
             },
-            "description": "Busca um sheltered específico por ID"
+            "description": "Busca um sheltered específico por ID. Disponível para todos os roles com controle de acesso."
           },
           "response": [
             {
@@ -231,7 +231,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"Ana Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"Feminino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             },
             {
               "name": "Erro - Sheltered Não Encontrado",
@@ -254,7 +254,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Sheltered não encontrado\",\n  \"error\": \"Not Found\"\n}"
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Abrigado não encontrado ou sem acesso\",\n  \"error\": \"Not Found\"\n}"
             }
           ]
         },
@@ -270,14 +270,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"11999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelterId\": \"{{shelter_id}}\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  }\n}"
+              "raw": "{\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelterId\": \"{{shelter_id}}\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/sheltered",
               "host": ["{{base_url}}"],
               "path": ["sheltered"]
             },
-            "description": "Cria um novo sheltered"
+            "description": "Cria um novo sheltered. Disponível para todos os roles com controle de acesso ao shelter."
           },
           "response": [
             {
@@ -292,7 +292,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"Masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelterId\": \"uuid-shelter-1\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  }\n}"
+                  "raw": "{\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelterId\": \"uuid-shelter-1\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  }\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered",
@@ -310,10 +310,10 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-sheltered-novo\",\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"Masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-novo\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-sheltered-novo\",\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-novo\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             },
             {
-              "name": "Erro - Dados Inválidos",
+              "name": "Erro - Validação",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -324,7 +324,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"\",\n  \"birthDate\": \"data-invalida\",\n  \"guardianName\": \"\",\n  \"gender\": \"\",\n  \"guardianPhone\": \"123\"\n}"
+                  "raw": "{\n  \"name\": \"A\",\n  \"birthDate\": \"data-invalida\",\n  \"gender\": \"masculino\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered",
@@ -342,10 +342,10 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"statusCode\": 400,\n  \"message\": [\n    \"name should not be empty\",\n    \"birthDate must be a valid ISO 8601 date string\",\n    \"gender should not be empty\"\n  ],\n  \"error\": \"Bad Request\"\n}"
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": [\n    \"name must be longer than or equal to 2 characters\",\n    \"birthDate must be a valid ISO 8601 date string\"\n  ],\n  \"error\": \"Bad Request\"\n}"
             },
             {
-              "name": "Sucesso - Sheltered Criado sem Responsável",
+              "name": "Erro - Acesso Negado ao Shelter",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -356,7 +356,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"João Sem Responsável\",\n  \"birthDate\": \"2012-03-20\",\n  \"gender\": \"Masculino\",\n  \"joinedAt\": \"2024-02-01\",\n  \"address\": {\n    \"street\": \"Rua Sem Responsável\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"Rio de Janeiro\",\n    \"state\": \"RJ\",\n    \"postalCode\": \"20000-000\",\n    \"complement\": \"Casa 2\"\n  }\n}"
+                  "raw": "{\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"gender\": \"masculino\",\n  \"shelterId\": \"uuid-shelter-sem-acesso\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered",
@@ -364,8 +364,8 @@
                   "path": ["sheltered"]
                 }
               },
-              "status": "Created",
-              "code": 201,
+              "status": "Forbidden",
+              "code": 403,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -374,7 +374,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-sheltered-sem-responsavel\",\n  \"name\": \"João Sem Responsável\",\n  \"birthDate\": \"2012-03-20\",\n  \"guardianName\": null,\n  \"gender\": \"Masculino\",\n  \"guardianPhone\": null,\n  \"joinedAt\": \"2024-02-01\",\n  \"shelter\": null,\n  \"address\": {\n    \"id\": \"uuid-address-sem-responsavel\",\n    \"street\": \"Rua Sem Responsável\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"Rio de Janeiro\",\n    \"state\": \"RJ\",\n    \"postalCode\": \"20000-000\",\n    \"complement\": \"Casa 2\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"statusCode\": 403,\n  \"message\": \"Sem acesso ao shelter informado\",\n  \"error\": \"Forbidden\"\n}"
             }
           ]
         },
@@ -390,7 +390,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"João Silva Santos\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva Santos\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"11999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelterId\": \"{{shelter_id}}\",\n  \"address\": {\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\"\n  }\n}"
+              "raw": "{\n  \"name\": \"João Silva Atualizado\",\n  \"guardianPhone\": \"+5511888888888\",\n  \"address\": {\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\"\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/sheltered/:id",
@@ -404,7 +404,7 @@
                 }
               ]
             },
-            "description": "Atualiza um sheltered existente"
+            "description": "Atualiza um sheltered existente. Disponível para todos os roles com controle de acesso."
           },
           "response": [
             {
@@ -419,7 +419,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"João Silva Santos\",\n  \"guardianName\": \"Maria Silva Santos\",\n  \"gender\": \"Masculino\"\n}"
+                  "raw": "{\n  \"name\": \"João Silva Atualizado\",\n  \"guardianPhone\": \"+5511888888888\",\n  \"address\": {\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\"\n  }\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered/uuid-sheltered-1",
@@ -437,7 +437,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"João Silva Santos\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva Santos\",\n  \"gender\": \"Masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2024-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:30:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"João Silva Atualizado\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"+5511888888888\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:30:00.000Z\"\n}"
             },
             {
               "name": "Erro - Sheltered Não Encontrado",
@@ -451,7 +451,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"João Silva Santos\"\n}"
+                  "raw": "{\n  \"name\": \"João Silva Atualizado\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered/uuid-inexistente",
@@ -469,7 +469,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Sheltered não encontrado\",\n  \"error\": \"Not Found\"\n}"
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Abrigado não encontrado ou sem acesso\",\n  \"error\": \"Not Found\"\n}"
             }
           ]
         },
@@ -490,7 +490,7 @@
                 }
               ]
             },
-            "description": "Remove um sheltered"
+            "description": "Remove um sheltered. Disponível para todos os roles com controle de acesso."
           },
           "response": [
             {
@@ -504,8 +504,8 @@
                   "path": ["sheltered", "uuid-sheltered-1"]
                 }
               },
-              "status": "OK",
-              "code": 200,
+              "status": "No Content",
+              "code": 204,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -537,12 +537,12 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Sheltered não encontrado\",\n  \"error\": \"Not Found\"\n}"
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Abrigado não encontrado ou sem acesso\",\n  \"error\": \"Not Found\"\n}"
             }
           ]
         }
       ],
-      "description": "Endpoints para gerenciamento de Sheltered"
+      "description": "Endpoints para gerenciamento completo de Sheltered com autenticação JWT e controle de acesso baseado em roles."
     }
   ]
 }

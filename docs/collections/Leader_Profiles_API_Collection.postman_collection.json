@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Leader Profiles API Collection",
-    "description": "Collection para todos os endpoints do módulo Leader Profiles - ✅ TESTADA E VALIDADA - Todos os 8 endpoints funcionando perfeitamente",
+    "description": "Collection completa para todos os endpoints do módulo Leader Profiles - Atualizada com estrutura real dos DTOs, filtros completos e autenticação",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "2.0.0"
+    "version": "3.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -26,6 +26,74 @@
     {
       "name": "Leader Profiles",
       "item": [
+        {
+          "name": "Criar Leader Profile para Usuário",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leader-profiles/create-for-user/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["leader-profiles", "create-for-user", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{user_id}}",
+                  "description": "UUID do usuário"
+                }
+              ]
+            },
+            "description": "Cria um leader profile para um usuário específico. Disponível para todos os roles."
+          },
+          "response": [
+            {
+              "name": "Sucesso - Leader Profile Criado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/create-for-user/uuid-user-1",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "create-for-user", "uuid-user-1"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-leader-1\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-1\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelter\": null,\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+            },
+            {
+              "name": "Erro - Usuário Não Encontrado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/create-for-user/uuid-inexistente",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "create-for-user", "uuid-inexistente"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"User não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        },
         {
           "name": "Listar Leader Profiles (Paginação)",
           "request": {
@@ -59,31 +127,36 @@
                 {
                   "key": "searchString",
                   "value": "",
-                  "description": "String de busca (opcional)"
+                  "description": "Busca por nome, email, telefone do leader"
                 },
                 {
                   "key": "q",
                   "value": "",
-                  "description": "Query de busca alternativa (opcional)"
+                  "description": "Alias para searchString"
                 },
                 {
                   "key": "active",
                   "value": "",
-                  "description": "Filtrar por status ativo (true/false)"
+                  "description": "Filtrar por status ativo (true, false)"
                 },
                 {
                   "key": "hasShelters",
                   "value": "",
-                  "description": "Filtrar por líderes com shelters (true/false)"
+                  "description": "Filtrar por leaders com shelters (true, false)"
                 },
                 {
                   "key": "shelterId",
-                  "value": "{{shelter_id}}",
+                  "value": "",
                   "description": "Filtrar por ID do shelter"
+                },
+                {
+                  "key": "shelterName",
+                  "value": "",
+                  "description": "Filtrar por nome do shelter"
                 }
               ]
             },
-            "description": "Lista todos os leader profiles com paginação e filtros opcionais"
+            "description": "Lista todos os leader profiles com paginação e filtros opcionais. Disponível para todos os roles."
           },
           "response": [
             {
@@ -92,18 +165,14 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles?page=1&limit=12",
+                  "raw": "{{base_url}}/leader-profiles?page=1&limit=12&sort=updatedAt&order=desc",
                   "host": ["{{base_url}}"],
                   "path": ["leader-profiles"],
                   "query": [
-                    {
-                      "key": "page",
-                      "value": "1"
-                    },
-                    {
-                      "key": "limit",
-                      "value": "12"
-                    }
+                    {"key": "page", "value": "1"},
+                    {"key": "limit", "value": "12"},
+                    {"key": "sort", "value": "updatedAt"},
+                    {"key": "order", "value": "desc"}
                   ]
                 }
               },
@@ -117,7 +186,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-leader-profile\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      },\n      \"shelters\": [\n        {\n          \"id\": \"uuid-shelter\",\n          \"name\": \"Abrigo Central\",\n          \"time\": \"19:00\",\n          \"teachers\": [\n            {\n              \"id\": \"uuid-teacher\",\n              \"user\": {\n                \"id\": \"uuid-teacher-user\",\n                \"name\": \"Maria Santos\",\n                \"email\": \"maria@example.com\",\n                \"phone\": \"+5511888888888\",\n                \"active\": true,\n                \"completed\": true,\n                \"commonUser\": false\n              }\n            }\n          ]\n        }\n      ],\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 12\n}"
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-leader-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-1\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao.silva@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      },\n      \"shelter\": {\n        \"id\": \"uuid-shelter-1\",\n        \"number\": 1,\n        \"weekday\": \"monday\",\n        \"teachers\": [\n          {\n            \"id\": \"uuid-teacher-1\",\n            \"active\": true,\n            \"user\": {\n              \"id\": \"uuid-teacher-user-1\",\n              \"name\": \"Maria Santos\",\n              \"email\": \"maria.santos@example.com\",\n              \"phone\": \"+5511888888888\",\n              \"active\": true,\n              \"completed\": true,\n              \"commonUser\": false\n            }\n          }\n        ]\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 12\n}"
             }
           ]
         },
@@ -131,7 +200,7 @@
               "host": ["{{base_url}}"],
               "path": ["leader-profiles", "simple"]
             },
-            "description": "Lista todos os leader profiles em formato simplificado (id, nome, vinculado)"
+            "description": "Lista todos os leader profiles em formato simplificado. Disponível para todos os roles."
           },
           "response": [
             {
@@ -155,7 +224,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"uuid-leader-profile\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"active\": true,\n    \"shelters\": [\n      {\n        \"id\": \"uuid-shelter\",\n        \"name\": \"Abrigo Central\"\n      }\n    ]\n  }\n]"
+              "body": "[\n  {\n    \"leaderProfileId\": \"uuid-leader-1\",\n    \"name\": \"João Silva\",\n    \"vinculado\": true\n  },\n  {\n    \"leaderProfileId\": \"uuid-leader-2\",\n    \"name\": \"Ana Santos\",\n    \"vinculado\": false\n  },\n  {\n    \"leaderProfileId\": \"uuid-leader-3\",\n    \"name\": \"Pedro Costa\",\n    \"vinculado\": true\n  }\n]"
             }
           ]
         },
@@ -176,7 +245,7 @@
                 }
               ]
             },
-            "description": "Busca um leader profile específico por ID"
+            "description": "Busca um leader profile específico por ID. Disponível para todos os roles."
           },
           "response": [
             {
@@ -185,9 +254,9 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/uuid-leader-profile",
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-profile"]
+                  "path": ["leader-profiles", "uuid-leader-1"]
                 }
               },
               "status": "OK",
@@ -200,7 +269,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-leader-profile\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelters\": [\n    {\n      \"id\": \"uuid-shelter\",\n      \"name\": \"Abrigo Central\",\n      \"time\": \"19:00\",\n      \"teachers\": [\n        {\n          \"id\": \"uuid-teacher\",\n          \"user\": {\n            \"id\": \"uuid-teacher-user\",\n            \"name\": \"Maria Santos\",\n            \"email\": \"maria@example.com\",\n            \"phone\": \"+5511888888888\",\n            \"active\": true,\n            \"completed\": true,\n            \"commonUser\": false\n          }\n        }\n      ]\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-leader-1\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-1\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"number\": 1,\n    \"weekday\": \"monday\",\n    \"teachers\": [\n      {\n        \"id\": \"uuid-teacher-1\",\n        \"active\": true,\n        \"user\": {\n          \"id\": \"uuid-teacher-user-1\",\n          \"name\": \"Maria Santos\",\n          \"email\": \"maria.santos@example.com\",\n          \"phone\": \"+5511888888888\",\n          \"active\": true,\n          \"completed\": true,\n          \"commonUser\": false\n        }\n      }\n    ]\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             },
             {
               "name": "Erro - Leader Profile Não Encontrado",
@@ -208,9 +277,9 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/invalid-id",
+                  "raw": "{{base_url}}/leader-profiles/uuid-inexistente",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "invalid-id"]
+                  "path": ["leader-profiles", "uuid-inexistente"]
                 }
               },
               "status": "Not Found",
@@ -228,7 +297,7 @@
           ]
         },
         {
-          "name": "Buscar Leader Profile por Shelter ID",
+          "name": "Buscar Leader por Shelter ID",
           "request": {
             "method": "GET",
             "header": [],
@@ -244,18 +313,18 @@
                 }
               ]
             },
-            "description": "Busca o leader profile responsável por um shelter específico"
+            "description": "Busca o leader vinculado a um shelter específico. Disponível para todos os roles."
           },
           "response": [
             {
-              "name": "Sucesso - Leader do Shelter Encontrado",
+              "name": "Sucesso - Leader do Shelter",
               "originalRequest": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/by-shelter/uuid-shelter",
+                  "raw": "{{base_url}}/leader-profiles/by-shelter/uuid-shelter-1",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "by-shelter", "uuid-shelter"]
+                  "path": ["leader-profiles", "by-shelter", "uuid-shelter-1"]
                 }
               },
               "status": "OK",
@@ -268,30 +337,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-leader-profile\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelters\": [\n    {\n      \"id\": \"uuid-shelter\",\n      \"name\": \"Abrigo Central\",\n      \"time\": \"19:00\",\n      \"teachers\": [\n        {\n          \"id\": \"uuid-teacher\",\n          \"user\": {\n            \"id\": \"uuid-teacher-user\",\n            \"name\": \"Maria Santos\",\n            \"email\": \"maria@example.com\",\n            \"phone\": \"+5511888888888\",\n            \"active\": true,\n            \"completed\": true,\n            \"commonUser\": false\n          }\n        }\n      ]\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
-            },
-            {
-              "name": "Erro - Shelter Sem Leader",
-              "originalRequest": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/leader-profiles/by-shelter/uuid-shelter-sem-leader",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "by-shelter", "uuid-shelter-sem-leader"]
-                }
-              },
-              "status": "Not Found",
-              "code": 404,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Este Shelter não possui líder vinculado\",\n  \"error\": \"Not Found\"\n}"
+              "body": "{\n  \"id\": \"uuid-leader-1\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-1\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"number\": 1,\n    \"weekday\": \"monday\",\n    \"teachers\": [\n      {\n        \"id\": \"uuid-teacher-1\",\n        \"active\": true,\n        \"user\": {\n          \"id\": \"uuid-teacher-user-1\",\n          \"name\": \"Maria Santos\",\n          \"email\": \"maria.santos@example.com\",\n          \"phone\": \"+5511888888888\",\n          \"active\": true,\n          \"completed\": true,\n          \"commonUser\": false\n        }\n      }\n    ]\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             },
             {
               "name": "Erro - Shelter Não Encontrado",
@@ -299,9 +345,9 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/by-shelter/invalid-shelter-id",
+                  "raw": "{{base_url}}/leader-profiles/by-shelter/uuid-inexistente",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "by-shelter", "invalid-shelter-id"]
+                  "path": ["leader-profiles", "by-shelter", "uuid-inexistente"]
                 }
               },
               "status": "Not Found",
@@ -319,7 +365,7 @@
           ]
         },
         {
-          "name": "Atribuir Shelter ao Leader",
+          "name": "Atribuir Leader a Shelter",
           "request": {
             "method": "PATCH",
             "header": [
@@ -344,11 +390,11 @@
                 }
               ]
             },
-            "description": "Atribui um shelter a um leader profile"
+            "description": "Atribui um leader a um shelter. Disponível para todos os roles."
           },
           "response": [
             {
-              "name": "Sucesso - Shelter Vinculado",
+              "name": "Sucesso - Leader Atribuído",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -359,12 +405,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"uuid-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/uuid-leader-id/assign-shelter",
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/assign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-id", "assign-shelter"]
+                  "path": ["leader-profiles", "uuid-leader-1", "assign-shelter"]
                 }
               },
               "status": "OK",
@@ -380,6 +426,38 @@
               "body": "{\n  \"message\": \"Líder atribuído ao shelter com sucesso\"\n}"
             },
             {
+              "name": "Erro - Leader Não Encontrado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/uuid-inexistente/assign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "uuid-inexistente", "assign-shelter"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"LeaderProfile não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            },
+            {
               "name": "Erro - Shelter Não Encontrado",
               "originalRequest": {
                 "method": "PATCH",
@@ -391,12 +469,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"invalid-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-inexistente\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/uuid-leader-id/assign-shelter",
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/assign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-id", "assign-shelter"]
+                  "path": ["leader-profiles", "uuid-leader-1", "assign-shelter"]
                 }
               },
               "status": "Not Found",
@@ -410,11 +488,75 @@
               ],
               "cookie": [],
               "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Shelter não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            },
+            {
+              "name": "Erro - Leader Já Vinculado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-2\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/assign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "uuid-leader-1", "assign-shelter"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Leader já está vinculado a outro Shelter\",\n  \"error\": \"Bad Request\"\n}"
+            },
+            {
+              "name": "Erro - Shelter Já Possui Leader",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-com-leader\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/assign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "uuid-leader-1", "assign-shelter"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Shelter já possui um Leader\",\n  \"error\": \"Bad Request\"\n}"
             }
           ]
         },
         {
-          "name": "Remover Shelter do Leader",
+          "name": "Desatribuir Leader de Shelter",
           "request": {
             "method": "PATCH",
             "header": [
@@ -439,11 +581,11 @@
                 }
               ]
             },
-            "description": "Remove um shelter de um leader profile"
+            "description": "Remove um leader de um shelter. Disponível para todos os roles."
           },
           "response": [
             {
-              "name": "Sucesso - Shelter Desvinculado",
+              "name": "Sucesso - Leader Desatribuído",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -454,12 +596,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"uuid-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/uuid-leader-id/unassign-shelter",
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/unassign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-id", "unassign-shelter"]
+                  "path": ["leader-profiles", "uuid-leader-1", "unassign-shelter"]
                 }
               },
               "status": "OK",
@@ -475,6 +617,38 @@
               "body": "{\n  \"message\": \"Líder removido do shelter com sucesso\"\n}"
             },
             {
+              "name": "Erro - Leader Não Encontrado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/uuid-inexistente/unassign-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "uuid-inexistente", "unassign-shelter"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"LeaderProfile não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            },
+            {
               "name": "Erro - Shelter Não Encontrado",
               "originalRequest": {
                 "method": "PATCH",
@@ -486,12 +660,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"invalid-shelter-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-inexistente\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/uuid-leader-id/unassign-shelter",
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/unassign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-id", "unassign-shelter"]
+                  "path": ["leader-profiles", "uuid-leader-1", "unassign-shelter"]
                 }
               },
               "status": "Not Found",
@@ -505,45 +679,29 @@
               ],
               "cookie": [],
               "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Shelter não encontrado\",\n  \"error\": \"Not Found\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "Criar Leader Profile",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/leader-profiles/create-for-user/{{leader_profile_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles", "create-for-user", "{{leader_profile_id}}"]
             },
-            "description": "Cria um leader profile para um usuário existente"
-          },
-          "response": [
             {
-              "name": "Sucesso - Leader Profile Criado",
+              "name": "Erro - Leader Não Pertence ao Shelter",
               "originalRequest": {
-                "method": "POST",
+                "method": "PATCH",
                 "header": [
                   {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
                 ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-diferente\"\n}"
+                },
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/create-for-user/uuid-user-id",
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/unassign-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "create-for-user", "uuid-user-id"]
+                  "path": ["leader-profiles", "uuid-leader-1", "unassign-shelter"]
                 }
               },
-              "status": "Created",
-              "code": 201,
+              "status": "Bad Request",
+              "code": 400,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -552,40 +710,12 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-leader-profile\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-id\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelter\": null,\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
-            },
-            {
-              "name": "Erro - Usuário Não Encontrado",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/leader-profiles/create-for-user/invalid-user-id",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "create-for-user", "invalid-user-id"]
-                }
-              },
-              "status": "Not Found",
-              "code": 404,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"User não encontrado\",\n  \"error\": \"Not Found\"\n}"
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Leader não pertence ao shelter informado\",\n  \"error\": \"Bad Request\"\n}"
             }
           ]
         },
         {
-          "name": "Mover Shelter entre Leaders",
+          "name": "Mover Shelter Entre Leaders",
           "request": {
             "method": "PATCH",
             "header": [
@@ -596,7 +726,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"shelterId\": \"{{shelter_id}}\",\n  \"toLeaderId\": \"{{leader_profile_id}}\"\n}"
+              "raw": "{\n  \"shelterId\": \"{{shelter_id}}\",\n  \"toLeaderId\": \"{{to_leader_id}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/leader-profiles/:fromLeaderId/move-shelter",
@@ -605,12 +735,12 @@
               "variable": [
                 {
                   "key": "fromLeaderId",
-                  "value": "{{leader_profile_id}}",
-                  "description": "UUID do leader profile atual"
+                  "value": "{{from_leader_id}}",
+                  "description": "UUID do leader atual do shelter"
                 }
               ]
             },
-            "description": "Move um shelter de um leader para outro"
+            "description": "Move um shelter de um leader para outro. Disponível para todos os roles."
           },
           "response": [
             {
@@ -625,12 +755,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"uuid-shelter-id\",\n  \"toLeaderId\": \"uuid-novo-leader-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\",\n  \"toLeaderId\": \"uuid-leader-2\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/uuid-leader-atual/move-shelter",
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-atual", "move-shelter"]
+                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
                 }
               },
               "status": "OK",
@@ -646,6 +776,70 @@
               "body": "{\n  \"message\": \"Shelter movido com sucesso\"\n}"
             },
             {
+              "name": "Erro - Leader Origem Não Encontrado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\",\n  \"toLeaderId\": \"uuid-leader-2\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/uuid-inexistente/move-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "uuid-inexistente", "move-shelter"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"LeaderProfile não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            },
+            {
+              "name": "Erro - Leader Destino Não Encontrado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\",\n  \"toLeaderId\": \"uuid-inexistente\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 404,\n  \"message\": \"LeaderProfile de destino não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            },
+            {
               "name": "Erro - Shelter Não Encontrado",
               "originalRequest": {
                 "method": "PATCH",
@@ -657,12 +851,12 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"shelterId\": \"invalid-shelter-id\",\n  \"toLeaderId\": \"uuid-novo-leader-id\"\n}"
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-inexistente\",\n  \"toLeaderId\": \"uuid-leader-2\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/leader-profiles/uuid-leader-atual/move-shelter",
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
                   "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-atual", "move-shelter"]
+                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
                 }
               },
               "status": "Not Found",
@@ -676,11 +870,75 @@
               ],
               "cookie": [],
               "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Shelter não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            },
+            {
+              "name": "Erro - Shelter Não Pertence ao Leader",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-outro-leader\",\n  \"toLeaderId\": \"uuid-leader-2\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Shelter não pertence ao leader informado\",\n  \"error\": \"Bad Request\"\n}"
+            },
+            {
+              "name": "Erro - Leader Destino Já Possui Shelter",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelterId\": \"uuid-shelter-1\",\n  \"toLeaderId\": \"uuid-leader-com-shelter\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
+                  "host": ["{{base_url}}"],
+                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Leader de destino já possui um Shelter\",\n  \"error\": \"Bad Request\"\n}"
             }
           ]
         }
       ],
-      "description": "Endpoints para gerenciamento de Leader Profiles"
+      "description": "Endpoints para gerenciamento completo de Leader Profiles com autenticação JWT e controle de acesso baseado em roles."
     }
   ]
 }

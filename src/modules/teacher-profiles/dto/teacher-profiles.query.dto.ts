@@ -46,6 +46,11 @@ export class TeacherProfilesQueryDto {
   shelterId?: string;
 
   @IsOptional()
+  @Transform(({ value }) => trimOrUndef(value))
+  @IsString()
+  shelterName?: string;
+
+  @IsOptional()
   @Transform(({ value }) => toInt(value))
   @Type(() => Number)
   @IsInt()

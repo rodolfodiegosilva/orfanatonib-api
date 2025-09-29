@@ -95,7 +95,7 @@ export class LeaderProfilesRepository {
     params: LeaderProfilesQueryDto,
   ) {
     const text = (params.searchString ?? params.q)?.trim();
-    const { active, hasShelters } = params;
+    const { active, hasShelters, shelterName } = params;
     const shelterId = this.coerceShelterId((params as any).shelterId);
 
     if (text) {
@@ -136,6 +136,18 @@ export class LeaderProfilesRepository {
             AND s.id = :shelterId
         )`,
         { shelterId },
+      );
+    }
+
+    if (shelterName) {
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1
+          FROM shelters s
+          WHERE s.leader_profile_id = leader.id
+            AND LOWER(s.name) LIKE LOWER(:shelterName)
+        )`,
+        { shelterName: `%${shelterName}%` },
       );
     }
 
