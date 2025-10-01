@@ -10,6 +10,7 @@ import {
 import { Type } from 'class-transformer';
 
 export class AddressPatchDto {
+  @IsOptional() @IsString() id?: string;
   @IsOptional() @IsString() street?: string;
   @IsOptional() @IsString() number?: string;
   @IsOptional() @IsString() district?: string;
@@ -17,6 +18,8 @@ export class AddressPatchDto {
   @IsOptional() @IsString() state?: string;
   @IsOptional() @IsString() postalCode?: string;
   @IsOptional() @IsString() complement?: string;
+  @IsOptional() @IsString() createdAt?: string;
+  @IsOptional() @IsString() updatedAt?: string;
 }
 
 export class UpdateShelterDto {
