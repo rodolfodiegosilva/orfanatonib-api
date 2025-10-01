@@ -18,6 +18,6 @@ export function toShelterSelectOption(entity: ShelterEntity): ShelterSelectOptio
   return {
     id: entity.id,
     detalhe: `${entity.name} : ${bairro || '—'}`,
-    leader: !!entity.leader,
+    leader: !!(entity.leaders && entity.leaders.length > 0),
   };
 }

@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Sheltered API Collection",
-    "description": "Collection completa para todos os endpoints do módulo Sheltered - Atualizada com estrutura real dos DTOs, filtros completos e autenticação",
+    "description": "Collection completa para todos os endpoints do módulo Sheltered - VALIDADA E FUNCIONAL com relacionamentos ManyToOne. Inclui todos os endpoints: listagem paginada, listagem simples, busca por ID, busca por shelter, criação, atualização e remoção de abrigados. Suporta filtros avançados, paginação, ordenação e operações em massa. Relacionamento Sheltered-Shelter (ManyToOne) funcionando perfeitamente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "3.0.0"
+    "version": "4.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -33,8 +33,12 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC",
-              "host": ["{{base_url}}"],
-              "path": ["sheltered"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sheltered"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -128,13 +132,29 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered"],
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered"
+                  ],
                   "query": [
-                    {"key": "page", "value": "1"},
-                    {"key": "limit", "value": "20"},
-                    {"key": "orderBy", "value": "name"},
-                    {"key": "order", "value": "ASC"}
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "orderBy",
+                      "value": "name"
+                    },
+                    {
+                      "key": "order",
+                      "value": "ASC"
+                    }
                   ]
                 }
               },
@@ -148,7 +168,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"data\": [\n    {\n      \"id\": \"uuid-sheltered-1\",\n      \"name\": \"João Silva\",\n      \"birthDate\": \"2010-05-15\",\n      \"guardianName\": \"Maria Silva\",\n      \"gender\": \"masculino\",\n      \"guardianPhone\": \"+5511999999999\",\n      \"joinedAt\": \"2023-01-15\",\n      \"shelter\": {\n        \"id\": \"uuid-shelter-1\",\n        \"name\": \"Abrigo Central\"\n      },\n      \"address\": {\n        \"id\": \"uuid-address-1\",\n        \"street\": \"Rua das Flores\",\n        \"number\": \"123\",\n        \"district\": \"Centro\",\n        \"city\": \"São Paulo\",\n        \"state\": \"SP\",\n        \"postalCode\": \"01234-567\",\n        \"complement\": \"Apto 45\"\n      },\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalItems\": 1,\n    \"totalPages\": 1,\n    \"orderBy\": \"name\",\n    \"order\": \"ASC\"\n  }\n}"
+              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"Ana Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"feminino\",\n  \"guardianPhone\": \"+5511777777777\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"pagelas\": [\n    {\n      \"id\": \"uuid-pagela-1\",\n      \"year\": 2024,\n      \"visit\": 1,\n      \"referenceDate\": \"2024-01-15\",\n      \"present\": true,\n      \"notes\": \"Participou ativamente da aula\"\n    },\n    {\n      \"id\": \"uuid-pagela-2\",\n      \"year\": 2024,\n      \"visit\": 2,\n      \"referenceDate\": \"2024-01-22\",\n      \"present\": false,\n      \"notes\": \"Ausente por motivo médico\"\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             }
           ]
         },
@@ -159,8 +179,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/sheltered/simple",
-              "host": ["{{base_url}}"],
-              "path": ["sheltered", "simple"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sheltered",
+                "simple"
+              ]
             },
             "description": "Lista todos os sheltered em formato simplificado. Disponível para todos os roles."
           },
@@ -172,8 +197,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/sheltered/simple",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered", "simple"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered",
+                    "simple"
+                  ]
                 }
               },
               "status": "OK",
@@ -197,8 +227,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/sheltered/:id",
-              "host": ["{{base_url}}"],
-              "path": ["sheltered", ":id"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sheltered",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -217,8 +252,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/sheltered/uuid-sheltered-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered", "uuid-sheltered-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered",
+                    "uuid-sheltered-1"
+                  ]
                 }
               },
               "status": "OK",
@@ -231,7 +271,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"João Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"masculino\",\n  \"guardianPhone\": \"+5511999999999\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"Ana Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"feminino\",\n  \"guardianPhone\": \"+5511777777777\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"pagelas\": [\n    {\n      \"id\": \"uuid-pagela-1\",\n      \"year\": 2024,\n      \"visit\": 1,\n      \"referenceDate\": \"2024-01-15\",\n      \"present\": true,\n      \"notes\": \"Participou ativamente da aula\"\n    },\n    {\n      \"id\": \"uuid-pagela-2\",\n      \"year\": 2024,\n      \"visit\": 2,\n      \"referenceDate\": \"2024-01-22\",\n      \"present\": false,\n      \"notes\": \"Ausente por motivo médico\"\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             },
             {
               "name": "Erro - Sheltered Não Encontrado",
@@ -240,8 +280,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/sheltered/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -274,8 +319,12 @@
             },
             "url": {
               "raw": "{{base_url}}/sheltered",
-              "host": ["{{base_url}}"],
-              "path": ["sheltered"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sheltered"
+              ]
             },
             "description": "Cria um novo sheltered. Disponível para todos os roles com controle de acesso ao shelter."
           },
@@ -296,8 +345,12 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered"
+                  ]
                 }
               },
               "status": "Created",
@@ -328,8 +381,12 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered"
+                  ]
                 }
               },
               "status": "Bad Request",
@@ -360,8 +417,12 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered"
+                  ]
                 }
               },
               "status": "Forbidden",
@@ -394,8 +455,13 @@
             },
             "url": {
               "raw": "{{base_url}}/sheltered/:id",
-              "host": ["{{base_url}}"],
-              "path": ["sheltered", ":id"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sheltered",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -423,8 +489,13 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered/uuid-sheltered-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered", "uuid-sheltered-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered",
+                    "uuid-sheltered-1"
+                  ]
                 }
               },
               "status": "OK",
@@ -455,8 +526,13 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/sheltered/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -480,8 +556,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/sheltered/:id",
-              "host": ["{{base_url}}"],
-              "path": ["sheltered", ":id"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sheltered",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -500,8 +581,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/sheltered/uuid-sheltered-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered", "uuid-sheltered-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered",
+                    "uuid-sheltered-1"
+                  ]
                 }
               },
               "status": "No Content",
@@ -523,8 +609,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/sheltered/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["sheltered", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "sheltered",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",

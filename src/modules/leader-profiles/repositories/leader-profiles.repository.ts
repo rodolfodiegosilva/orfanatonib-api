@@ -43,8 +43,8 @@ export class LeaderProfilesRepository {
 
     return repo
       .createQueryBuilder('leader')
-      .leftJoinAndSelect('leader.shelter', 'shelter')
-      .leftJoinAndSelect('shelter.teachers', 'teachers')
+      .leftJoinAndSelect('leader.shelters', 'shelters')
+      .leftJoinAndSelect('shelters.teachers', 'teachers')
       .leftJoin('leader.user', 'leader_user')
       .addSelect([
         'leader_user.id',
@@ -108,10 +108,11 @@ export class LeaderProfilesRepository {
           leader_user.phone        LIKE :likeRaw
           OR EXISTS (
             SELECT 1
-            FROM shelters s
+            FROM shelter_leaders sl
+            JOIN shelters s ON s.id = sl.shelter_id
             JOIN teacher_profiles tp ON tp.shelter_id = s.id
             JOIN users tu ON tu.id = tp.user_id
-            WHERE s.leader_profile_id = leader.id
+            WHERE sl.leader_profile_id = leader.id
               AND (
                 LOWER(tu.name)  LIKE :like OR
                 LOWER(tu.email) LIKE :like OR
@@ -131,9 +132,9 @@ export class LeaderProfilesRepository {
       qb.andWhere(
         `EXISTS (
           SELECT 1
-          FROM shelters s
-          WHERE s.leader_profile_id = leader.id
-            AND s.id = :shelterId
+          FROM shelter_leaders sl
+          WHERE sl.leader_profile_id = leader.id
+            AND sl.shelter_id = :shelterId
         )`,
         { shelterId },
       );
@@ -143,8 +144,9 @@ export class LeaderProfilesRepository {
       qb.andWhere(
         `EXISTS (
           SELECT 1
-          FROM shelters s
-          WHERE s.leader_profile_id = leader.id
+          FROM shelter_leaders sl
+          JOIN shelters s ON s.id = sl.shelter_id
+          WHERE sl.leader_profile_id = leader.id
             AND LOWER(s.name) LIKE LOWER(:shelterName)
         )`,
         { shelterName: `%${shelterName}%` },
@@ -156,8 +158,8 @@ export class LeaderProfilesRepository {
         qb.andWhere(`
           EXISTS (
             SELECT 1
-            FROM shelters s
-            WHERE s.leader_profile_id = leader.id
+            FROM shelter_leaders sl
+            WHERE sl.leader_profile_id = leader.id
             LIMIT 1
           )
         `);
@@ -165,8 +167,8 @@ export class LeaderProfilesRepository {
         qb.andWhere(`
           NOT EXISTS (
             SELECT 1
-            FROM shelters s
-            WHERE s.leader_profile_id = leader.id
+            FROM shelter_leaders sl
+            WHERE sl.leader_profile_id = leader.id
             LIMIT 1
           )
         `);
@@ -216,7 +218,7 @@ export class LeaderProfilesRepository {
     const items = await this.buildLeaderBaseQB()
       .andWhere('leader.id IN (:...ids)', { ids })
       .orderBy(sortColumn, sortDir)
-      .addOrderBy('shelter.name', 'ASC')
+      .addOrderBy('shelters.name', 'ASC')
       .addOrderBy('teachers.createdAt', 'ASC')
       .getMany();
 
@@ -226,7 +228,7 @@ export class LeaderProfilesRepository {
   async findAllWithSheltersAndTeachers(): Promise<LeaderProfileEntity[]> {
     return this.buildLeaderBaseQB()
       .orderBy('leader.createdAt', 'ASC')
-      .addOrderBy('shelter.name', 'ASC')
+      .addOrderBy('shelters.name', 'ASC')
       .addOrderBy('teachers.createdAt', 'ASC')
       .getMany();
   }
@@ -236,7 +238,7 @@ export class LeaderProfilesRepository {
   ): Promise<LeaderProfileEntity> {
     const leader = await this.buildLeaderBaseQB()
       .andWhere('leader.id = :id', { id })
-      .orderBy('shelter.name', 'ASC')
+      .orderBy('shelters.name', 'ASC')
       .addOrderBy('teachers.createdAt', 'ASC')
       .getOne();
 
@@ -249,13 +251,14 @@ export class LeaderProfilesRepository {
   ): Promise<LeaderProfileEntity> {
     const shelter = await this.shelterRepo.findOne({
       where: { id: shelterId },
-      relations: { leader: true },
+      relations: { leaders: true },
     });
     if (!shelter) throw new NotFoundException('Shelter não encontrado');
-    if (!shelter.leader) {
-      throw new NotFoundException('Este Shelter não possui líder vinculado');
+    if (!shelter.leaders || shelter.leaders.length === 0) {
+      throw new NotFoundException('Este Shelter não possui líderes vinculados');
     }
-    return this.findOneWithSheltersAndTeachersOrFail(shelter.leader.id);
+    // Retorna o primeiro líder (pode ser ajustado conforme regra de negócio)
+    return this.findOneWithSheltersAndTeachersOrFail(shelter.leaders[0].id);
   }
 
   async assignShelterToLeader(
@@ -272,13 +275,16 @@ export class LeaderProfilesRepository {
 
       const shelter = await shelterRepo.findOne({
         where: { id: shelterId },
-        relations: { leader: true },
+        relations: { leaders: true },
       });
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
-      if (shelter.leader && shelter.leader.id === leaderId) return;
+      // Verificar se o líder já está vinculado
+      const isAlreadyAssigned = shelter.leaders.some(l => l.id === leaderId);
+      if (isAlreadyAssigned) return;
 
-      shelter.leader = leader;
+      // Adicionar o líder à lista de líderes
+      shelter.leaders.push(leader);
       await shelterRepo.save(shelter);
     });
   }
@@ -292,17 +298,20 @@ export class LeaderProfilesRepository {
 
       const shelter = await shelterRepo.findOne({
         where: { id: shelterId },
-        relations: { leader: true },
+        relations: { leaders: true },
       });
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
-      if (!shelter.leader || shelter.leader.id !== leaderId) {
+      // Verificar se o líder está vinculado
+      const leaderIndex = shelter.leaders.findIndex(l => l.id === leaderId);
+      if (leaderIndex === -1) {
         throw new BadRequestException(
           'Este Shelter não está vinculado a este líder',
         );
       }
 
-      shelter.leader = null as any;
+      // Remover o líder da lista
+      shelter.leaders.splice(leaderIndex, 1);
       await shelterRepo.save(shelter);
     });
   }
@@ -331,17 +340,29 @@ export class LeaderProfilesRepository {
 
       const shelter = await shelterRepo.findOne({
         where: { id: shelterId },
-        relations: { leader: true },
+        relations: { leaders: true },
       });
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
-      if (!shelter.leader || shelter.leader.id !== fromLeaderId) {
+      // Verificar se o líder de origem está vinculado
+      const fromLeaderIndex = shelter.leaders.findIndex(l => l.id === fromLeaderId);
+      if (fromLeaderIndex === -1) {
         throw new BadRequestException(
           'O Shelter não está vinculado ao líder de origem',
         );
       }
 
-      shelter.leader = to;
+      // Verificar se o líder de destino já está vinculado
+      const toLeaderIndex = shelter.leaders.findIndex(l => l.id === toLeaderId);
+      if (toLeaderIndex !== -1) {
+        throw new BadRequestException(
+          'O Shelter já está vinculado ao líder de destino',
+        );
+      }
+
+      // Remover o líder de origem e adicionar o de destino
+      shelter.leaders.splice(fromLeaderIndex, 1);
+      shelter.leaders.push(to);
       await shelterRepo.save(shelter);
     });
   }
@@ -369,17 +390,19 @@ export class LeaderProfilesRepository {
 
       const leader = await txLeader.findOne({
         where: { user: { id: userId } },
-        relations: { shelter: true },
+        relations: { shelters: true },
       });
       if (!leader) return;
 
-      if (leader.shelter) {
-        await txShelter
-          .createQueryBuilder()
-          .update(ShelterEntity)
-          .set({ leader: null as any })
-          .where('leader_profile_id = :id', { id: leader.id })
-          .execute();
+      if (leader.shelters && leader.shelters.length > 0) {
+        // Remover o líder de todos os shelters
+        for (const shelter of leader.shelters) {
+          await txShelter
+            .createQueryBuilder()
+            .relation(ShelterEntity, 'leaders')
+            .of(shelter.id)
+            .remove(leader.id);
+        }
       }
 
       await txLeader.delete(leader.id);
@@ -391,10 +414,10 @@ export class LeaderProfilesRepository {
       .createQueryBuilder('leader')
       .leftJoin('leader.user', 'user')
       .addSelect(['user.id', 'user.name'])
-      .leftJoinAndSelect('leader.shelter', 'shelter')
+      .leftJoinAndSelect('leader.shelters', 'shelters')
       .where('user.active = true')
       .orderBy('leader.createdAt', 'ASC')
-      .addOrderBy('shelter.name', 'ASC')
+      .addOrderBy('shelters.name', 'ASC')
       .getMany();
 
     return items.map(toLeaderSimple);

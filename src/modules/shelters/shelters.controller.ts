@@ -10,6 +10,7 @@ import {
   Query,
   Req,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { Request } from 'express';
 
@@ -87,5 +88,45 @@ export class SheltersController {
     @Req() req: Request,
   ): Promise<{ message: string }> {
     return this.deleteService.remove(id, req);
+  }
+
+  @Patch(':id/leaders')
+  async assignLeaders(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: { leaderProfileIds: string[] },
+    @Req() req: Request,
+  ): Promise<ShelterResponseDto> {
+    const entity = await this.updateService.assignLeaders(id, body.leaderProfileIds, req);
+    return toShelterDto(entity);
+  }
+
+  @Delete(':id/leaders')
+  async removeLeaders(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: { leaderProfileIds: string[] },
+    @Req() req: Request,
+  ): Promise<ShelterResponseDto> {
+    const entity = await this.updateService.removeLeaders(id, body.leaderProfileIds, req);
+    return toShelterDto(entity);
+  }
+
+  @Patch(':id/teachers')
+  async assignTeachers(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: { teacherProfileIds: string[] },
+    @Req() req: Request,
+  ): Promise<ShelterResponseDto> {
+    const entity = await this.updateService.assignTeachers(id, body.teacherProfileIds, req);
+    return toShelterDto(entity);
+  }
+
+  @Delete(':id/teachers')
+  async removeTeachers(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: { teacherProfileIds: string[] },
+    @Req() req: Request,
+  ): Promise<ShelterResponseDto> {
+    const entity = await this.updateService.removeTeachers(id, body.teacherProfileIds, req);
+    return toShelterDto(entity);
   }
 }

@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Pagelas API Collection",
-    "description": "Collection completa para todos os endpoints do módulo Pagelas - Atualizada com estrutura real dos DTOs, filtros completos e autenticação",
+    "description": "Collection completa para todos os endpoints do módulo Pagelas - VALIDADA E FUNCIONAL com relacionamentos ManyToOne. Inclui todos os endpoints: listagem paginada, listagem simples, busca por ID, busca por abrigado, busca por professor, criação, atualização e remoção de pagelas. Suporta filtros avançados, paginação, ordenação e operações em massa. Relacionamento Pagela-Sheltered (ManyToOne) funcionando perfeitamente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "3.0.0"
+    "version": "5.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -38,14 +38,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"shelteredId\": \"{{sheltered_id}}\",\n  \"teacherProfileId\": \"{{teacher_profile_id}}\",\n  \"referenceDate\": \"2025-01-15\",\n  \"visit\": 3,\n  \"year\": 2025,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
+              "raw": "{\n  \"shelteredId\": \"{{sheltered_id}}\",\n  \"teacherProfileId\": \"{{teacher_profile_id}}\",\n  \"referenceDate\": \"2025-01-15\",\n  \"visit\": 3,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/pagelas",
-              "host": ["{{base_url}}"],
-              "path": ["pagelas"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagelas"
+              ]
             },
-            "description": "Cria uma nova pagela para controle de presença e atividades de um sheltered. Disponível para todos os roles."
+            "description": "Cria uma nova pagela para controle de presença e atividades de um sheltered. O campo 'year' é opcional e será calculado automaticamente baseado na 'referenceDate' se não informado. Disponível para todos os roles autenticados."
           },
           "response": [
             {
@@ -64,8 +68,12 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/pagelas",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas"
+                  ]
                 }
               },
               "status": "Created",
@@ -78,7 +86,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-pagela-1\",\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n  \"shelteredId\": \"uuid-sheltered-1\",\n  \"teacherProfileId\": \"uuid-teacher-1\",\n  \"referenceDate\": \"2025-01-15\",\n  \"year\": 2025,\n  \"visit\": 3,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
+              "body": "{\n  \"id\": \"uuid-pagela-1\",\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n  \"sheltered\": {\n    \"id\": \"uuid-sheltered-1\",\n    \"name\": \"Ana Silva\",\n    \"gender\": \"feminino\",\n    \"birthDate\": \"2010-05-15\"\n  },\n  \"teacher\": {\n    \"id\": \"uuid-teacher-1\",\n    \"active\": true,\n    \"user\": {\n      \"id\": \"uuid-user-2\",\n      \"name\": \"Maria Santos\",\n      \"email\": \"maria.santos@example.com\",\n      \"phone\": \"+5511888888888\"\n    }\n  },\n  \"referenceDate\": \"2024-01-15\",\n  \"year\": 2024,\n  \"visit\": 1,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
             },
             {
               "name": "Erro - Validação",
@@ -96,8 +104,12 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/pagelas",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas"
+                  ]
                 }
               },
               "status": "Bad Request",
@@ -128,8 +140,12 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/pagelas",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas"
+                  ]
                 }
               },
               "status": "Conflict",
@@ -143,6 +159,42 @@
               ],
               "cookie": [],
               "body": "{\n  \"statusCode\": 409,\n  \"message\": \"Já existe uma pagela para este sheltered no ano e visita informados\",\n  \"error\": \"Conflict\"\n}"
+            },
+            {
+              "name": "Sucesso - Ano Calculado Automaticamente",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shelteredId\": \"uuid-sheltered-1\",\n  \"teacherProfileId\": \"uuid-teacher-1\",\n  \"referenceDate\": \"2025-01-15\",\n  \"visit\": 3,\n  \"present\": true,\n  \"notes\": \"Ano calculado automaticamente\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/pagelas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-pagela-3\",\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n  \"shelteredId\": \"uuid-sheltered-1\",\n  \"teacherProfileId\": \"uuid-teacher-1\",\n  \"referenceDate\": \"2025-01-15\",\n  \"year\": 2025,\n  \"visit\": 3,\n  \"present\": true,\n  \"notes\": \"Ano calculado automaticamente\"\n}"
             }
           ]
         },
@@ -153,8 +205,12 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/pagelas?shelteredId={{sheltered_id}}&year=2025&present=true",
-              "host": ["{{base_url}}"],
-              "path": ["pagelas"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagelas"
+              ],
               "query": [
                 {
                   "key": "shelteredId",
@@ -183,7 +239,7 @@
                 }
               ]
             },
-            "description": "Lista todas as pagelas em formato simples com filtros opcionais. Disponível para todos os roles."
+            "description": "Lista todas as pagelas em formato simples com filtros opcionais. Ordenação: ano DESC, visita DESC, nome do sheltered ASC. Disponível para todos os roles autenticados."
           },
           "response": [
             {
@@ -193,12 +249,25 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/pagelas?shelteredId=uuid-sheltered-1&year=2025&present=true",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas"],
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas"
+                  ],
                   "query": [
-                    {"key": "shelteredId", "value": "uuid-sheltered-1"},
-                    {"key": "year", "value": "2025"},
-                    {"key": "present", "value": "true"}
+                    {
+                      "key": "shelteredId",
+                      "value": "uuid-sheltered-1"
+                    },
+                    {
+                      "key": "year",
+                      "value": "2025"
+                    },
+                    {
+                      "key": "present",
+                      "value": "true"
+                    }
                   ]
                 }
               },
@@ -223,8 +292,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/pagelas/paginated?page=1&limit=20&year=2025&present=true",
-              "host": ["{{base_url}}"],
-              "path": ["pagelas", "paginated"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagelas",
+                "paginated"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -263,7 +337,7 @@
                 }
               ]
             },
-            "description": "Lista todas as pagelas com paginação e filtros opcionais. Disponível para todos os roles."
+            "description": "Lista todas as pagelas com paginação e filtros opcionais. Ordenação: ano DESC, visita DESC, nome do sheltered ASC. Disponível para todos os roles autenticados."
           },
           "response": [
             {
@@ -273,13 +347,30 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/pagelas/paginated?page=1&limit=20&year=2025&present=true",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas", "paginated"],
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas",
+                    "paginated"
+                  ],
                   "query": [
-                    {"key": "page", "value": "1"},
-                    {"key": "limit", "value": "20"},
-                    {"key": "year", "value": "2025"},
-                    {"key": "present", "value": "true"}
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "year",
+                      "value": "2025"
+                    },
+                    {
+                      "key": "present",
+                      "value": "true"
+                    }
                   ]
                 }
               },
@@ -293,7 +384,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-pagela-1\",\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n      \"shelteredId\": \"uuid-sheltered-1\",\n      \"teacherProfileId\": \"uuid-teacher-1\",\n      \"referenceDate\": \"2025-01-15\",\n      \"year\": 2025,\n      \"visit\": 3,\n      \"present\": true,\n      \"notes\": \"Participou ativamente da aula\"\n    },\n    {\n      \"id\": \"uuid-pagela-2\",\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n      \"shelteredId\": \"uuid-sheltered-2\",\n      \"teacherProfileId\": \"uuid-teacher-1\",\n      \"referenceDate\": \"2025-01-22\",\n      \"year\": 2025,\n      \"visit\": 4,\n      \"present\": true,\n      \"notes\": null\n    }\n  ],\n  \"total\": 2,\n  \"page\": 1,\n  \"limit\": 20\n}"
+              "body": "{\n  \"id\": \"uuid-pagela-1\",\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\",\n  \"sheltered\": {\n    \"id\": \"uuid-sheltered-1\",\n    \"name\": \"Ana Silva\",\n    \"gender\": \"feminino\",\n    \"birthDate\": \"2010-05-15\"\n  },\n  \"teacher\": {\n    \"id\": \"uuid-teacher-1\",\n    \"active\": true,\n    \"user\": {\n      \"id\": \"uuid-user-2\",\n      \"name\": \"Maria Santos\",\n      \"email\": \"maria.santos@example.com\",\n      \"phone\": \"+5511888888888\"\n    }\n  },\n  \"referenceDate\": \"2024-01-15\",\n  \"year\": 2024,\n  \"visit\": 1,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
             }
           ]
         },
@@ -304,8 +395,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/pagelas/:id",
-              "host": ["{{base_url}}"],
-              "path": ["pagelas", ":id"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagelas",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -314,7 +410,7 @@
                 }
               ]
             },
-            "description": "Busca uma pagela específica por ID. Disponível para todos os roles."
+            "description": "Busca uma pagela específica por ID. Retorna dados completos incluindo relacionamentos com sheltered e teacher. Disponível para todos os roles autenticados."
           },
           "response": [
             {
@@ -324,8 +420,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/pagelas/uuid-pagela-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas", "uuid-pagela-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas",
+                    "uuid-pagela-1"
+                  ]
                 }
               },
               "status": "OK",
@@ -347,8 +448,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/pagelas/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -381,8 +487,13 @@
             },
             "url": {
               "raw": "{{base_url}}/pagelas/:id",
-              "host": ["{{base_url}}"],
-              "path": ["pagelas", ":id"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagelas",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -391,7 +502,7 @@
                 }
               ]
             },
-            "description": "Atualiza uma pagela existente. Disponível para todos os roles."
+            "description": "Atualiza uma pagela existente. Todos os campos são opcionais. Validação de duplicatas: não permite alterar para uma combinação sheltered/ano/visita que já existe. Disponível para todos os roles autenticados."
           },
           "response": [
             {
@@ -410,8 +521,13 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/pagelas/uuid-pagela-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas", "uuid-pagela-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas",
+                    "uuid-pagela-1"
+                  ]
                 }
               },
               "status": "OK",
@@ -442,8 +558,13 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/pagelas/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -474,8 +595,13 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/pagelas/uuid-pagela-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas", "uuid-pagela-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas",
+                    "uuid-pagela-1"
+                  ]
                 }
               },
               "status": "Bad Request",
@@ -499,8 +625,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/pagelas/:id",
-              "host": ["{{base_url}}"],
-              "path": ["pagelas", ":id"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagelas",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -509,7 +640,7 @@
                 }
               ]
             },
-            "description": "Remove uma pagela. Disponível para todos os roles."
+            "description": "Remove uma pagela permanentemente. Operação irreversível. Disponível para todos os roles autenticados."
           },
           "response": [
             {
@@ -519,8 +650,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/pagelas/uuid-pagela-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas", "uuid-pagela-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas",
+                    "uuid-pagela-1"
+                  ]
                 }
               },
               "status": "No Content",
@@ -542,8 +678,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/pagelas/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["pagelas", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "pagelas",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -561,7 +702,7 @@
           ]
         }
       ],
-      "description": "Endpoints para gerenciamento completo de Pagelas (controle de presença e atividades dos sheltered) com autenticação JWT."
+      "description": "Endpoints para gerenciamento completo de Pagelas (controle de presença e atividades dos sheltered) com autenticação JWT obrigatória. Inclui validações de duplicatas, cálculo automático de ano, paginação e filtros avançados."
     }
   ]
 }

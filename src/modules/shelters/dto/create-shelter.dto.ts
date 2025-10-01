@@ -28,8 +28,11 @@ export class CreateShelterDto {
   @Type(() => AddressInputDto)
   address!: AddressInputDto;
 
-  @IsOptional() @IsUUID()
-  leaderProfileId?: string;
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID(undefined, { each: true })
+  leaderProfileIds?: string[];
 
   @IsOptional()
   @IsArray()

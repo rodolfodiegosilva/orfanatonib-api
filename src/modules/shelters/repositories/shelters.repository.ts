@@ -48,9 +48,9 @@ export class SheltersRepository {
     return repo
       .createQueryBuilder('shelter')
       .leftJoinAndSelect('shelter.address', 'address')
-      .leftJoinAndSelect('shelter.leader', 'leader')
+      .leftJoinAndSelect('shelter.leaders', 'leaders')
       .leftJoinAndSelect('shelter.teachers', 'teachers')
-      .leftJoinAndSelect('leader.user', 'leaderUser')
+      .leftJoinAndSelect('leaders.user', 'leaderUser')
       .leftJoinAndSelect('teachers.user', 'teacherUser');
   }
 
@@ -78,6 +78,7 @@ export class SheltersRepository {
       searchString,
       nameSearchString,
       leaderId,
+      leaderIds,
       sort = 'name',
       order = 'ASC',
     } = q;
@@ -105,7 +106,11 @@ export class SheltersRepository {
     }
 
     if (leaderId) {
-      qb.andWhere('leader.id = :leaderId', { leaderId });
+      qb.andWhere('leaders.id = :leaderId', { leaderId });
+    }
+
+    if (leaderIds?.length) {
+      qb.andWhere('leaders.id IN (:...leaderIds)', { leaderIds });
     }
 
     const sortMap: Record<string, string> = {
@@ -182,20 +187,24 @@ export class SheltersRepository {
       const address = addressRepo.create(dto.address);
       await addressRepo.save(address);
 
-      let leader: LeaderProfileEntity | null = null;
-      if (dto.leaderProfileId) {
-        leader = await leaderRepo.findOne({
-          where: { id: dto.leaderProfileId },
+      let leaders: LeaderProfileEntity[] = [];
+      if (dto.leaderProfileIds?.length) {
+        leaders = await leaderRepo.find({
+          where: { id: In(dto.leaderProfileIds) },
         });
-        if (!leader) {
-          throw new NotFoundException('LeaderProfile não encontrado');
+        if (leaders.length !== dto.leaderProfileIds.length) {
+          const found = new Set(leaders.map((l) => l.id));
+          const missing = dto.leaderProfileIds.filter((id) => !found.has(id));
+          throw new NotFoundException(
+            `LeaderProfile(s) não encontrado(s): ${missing.join(', ')}`,
+          );
         }
       }
 
       const shelter = shelterRepo.create({
         name: dto.name,
         address,
-        leader: leader ?? null,
+        leaders,
       });
 
       try {
@@ -246,7 +255,7 @@ export class SheltersRepository {
 
       const shelter = await shelterRepo.findOne({
         where: { id },
-        relations: { address: true, leader: true, teachers: true },
+        relations: { address: true, leaders: true, teachers: true },
       });
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
@@ -263,17 +272,21 @@ export class SheltersRepository {
         }
       }
 
-      if (dto.leaderProfileId !== undefined) {
-        if (dto.leaderProfileId === null) {
-          shelter.leader = null as any;
+      if (dto.leaderProfileIds !== undefined) {
+        if (dto.leaderProfileIds.length === 0) {
+          shelter.leaders = [];
         } else {
-          const leader = await leaderRepo.findOne({
-            where: { id: dto.leaderProfileId },
+          const leaders = await leaderRepo.find({
+            where: { id: In(dto.leaderProfileIds) },
           });
-          if (!leader) {
-            throw new NotFoundException('LeaderProfile não encontrado');
+          if (leaders.length !== dto.leaderProfileIds.length) {
+            const found = new Set(leaders.map((l) => l.id));
+            const missing = dto.leaderProfileIds.filter((id) => !found.has(id));
+            throw new NotFoundException(
+              `LeaderProfile(s) não encontrado(s): ${missing.join(', ')}`,
+            );
           }
-          shelter.leader = leader;
+          shelter.leaders = leaders;
         }
       }
 
@@ -348,7 +361,7 @@ export class SheltersRepository {
 
       const shelter = await txShelter.findOne({
         where: { id },
-        relations: { teachers: true, leader: true, address: true },
+        relations: { teachers: true, leaders: true, address: true },
       });
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
@@ -359,8 +372,13 @@ export class SheltersRepository {
         );
       }
 
-      if (shelter.leader) {
-        await txShelter.update({ id: shelter.id }, { leader: null as any });
+      if (shelter.leaders?.length) {
+        // Remover relacionamentos ManyToMany
+        await txShelter
+          .createQueryBuilder()
+          .relation(ShelterEntity, 'leaders')
+          .of(shelter.id)
+          .remove(shelter.leaders.map(l => l.id));
       }
 
       const addressId = shelter.address?.id;
@@ -373,40 +391,41 @@ export class SheltersRepository {
     });
   }
 
-  async assignTeachers(
-    shelterId: string,
-    teacherIds: string[],
-    manager?: EntityManager,
-  ): Promise<void> {
-    const shelterRepo = manager ? manager.withRepository(this.shelterRepo) : this.shelterRepo;
-    const teacherRepo = manager
-      ? manager.withRepository(this.teacherProfileRepo)
-      : this.teacherProfileRepo;
+  async assignTeachers(shelterId: string, teacherIds: string[]): Promise<ShelterEntity> {
+    return this.dataSource.transaction(async (manager) => {
+      const shelterRepo = manager.withRepository(this.shelterRepo);
+      const teacherRepo = manager.withRepository(this.teacherProfileRepo);
 
-    const shelter = await shelterRepo.findOne({ where: { id: shelterId } });
-    if (!shelter) throw new NotFoundException('Shelter não encontrado');
+      const shelter = await shelterRepo.findOne({
+        where: { id: shelterId },
+        relations: { teachers: true },
+      });
+      if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
-    const teachers = await teacherRepo.find({
-      where: { id: In(teacherIds) },
-      relations: { shelter: true },
+      const teachers = await teacherRepo.find({
+        where: { id: In(teacherIds) },
+        relations: { shelter: true },
+      });
+
+      const foundIds = new Set(teachers.map((t) => t.id));
+      const missing = teacherIds.filter((id) => !foundIds.has(id));
+      if (missing.length) {
+        throw new NotFoundException(`Teachers não encontrados: ${missing.join(', ')}`);
+      }
+
+      const alreadyAssigned = teachers.filter((t) => !!t.shelter);
+      if (alreadyAssigned.length) {
+        throw new BadRequestException(
+          `Alguns teachers já estão atribuídos a um shelter: ${alreadyAssigned
+            .map((t) => t.user?.name)
+            .join(', ')}`,
+        );
+      }
+
+      await teacherRepo.update({ id: In(teacherIds) }, { shelter: { id: shelter.id } as any });
+      
+      return this.findOneOrFailForResponseTx(manager, shelterId);
     });
-
-    const foundIds = new Set(teachers.map((t) => t.id));
-    const missing = teacherIds.filter((id) => !foundIds.has(id));
-    if (missing.length) {
-      throw new NotFoundException(`Teachers não encontrados: ${missing.join(', ')}`);
-    }
-
-    const alreadyAssigned = teachers.filter((t) => !!t.shelter);
-    if (alreadyAssigned.length) {
-      throw new BadRequestException(
-        `Alguns teachers já estão atribuídos a um shelter: ${alreadyAssigned
-          .map((t) => t.user?.name)
-          .join(', ')}`,
-      );
-    }
-
-    await teacherRepo.update({ id: In(teacherIds) }, { shelter: { id: shelter.id } as any });
   }
 
   async unassignTeachers(
@@ -479,8 +498,8 @@ export class SheltersRepository {
 
     const qb = this.shelterRepo
       .createQueryBuilder('shelter')
-      .leftJoin('shelter.leader', 'leader')
-      .leftJoin('leader.user', 'leaderUser')
+      .leftJoin('shelter.leaders', 'leaders')
+      .leftJoin('leaders.user', 'leaderUser')
       .where('shelter.id = :shelterId', { shelterId })
       .andWhere('leaderUser.id = :uid', { uid: userId });
 
@@ -494,5 +513,80 @@ export class SheltersRepository {
       select: { id: true },
     });
     return leader?.id ?? null;
+  }
+
+  async assignLeaders(shelterId: string, leaderIds: string[]): Promise<ShelterEntity> {
+    return this.dataSource.transaction(async (manager) => {
+      const shelterRepo = manager.withRepository(this.shelterRepo);
+      const leaderRepo = manager.withRepository(this.leaderRepo);
+
+      const shelter = await shelterRepo.findOne({
+        where: { id: shelterId },
+        relations: { leaders: true },
+      });
+      if (!shelter) throw new NotFoundException('Shelter não encontrado');
+
+      const leaders = await leaderRepo.find({
+        where: { id: In(leaderIds) },
+      });
+
+      if (leaders.length !== leaderIds.length) {
+        const found = new Set(leaders.map((l) => l.id));
+        const missing = leaderIds.filter((id) => !found.has(id));
+        throw new NotFoundException(
+          `LeaderProfile(s) não encontrado(s): ${missing.join(', ')}`,
+        );
+      }
+
+      // Adicionar novos líderes sem remover os existentes
+      const currentLeaderIds = new Set(shelter.leaders.map(l => l.id));
+      const newLeaders = leaders.filter(l => !currentLeaderIds.has(l.id));
+      
+      if (newLeaders.length > 0) {
+        shelter.leaders = [...shelter.leaders, ...newLeaders];
+        await shelterRepo.save(shelter);
+      }
+
+      return this.findOneOrFailForResponseTx(manager, shelterId);
+    });
+  }
+
+  async removeLeaders(shelterId: string, leaderIds: string[]): Promise<ShelterEntity> {
+    return this.dataSource.transaction(async (manager) => {
+      const shelterRepo = manager.withRepository(this.shelterRepo);
+
+      const shelter = await shelterRepo.findOne({
+        where: { id: shelterId },
+        relations: { leaders: true },
+      });
+      if (!shelter) throw new NotFoundException('Shelter não encontrado');
+
+      // Remover líderes específicos
+      shelter.leaders = shelter.leaders.filter(l => !leaderIds.includes(l.id));
+      await shelterRepo.save(shelter);
+
+      return this.findOneOrFailForResponseTx(manager, shelterId);
+    });
+  }
+
+  async removeTeachers(shelterId: string, teacherIds: string[]): Promise<ShelterEntity> {
+    return this.dataSource.transaction(async (manager) => {
+      const shelterRepo = manager.withRepository(this.shelterRepo);
+      const teacherRepo = manager.withRepository(this.teacherProfileRepo);
+
+      const shelter = await shelterRepo.findOne({
+        where: { id: shelterId },
+        relations: { teachers: true },
+      });
+      if (!shelter) throw new NotFoundException('Shelter não encontrado');
+
+      // Remover professores específicos
+      await teacherRepo.update(
+        { id: In(teacherIds), shelter: { id: shelterId } as any },
+        { shelter: null as any }
+      );
+
+      return this.findOneOrFailForResponseTx(manager, shelterId);
+    });
   }
 }

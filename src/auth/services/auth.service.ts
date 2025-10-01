@@ -187,12 +187,10 @@ export class AuthService {
         ? {
           id: user.leaderProfile.id,
           active: user.leaderProfile.active,
-          shelter: user.leaderProfile.shelter
-            ? {
-              id: user.leaderProfile.shelter.id,
-              name: user.leaderProfile.shelter.name,
-            }
-            : null,
+          shelters: user.leaderProfile.shelters?.map(shelter => ({
+            id: shelter.id,
+            name: shelter.name,
+          })) || [],
         }
         : null,
     };

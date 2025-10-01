@@ -68,7 +68,8 @@ export class LeaderResponseDto {
 
   @Expose()
   @Type(() => ShelterWithTeachersDto)
-  shelter!: ShelterWithTeachersDto | null;
+  @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  shelters!: ShelterWithTeachersDto[];
 
   @Expose()
   createdAt!: Date;

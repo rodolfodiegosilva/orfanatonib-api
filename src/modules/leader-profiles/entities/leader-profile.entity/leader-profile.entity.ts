@@ -8,6 +8,7 @@ import {
   JoinColumn,
   Unique,
   OneToMany,
+  ManyToMany,
 } from 'typeorm';
 
 @Unique('UQ_leader_profile_user', ['user'])
@@ -23,6 +24,8 @@ export class LeaderProfileEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @OneToOne(() => ShelterEntity, (shelter) => shelter.leader, { cascade: false })
-  shelter: ShelterEntity | null;
+  @ManyToMany(() => ShelterEntity, (shelter) => shelter.leaders, { 
+    cascade: false 
+  })
+  shelters: ShelterEntity[];
 }

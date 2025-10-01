@@ -12,7 +12,7 @@ export class TeacherSimpleListDto {
   name!: string;
 
   @Expose()
-  @Transform(({ obj }) => !!obj.club)
+  @Transform(({ obj }) => !!obj.shelter)
   vinculado!: boolean;
 }
 

@@ -21,6 +21,15 @@ export class AddressResponseDto {
   complement?: string;
 }
 
+export class PagelaMiniDto {
+  id: string;
+  year: number;
+  visit: number;
+  referenceDate: string;
+  present: boolean;
+  notes?: string | null;
+}
+
 export class ShelteredResponseDto {
   id: string;
   name: string;
@@ -31,6 +40,7 @@ export class ShelteredResponseDto {
   joinedAt?: string | null;
   shelter?: { id: string; name: string } | null;
   address?: AddressResponseDto | null;
+  pagelas?: PagelaMiniDto[];
   createdAt: string;
   updatedAt: string;
 }

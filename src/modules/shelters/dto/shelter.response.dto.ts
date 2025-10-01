@@ -63,8 +63,8 @@ export class ShelterResponseDto {
 
   @Expose()
   @Type(() => CoordinatorWithUserDto)
-  @Transform(({ value }) => value ?? null)
-  leader!: CoordinatorWithUserDto | null;
+  @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  leaders!: CoordinatorWithUserDto[];
 
   @Expose()
   @Type(() => TeacherWithUserDto)

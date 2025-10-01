@@ -26,19 +26,82 @@ export class UpdateSheltersService {
       const allowed = await this.sheltersRepository.userHasAccessToShelter(id, ctx);
       if (!allowed) throw new NotFoundException('Shelter não encontrado');
 
-      if (dto.leaderProfileId !== undefined) {
+      if (dto.leaderProfileIds !== undefined) {
         const myLeaderId = await this.sheltersRepository.getLeaderProfileIdByUserId(ctx.userId!);
         if (!myLeaderId) throw new ForbiddenException('Acesso negado');
 
-        if (dto.leaderProfileId !== null && dto.leaderProfileId !== myLeaderId) {
-          throw new ForbiddenException('Não é permitido atribuir outro líder');
-        }
-        if (dto.leaderProfileId === undefined) {
-          dto.leaderProfileId = myLeaderId;
+        // Verificar se o líder atual está na lista ou se está removendo todos
+        if (dto.leaderProfileIds.length > 0 && !dto.leaderProfileIds.includes(myLeaderId)) {
+          throw new ForbiddenException('Não é permitido atribuir outros líderes');
         }
       }
     }
 
     return this.sheltersRepository.updateShelter(id, dto);
+  }
+
+  async assignLeaders(id: string, leaderProfileIds: string[], req: Request) {
+    const ctx = await this.getCtx(req);
+    if (!ctx.role || ctx.role === 'teacher') throw new ForbiddenException('Acesso negado');
+
+    if (ctx.role === 'leader') {
+      const allowed = await this.sheltersRepository.userHasAccessToShelter(id, ctx);
+      if (!allowed) throw new NotFoundException('Shelter não encontrado');
+
+      const myLeaderId = await this.sheltersRepository.getLeaderProfileIdByUserId(ctx.userId!);
+      if (!myLeaderId) throw new ForbiddenException('Acesso negado');
+
+      // Verificar se o líder atual está na lista
+      if (!leaderProfileIds.includes(myLeaderId)) {
+        throw new ForbiddenException('Não é permitido atribuir outros líderes');
+      }
+    }
+
+    return this.sheltersRepository.assignLeaders(id, leaderProfileIds);
+  }
+
+  async removeLeaders(id: string, leaderProfileIds: string[], req: Request) {
+    const ctx = await this.getCtx(req);
+    if (!ctx.role || ctx.role === 'teacher') throw new ForbiddenException('Acesso negado');
+
+    if (ctx.role === 'leader') {
+      const allowed = await this.sheltersRepository.userHasAccessToShelter(id, ctx);
+      if (!allowed) throw new NotFoundException('Shelter não encontrado');
+
+      const myLeaderId = await this.sheltersRepository.getLeaderProfileIdByUserId(ctx.userId!);
+      if (!myLeaderId) throw new ForbiddenException('Acesso negado');
+
+      // Verificar se está tentando remover outros líderes além de si mesmo
+      const otherLeaders = leaderProfileIds.filter(id => id !== myLeaderId);
+      if (otherLeaders.length > 0) {
+        throw new ForbiddenException('Não é permitido remover outros líderes');
+      }
+    }
+
+    return this.sheltersRepository.removeLeaders(id, leaderProfileIds);
+  }
+
+  async assignTeachers(id: string, teacherProfileIds: string[], req: Request) {
+    const ctx = await this.getCtx(req);
+    if (!ctx.role || ctx.role === 'teacher') throw new ForbiddenException('Acesso negado');
+
+    if (ctx.role === 'leader') {
+      const allowed = await this.sheltersRepository.userHasAccessToShelter(id, ctx);
+      if (!allowed) throw new NotFoundException('Shelter não encontrado');
+    }
+
+    return this.sheltersRepository.assignTeachers(id, teacherProfileIds);
+  }
+
+  async removeTeachers(id: string, teacherProfileIds: string[], req: Request) {
+    const ctx = await this.getCtx(req);
+    if (!ctx.role || ctx.role === 'teacher') throw new ForbiddenException('Acesso negado');
+
+    if (ctx.role === 'leader') {
+      const allowed = await this.sheltersRepository.userHasAccessToShelter(id, ctx);
+      if (!allowed) throw new NotFoundException('Shelter não encontrado');
+    }
+
+    return this.sheltersRepository.removeTeachers(id, teacherProfileIds);
   }
 }

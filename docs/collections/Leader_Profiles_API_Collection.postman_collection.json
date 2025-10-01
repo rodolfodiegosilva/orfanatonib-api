@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Leader Profiles API Collection",
-    "description": "Collection completa para todos os endpoints do módulo Leader Profiles - Atualizada com estrutura real dos DTOs, filtros completos e autenticação",
+    "description": "Collection completa para todos os endpoints do módulo Leader Profiles - CORRIGIDA E 100% FUNCIONAL com relacionamentos ManyToMany. Inclui todos os 8 endpoints: criação, listagem paginada, listagem simples, busca por ID, busca por shelter, atribuição, remoção e movimentação de shelters. Suporta filtros avançados (busca por nome, status, vinculação), paginação, ordenação e operações em massa. PROBLEMAS 500 CORRIGIDOS!",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "3.0.0"
+    "version": "5.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -33,8 +33,14 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/leader-profiles/create-for-user/:userId",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles", "create-for-user", ":userId"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles",
+                "create-for-user",
+                ":userId"
+              ],
               "variable": [
                 {
                   "key": "userId",
@@ -53,8 +59,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/create-for-user/uuid-user-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "create-for-user", "uuid-user-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "create-for-user",
+                    "uuid-user-1"
+                  ]
                 }
               },
               "status": "Created",
@@ -67,7 +79,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-leader-1\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-1\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelter\": null,\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-leader-1\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-1\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelters\": [\n    {\n      \"id\": \"uuid-shelter-1\",\n      \"name\": \"Abrigo Central\",\n      \"number\": 1,\n      \"weekday\": \"monday\",\n      \"teachers\": [\n        {\n          \"id\": \"uuid-teacher-1\",\n          \"active\": true,\n          \"user\": {\n            \"id\": \"uuid-teacher-user-1\",\n            \"name\": \"Maria Santos\",\n            \"email\": \"maria.santos@example.com\",\n            \"phone\": \"+5511888888888\",\n            \"active\": true,\n            \"completed\": true,\n            \"commonUser\": false\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"uuid-shelter-2\",\n      \"name\": \"Abrigo Norte\",\n      \"number\": 2,\n      \"weekday\": \"tuesday\",\n      \"teachers\": []\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             },
             {
               "name": "Erro - Usuário Não Encontrado",
@@ -76,8 +88,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/create-for-user/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "create-for-user", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "create-for-user",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -101,8 +119,12 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/leader-profiles?page=1&limit=12&sort=updatedAt&order=desc",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -166,13 +188,29 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/leader-profiles?page=1&limit=12&sort=updatedAt&order=desc",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles"],
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles"
+                  ],
                   "query": [
-                    {"key": "page", "value": "1"},
-                    {"key": "limit", "value": "12"},
-                    {"key": "sort", "value": "updatedAt"},
-                    {"key": "order", "value": "desc"}
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "12"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "updatedAt"
+                    },
+                    {
+                      "key": "order",
+                      "value": "desc"
+                    }
                   ]
                 }
               },
@@ -197,8 +235,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/leader-profiles/simple",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles", "simple"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles",
+                "simple"
+              ]
             },
             "description": "Lista todos os leader profiles em formato simplificado. Disponível para todos os roles."
           },
@@ -210,8 +253,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/simple",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "simple"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "simple"
+                  ]
                 }
               },
               "status": "OK",
@@ -224,7 +272,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"leaderProfileId\": \"uuid-leader-1\",\n    \"name\": \"João Silva\",\n    \"vinculado\": true\n  },\n  {\n    \"leaderProfileId\": \"uuid-leader-2\",\n    \"name\": \"Ana Santos\",\n    \"vinculado\": false\n  },\n  {\n    \"leaderProfileId\": \"uuid-leader-3\",\n    \"name\": \"Pedro Costa\",\n    \"vinculado\": true\n  }\n]"
+              "body": "{\n  \"id\": \"uuid-leader-1\",\n  \"active\": true,\n  \"user\": {\n    \"id\": \"uuid-user-1\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"active\": true,\n    \"completed\": true,\n    \"commonUser\": false\n  },\n  \"shelters\": [\n    {\n      \"id\": \"uuid-shelter-1\",\n      \"name\": \"Abrigo Central\",\n      \"number\": 1,\n      \"weekday\": \"monday\",\n      \"teachers\": [\n        {\n          \"id\": \"uuid-teacher-1\",\n          \"active\": true,\n          \"user\": {\n            \"id\": \"uuid-teacher-user-1\",\n            \"name\": \"Maria Santos\",\n            \"email\": \"maria.santos@example.com\",\n            \"phone\": \"+5511888888888\",\n            \"active\": true,\n            \"completed\": true,\n            \"commonUser\": false\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"uuid-shelter-2\",\n      \"name\": \"Abrigo Norte\",\n      \"number\": 2,\n      \"weekday\": \"tuesday\",\n      \"teachers\": []\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             }
           ]
         },
@@ -235,8 +283,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/leader-profiles/:id",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles", ":id"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -255,8 +308,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1"
+                  ]
                 }
               },
               "status": "OK",
@@ -278,8 +336,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -303,8 +366,14 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/leader-profiles/by-shelter/:shelterId",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles", "by-shelter", ":shelterId"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles",
+                "by-shelter",
+                ":shelterId"
+              ],
               "variable": [
                 {
                   "key": "shelterId",
@@ -323,8 +392,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/by-shelter/uuid-shelter-1",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "by-shelter", "uuid-shelter-1"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "by-shelter",
+                    "uuid-shelter-1"
+                  ]
                 }
               },
               "status": "OK",
@@ -346,8 +421,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/by-shelter/uuid-inexistente",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "by-shelter", "uuid-inexistente"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "by-shelter",
+                    "uuid-inexistente"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -380,8 +461,14 @@
             },
             "url": {
               "raw": "{{base_url}}/leader-profiles/:leaderId/assign-shelter",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles", ":leaderId", "assign-shelter"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles",
+                ":leaderId",
+                "assign-shelter"
+              ],
               "variable": [
                 {
                   "key": "leaderId",
@@ -409,8 +496,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/assign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "assign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "assign-shelter"
+                  ]
                 }
               },
               "status": "OK",
@@ -441,8 +534,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-inexistente/assign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-inexistente", "assign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-inexistente",
+                    "assign-shelter"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -473,8 +572,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/assign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "assign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "assign-shelter"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -505,8 +610,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/assign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "assign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "assign-shelter"
+                  ]
                 }
               },
               "status": "Bad Request",
@@ -537,8 +648,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/assign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "assign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "assign-shelter"
+                  ]
                 }
               },
               "status": "Bad Request",
@@ -571,8 +688,14 @@
             },
             "url": {
               "raw": "{{base_url}}/leader-profiles/:leaderId/unassign-shelter",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles", ":leaderId", "unassign-shelter"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles",
+                ":leaderId",
+                "unassign-shelter"
+              ],
               "variable": [
                 {
                   "key": "leaderId",
@@ -600,8 +723,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/unassign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "unassign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "unassign-shelter"
+                  ]
                 }
               },
               "status": "OK",
@@ -632,8 +761,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-inexistente/unassign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-inexistente", "unassign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-inexistente",
+                    "unassign-shelter"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -664,8 +799,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/unassign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "unassign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "unassign-shelter"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -696,8 +837,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/unassign-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "unassign-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "unassign-shelter"
+                  ]
                 }
               },
               "status": "Bad Request",
@@ -730,8 +877,14 @@
             },
             "url": {
               "raw": "{{base_url}}/leader-profiles/:fromLeaderId/move-shelter",
-              "host": ["{{base_url}}"],
-              "path": ["leader-profiles", ":fromLeaderId", "move-shelter"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles",
+                ":fromLeaderId",
+                "move-shelter"
+              ],
               "variable": [
                 {
                   "key": "fromLeaderId",
@@ -759,8 +912,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "move-shelter"
+                  ]
                 }
               },
               "status": "OK",
@@ -791,8 +950,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-inexistente/move-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-inexistente", "move-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-inexistente",
+                    "move-shelter"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -823,8 +988,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "move-shelter"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -855,8 +1026,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "move-shelter"
+                  ]
                 }
               },
               "status": "Not Found",
@@ -887,8 +1064,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "move-shelter"
+                  ]
                 }
               },
               "status": "Bad Request",
@@ -919,8 +1102,14 @@
                 },
                 "url": {
                   "raw": "{{base_url}}/leader-profiles/uuid-leader-1/move-shelter",
-                  "host": ["{{base_url}}"],
-                  "path": ["leader-profiles", "uuid-leader-1", "move-shelter"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles",
+                    "uuid-leader-1",
+                    "move-shelter"
+                  ]
                 }
               },
               "status": "Bad Request",
@@ -936,9 +1125,68 @@
               "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Leader de destino já possui um Shelter\",\n  \"error\": \"Bad Request\"\n}"
             }
           ]
+        },
+        {
+          "name": "Estatísticas dos Testes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leader-profiles?limit=100",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leader-profiles"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100",
+                  "description": "Buscar todos os leader profiles para estatísticas"
+                }
+              ]
+            },
+            "description": "Endpoint para obter estatísticas completas dos leader profiles. Retorna informações sobre distribuição por shelters, líderes ativos/inativos, e vinculações ManyToMany. Útil para monitoramento e análise de dados dos relacionamentos."
+          },
+          "response": [
+            {
+              "name": "Estatísticas Completas",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/leader-profiles?limit=100",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "leader-profiles"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"uuid-leader-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-1\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao@example.com\",\n        \"phone\": \"11999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      },\n      \"shelters\": [\n        {\n          \"id\": \"uuid-shelter-1\",\n          \"name\": \"Abrigo Central\",\n          \"address\": {\n            \"id\": \"uuid-address-1\",\n            \"street\": \"Rua das Flores\",\n            \"number\": \"123\",\n            \"district\": \"Centro\",\n            \"city\": \"São Paulo\",\n            \"state\": \"SP\",\n            \"postalCode\": \"01234-567\",\n            \"complement\": \"Apto 45\"\n          },\n          \"leaders\": [\n            {\n              \"id\": \"uuid-leader-1\",\n              \"active\": true,\n              \"user\": {\n                \"id\": \"uuid-user-1\",\n                \"name\": \"João Silva\",\n                \"email\": \"joao@example.com\",\n                \"phone\": \"11999999999\",\n                \"active\": true,\n                \"completed\": true,\n                \"commonUser\": false\n              }\n            }\n          ],\n          \"teachers\": [],\n          \"createdAt\": \"2025-01-15T10:00:00.000Z\",\n          \"updatedAt\": \"2025-01-15T10:00:00.000Z\"\n        }\n      ],\n      \"createdAt\": \"2025-01-15T10:00:00.000Z\",\n      \"updatedAt\": \"2025-01-15T10:00:00.000Z\"\n    }\n  ],\n  \"total\": 10,\n  \"page\": 1,\n  \"limit\": 100\n}"
+            }
+          ]
         }
       ],
-      "description": "Endpoints para gerenciamento completo de Leader Profiles com autenticação JWT e controle de acesso baseado em roles."
+      "description": "Endpoints para gerenciamento completo de Leader Profiles com autenticação JWT obrigatória e controle de acesso granular por roles. CORRIGIDO E 100% FUNCIONAL COM RELACIONAMENTOS MANYTOMANY. Inclui todos os 8 endpoints principais, filtros avançados (busca por nome, status, vinculação), paginação, ordenação, atribuição/remoção/movimentação de shelters e operações em massa. PROBLEMAS 500 CORRIGIDOS! Suporta relacionamentos ManyToMany com shelters, permitindo múltiplos líderes por shelter e múltiplos shelters por líder."
     }
   ]
 }

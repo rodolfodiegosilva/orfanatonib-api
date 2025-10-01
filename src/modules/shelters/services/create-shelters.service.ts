@@ -28,10 +28,15 @@ export class CreateSheltersService {
       const myLeaderId = await this.sheltersRepository.getLeaderProfileIdByUserId(ctx.userId!);
       if (!myLeaderId) throw new ForbiddenException('Acesso negado');
 
-      if (dto.leaderProfileId && dto.leaderProfileId !== myLeaderId) {
-        throw new ForbiddenException('Não é permitido atribuir outro líder');
+      if (dto.leaderProfileIds && dto.leaderProfileIds.length > 0) {
+        // Verificar se o líder atual está na lista
+        if (!dto.leaderProfileIds.includes(myLeaderId)) {
+          throw new ForbiddenException('Não é permitido atribuir outros líderes');
+        }
+      } else {
+        // Se não especificado, usar apenas o líder atual
+        dto.leaderProfileIds = [myLeaderId];
       }
-      dto.leaderProfileId = myLeaderId;
     }
 
     return this.sheltersRepository.createShelter(dto);

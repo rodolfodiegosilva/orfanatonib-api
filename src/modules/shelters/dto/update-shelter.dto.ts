@@ -25,9 +25,9 @@ export class UpdateShelterDto {
 
 
   @IsOptional()
-  @ValidateIf((_, v) => v !== null && v !== undefined)
-  @IsUUID()
-  leaderProfileId?: string | null;
+  @IsArray()
+  @IsUUID('4', { each: true })
+  leaderProfileIds?: string[];
 
   @IsOptional()
   @ValidateNested()

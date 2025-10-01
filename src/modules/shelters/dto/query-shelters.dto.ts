@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Min, IsString, IsIn } from 'class-validator';
+import { IsInt, IsOptional, Min, IsString, IsIn, IsArray, IsUUID } from 'class-validator';
 
 export class QuerySheltersDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1)
@@ -16,6 +16,11 @@ export class QuerySheltersDto {
 
   @IsOptional() @IsString()
   leaderId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  leaderIds?: string[];
 
   @IsOptional()
   @IsIn(['name', 'createdAt', 'updatedAt', 'city', 'state'])

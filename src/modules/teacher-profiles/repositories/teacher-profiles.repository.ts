@@ -34,7 +34,7 @@ export class TeacherProfilesRepository {
     return this.teacherRepo
       .createQueryBuilder('teacher')
       .leftJoinAndSelect('teacher.shelter', 'shelter')
-      .leftJoinAndSelect('shelter.leader', 'leader')
+      .leftJoinAndSelect('shelter.leaders', 'leaders')
       .leftJoin('teacher.user', 'teacher_user')
       .addSelect([
         'teacher_user.id',
@@ -45,7 +45,7 @@ export class TeacherProfilesRepository {
         'teacher_user.completed',
         'teacher_user.commonUser',
       ])
-      .leftJoin('leader.user', 'leader_user')
+      .leftJoin('leaders.user', 'leader_user')
       .addSelect([
         'leader_user.id',
         'leader_user.name',
@@ -63,8 +63,8 @@ export class TeacherProfilesRepository {
       .createQueryBuilder('teacher')
       .leftJoin('teacher.user', 'teacher_user')
       .leftJoin('teacher.shelter', 'shelter')
-      .leftJoin('shelter.leader', 'leader')
-      .leftJoin('leader.user', 'leader_user')
+      .leftJoin('shelter.leaders', 'leaders')
+      .leftJoin('leaders.user', 'leader_user')
       .where('teacher_user.active = true');
   }
 
@@ -324,8 +324,8 @@ export class TeacherProfilesRepository {
     const qb = this.shelterRepo.createQueryBuilder('shelter').where('shelter.id = :clubId', { clubId });
 
     if (role === 'leader') {
-      qb.leftJoin('shelter.leader', 'leader')
-        .leftJoin('leader.user', 'leader_user')
+      qb.leftJoin('shelter.leaders', 'leaders')
+        .leftJoin('leaders.user', 'leader_user')
         .andWhere('leader_user.id = :uid', { uid: userId });
     } else {
       return false;
