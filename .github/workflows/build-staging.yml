@@ -1,4 +1,4 @@
-name: Build Staging Clubinho API
+name: Build Staging Chelterinho API
 
 on:
   pull_request:

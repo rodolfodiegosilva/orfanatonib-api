@@ -1,0 +1,103 @@
+{
+  "created_at": "2025-09-30T20:39:49.783Z",
+  "total_created": 0,
+  "pagelas": [],
+  "summary": {
+    "sheltered_used": [
+      {
+        "id": "1f655a3d-a611-4cfe-a23b-b41fc28c9f0a",
+        "name": "Ana Silva"
+      },
+      {
+        "id": "7af5855e-2683-4825-abdb-ad3dcb975863",
+        "name": "Ana Silva"
+      },
+      {
+        "id": "afd9ea58-2c02-482f-a8c0-a1ca572e4972",
+        "name": "Ana Silva"
+      },
+      {
+        "id": "f8019626-4e43-4f60-8a33-2a58b81db32f",
+        "name": "Ana Silva"
+      },
+      {
+        "id": "1a6b3422-db8f-443a-b0fc-a15932ef9567",
+        "name": "Bruno Santos"
+      },
+      {
+        "id": "75b1b3a4-e65a-4fa7-8eea-bb73471975ae",
+        "name": "Bruno Santos"
+      },
+      {
+        "id": "901b7343-f695-459b-9c0b-a249698fb77e",
+        "name": "Bruno Santos"
+      },
+      {
+        "id": "fbc3786d-81cc-41d2-b7ec-4b510ef7c035",
+        "name": "Bruno Santos"
+      },
+      {
+        "id": "02acfc00-183d-4149-8541-6e5b4eb9bd67",
+        "name": "Carlos Oliveira"
+      },
+      {
+        "id": "3305a377-0e44-42f4-b97d-095288f920d7",
+        "name": "Carlos Oliveira"
+      }
+    ],
+    "teachers_used": [
+      {
+        "id": "6ee8970b-ebbb-4bef-af5a-714683e24196",
+        "name": "Teste Teacher"
+      },
+      {
+        "id": "b4ce290c-b024-48d5-a69c-7f5a430928e3",
+        "name": "Jéssica Freitas"
+      },
+      {
+        "id": "72e59ec4-984f-4bc3-afb1-f8221bc97d21",
+        "name": "Leonardo Andrade"
+      },
+      {
+        "id": "658ccbc3-0bba-48c7-a11b-5959cc61fd1a",
+        "name": "Mariana Cunha"
+      },
+      {
+        "id": "9d01c70f-ffce-448c-8f54-0ce2909cd128",
+        "name": "Nelson Moura"
+      },
+      {
+        "id": "38ba4e6c-1855-4967-bdc4-2dbc4b19213b",
+        "name": "Olívia Bezerra"
+      },
+      {
+        "id": "12e84760-9d54-4e76-857b-2178fd03f305",
+        "name": "Paulo Correia"
+      },
+      {
+        "id": "135a1b26-4674-477f-9103-5f643c6e1d13",
+        "name": "Professor Teste Pagelas"
+      },
+      {
+        "id": "667a943d-39b4-4371-b643-a1d55e33d417",
+        "name": "Kátia Machado"
+      },
+      {
+        "id": "e9b194fd-7d50-44b9-bcde-210f9f716945",
+        "name": "Ivan Nascimento"
+      }
+    ],
+    "visits_created": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "years_created": [
+      2025,
+      2024,
+      2023
+    ]
+  }
+}

@@ -8,7 +8,7 @@ export class CreateAcceptedChristDto {
 
   @IsUUID()
   @IsNotEmpty()
-  childId: string;
+  shelteredId: string;
 
   @IsOptional()
   notes?: string | null;

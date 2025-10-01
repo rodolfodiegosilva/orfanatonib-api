@@ -1,4 +1,4 @@
-name: Deploy Staging Clubinho API
+name: Deploy Staging Chelterinho API
 
 on:
   push:

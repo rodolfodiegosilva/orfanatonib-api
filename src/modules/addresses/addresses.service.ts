@@ -36,4 +36,17 @@ export class AddressesService {
     this.logger.debug(`${this.tag(txId)}findById -> ${out ? 'OK' : 'NOT FOUND'} (ms=${Date.now() - t0})`);
     return out;
   }
+
+  async update(id: string, partial: Partial<AddressEntity>, txId?: string) {
+    const t0 = Date.now();
+    this.logger.debug(`${this.tag(txId)}update(${id})…`);
+    const entity = await this.repo.findById(id);
+    if (!entity) {
+      throw new Error('Address not found');
+    }
+    const merged = this.repo.merge(entity, partial);
+    const out = await this.repo.save(merged);
+    this.logger.debug(`${this.tag(txId)}update -> OK (ms=${Date.now() - t0})`);
+    return out;
+  }
 }

@@ -1,4 +1,4 @@
-name: Build Clubinho API
+name: Build Chelterinho API
 
 on:
   pull_request:

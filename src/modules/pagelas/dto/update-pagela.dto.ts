@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 export class UpdatePagelaDto {
   @IsOptional()
   @IsUUID()
-  teacherProfileId?: string | null;
+  teacherProfileId?: string;
 
   @IsOptional()
   @IsDateString()
@@ -14,8 +14,7 @@ export class UpdatePagelaDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(53)
-  week?: number;
+  visit?: number;
 
   @IsOptional()
   @Type(() => Number)
@@ -27,14 +26,6 @@ export class UpdatePagelaDto {
   @IsOptional()
   @IsBoolean()
   present?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  didMeditation?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  recitedVerse?: boolean;
 
   @IsOptional()
   @IsString()

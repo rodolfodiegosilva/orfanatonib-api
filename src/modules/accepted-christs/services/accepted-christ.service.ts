@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AcceptedChristRepository } from '../repositories/accepted-christ.repository';
 import { CreateAcceptedChristDto } from '../dtos/create-accepted-christ.dto';
-import { ChildEntity } from 'src/modules/children/entities/child.entity';
+import { ShelteredEntity } from 'src/modules/sheltered/entities/sheltered.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AcceptedChristEntity } from '../entities/accepted-christ.entity';
@@ -11,16 +11,16 @@ export class AcceptedChristService {
   constructor(
     private readonly acceptedChristRepository: AcceptedChristRepository,
 
-    @InjectRepository(ChildEntity)
-    private readonly childRepository: Repository<ChildEntity>,
+    @InjectRepository(ShelteredEntity)
+    private readonly shelteredRepository: Repository<ShelteredEntity>,
   ) {}
 
   async create(dto: CreateAcceptedChristDto): Promise<AcceptedChristEntity> {
-    const child = await this.childRepository.findOneByOrFail({ id: dto.childId });
+    const sheltered = await this.shelteredRepository.findOneByOrFail({ id: dto.shelteredId });
 
     const accepted = this.acceptedChristRepository.create({
       decision: dto.decision ?? null,
-      child,
+      sheltered,
       notes: dto.notes ?? null,
     });
 

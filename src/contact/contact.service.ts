@@ -69,7 +69,7 @@ export class ContactService {
 
   private generateWhatsappMessage(contact: ContactEntity): string {
     return `
-📥 *Novo contato recebido via site Clubinhos NIB!*
+📥 *Novo contato recebido via site Chelterinhos NIB!*
 
 👤 *Nome:* ${contact.name}
 📧 *E-mail:* ${contact.email}
@@ -88,7 +88,7 @@ ${contact.message}
             <table width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
               <tr>
                 <td style="background-color: #81d742; padding: 24px; text-align: center;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px;">💚 Clubinhos NIB</h1>
+                  <h1 style="margin: 0; color: #ffffff; font-size: 28px;">💚 Chelterinhos NIB</h1>
                   <p style="margin: 4px 0 0; color: #ffffff; font-size: 16px;">Mensagem de contato recebida</p>
                 </td>
               </tr>
@@ -118,7 +118,7 @@ ${contact.message}
               <tr>
                 <td style="background-color: #0073E6; padding: 16px; text-align: center;">
                   <p style="margin: 0; color: #ffffff; font-size: 14px;">
-                    💙 Obrigado por usar o <strong>Clubinhos NIB</strong>
+                    💙 Obrigado por usar o <strong>Chelterinhos NIB</strong>
                   </p>
                 </td>
               </tr>

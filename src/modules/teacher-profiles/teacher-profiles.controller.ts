@@ -12,8 +12,8 @@ import {
 import { Request } from 'express';
 import { TeacherProfilesService } from './services/teacher-profiles.service';
 import {
-  AssignTeacherToClubDto,
-  UnassignTeacherFromClubDto,
+  AssignTeacherToShelterDto,
+  UnassignTeacherFromShelterDto,
 } from './dto/teacher-profile.request.dto';
 import { TeacherResponseDto } from './dto/teacher-profile.response.dto';
 import { TeacherSimpleListDto } from './dto/teacher-simple-list.dto';
@@ -46,31 +46,31 @@ export class TeacherProfilesController {
     return this.service.findOne(id, req);
   }
 
-  @Get('by-club/:clubId')
-  findByClubId(
-    @Param('clubId', new ParseUUIDPipe()) clubId: string,
+  @Get('by-shelter/:shelterId')
+  findByShelterId(
+    @Param('shelterId', new ParseUUIDPipe()) shelterId: string,
     @Req() req: Request,
   ): Promise<TeacherResponseDto[]> {
-    return this.service.findByClubId(clubId, req);
+    return this.service.findByShelterId(shelterId, req);
   }
 
-  @Patch(':teacherId/assign-club')
-  async assignClub(
+  @Patch(':teacherId/assign-shelter')
+  async assignShelter(
     @Param('teacherId', new ParseUUIDPipe()) teacherId: string,
-    @Body() dto: AssignTeacherToClubDto,
+    @Body() dto: AssignTeacherToShelterDto,
     @Req() req: Request,
   ): Promise<{ message: string }> {
-    await this.service.assignClub(teacherId, dto.clubId, req);
-    return { message: 'Teacher atribuído ao club com sucesso' };
+    await this.service.assignShelter(teacherId, dto.shelterId, req);
+    return { message: 'Teacher atribuído ao shelter com sucesso' };
   }
 
-  @Patch(':teacherId/unassign-club')
-  async unassignClub(
+  @Patch(':teacherId/unassign-shelter')
+  async unassignShelter(
     @Param('teacherId', new ParseUUIDPipe()) teacherId: string,
-    @Body() dto: UnassignTeacherFromClubDto,
+    @Body() dto: UnassignTeacherFromShelterDto,
     @Req() req: Request,
   ): Promise<{ message: string }> {
-    await this.service.unassignClub(teacherId, dto.clubId, req);
-    return { message: 'Teacher removido do club com sucesso' };
+    await this.service.unassignShelter(teacherId, dto.shelterId, req);
+    return { message: 'Teacher removido do shelter com sucesso' };
   }
 }

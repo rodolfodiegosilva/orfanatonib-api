@@ -12,18 +12,16 @@ export class PagelasService {
   constructor(private readonly repo: PagelasRepository) { }
 
   async create(dto: CreatePagelaDto): Promise<PagelaResponseDto> {
-    const week = dto.week;
+    const visit = dto.visit;
     const year = dto.year ?? getISOWeekYear(dto.referenceDate).year;
 
     const created = await this.repo.createOne({
-      childId: dto.childId,
-      teacherProfileId: dto.teacherProfileId ?? null,
+      shelteredId: dto.shelteredId,
+      teacherProfileId: dto.teacherProfileId,
       referenceDate: dto.referenceDate,
       year,
-      week,
+      visit,
       present: dto.present,
-      didMeditation: dto.didMeditation,
-      recitedVerse: dto.recitedVerse,
       notes: dto.notes ?? null,
     });
 
@@ -59,14 +57,12 @@ export class PagelasService {
     const updated = await this.repo.updateOne(id, {
       teacher: dto.teacherProfileId === undefined
         ? undefined
-        : (dto.teacherProfileId ? ({ id: dto.teacherProfileId } as any) : null),
+        : ({ id: dto.teacherProfileId } as any),
 
       referenceDate: dto.referenceDate ?? undefined,
       year: dto.year ?? undefined,
-      week: dto.week ?? undefined,
+      visit: dto.visit ?? undefined,
       present: dto.present ?? undefined,
-      didMeditation: dto.didMeditation ?? undefined,
-      recitedVerse: dto.recitedVerse ?? undefined,
       notes: dto.notes ?? undefined,
     } as any);
 

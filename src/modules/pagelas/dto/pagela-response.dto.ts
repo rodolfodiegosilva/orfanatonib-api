@@ -1,20 +1,36 @@
 import { PagelaEntity } from '../entities/pagela.entity';
 
+export class ShelteredMiniDto {
+  id: string;
+  name: string;
+  gender: string;
+  birthDate: string;
+}
+
+export class TeacherMiniDto {
+  id: string;
+  active: boolean;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
+}
+
 export class PagelaResponseDto {
   id: string;
   createdAt: string;
   updatedAt: string;
 
-  childId: string;
-  teacherProfileId: string | null;
+  sheltered: ShelteredMiniDto;
+  teacher: TeacherMiniDto;
 
   referenceDate: string;
   year: number;
-  week: number;
+  visit: number;
 
   present: boolean;
-  didMeditation: boolean;
-  recitedVerse: boolean;
   notes: string | null;
 
   static fromEntity(e: PagelaEntity): PagelaResponseDto {
@@ -22,14 +38,26 @@ export class PagelaResponseDto {
       id: e.id,
       createdAt: (e as any).createdAt?.toISOString?.() ?? (e as any).createdAt,
       updatedAt: (e as any).updatedAt?.toISOString?.() ?? (e as any).updatedAt,
-      childId: e.child?.id,
-      teacherProfileId: e.teacher?.id ?? null,
+      sheltered: {
+        id: e.sheltered?.id,
+        name: e.sheltered?.name,
+        gender: e.sheltered?.gender,
+        birthDate: e.sheltered?.birthDate,
+      },
+      teacher: {
+        id: e.teacher?.id,
+        active: e.teacher?.active,
+        user: {
+          id: e.teacher?.user?.id,
+          name: e.teacher?.user?.name,
+          email: e.teacher?.user?.email,
+          phone: e.teacher?.user?.phone,
+        },
+      },
       referenceDate: e.referenceDate,
       year: e.year,
-      week: e.week,
+      visit: e.visit,
       present: e.present,
-      didMeditation: e.didMeditation,
-      recitedVerse: e.recitedVerse,
       notes: e.notes ?? null,
     };
   }

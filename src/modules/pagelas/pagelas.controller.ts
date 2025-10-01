@@ -23,11 +23,9 @@ export class PagelasController {
 
   @Get('paginated')
   findAllPaginated(
-    @Query() filters: PagelaFiltersDto,
-    @Query() pagination: PaginationQueryDto,
+    @Query() query: PagelaFiltersDto & PaginationQueryDto,
   ) {
-    const page = pagination.page ?? 1;
-    const limit = pagination.limit ?? 20;
+    const { page = 1, limit = 20, ...filters } = query;
     return this.service.findAllPaginated(filters, page, limit);
   }
 

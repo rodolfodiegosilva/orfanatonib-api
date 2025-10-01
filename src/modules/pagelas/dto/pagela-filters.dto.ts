@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 export class PagelaFiltersDto {
   @IsOptional()
   @IsUUID()
-  childId?: string;
+  shelteredId?: string;
 
   @IsOptional()
   @Type(() => Number)
@@ -17,20 +17,11 @@ export class PagelaFiltersDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(53)
-  week?: number;
+  visit?: number;
 
   @IsOptional()
   @IsBooleanString()
   present?: 'true' | 'false';
-
-  @IsOptional()
-  @IsBooleanString()
-  didMeditation?: 'true' | 'false';
-
-  @IsOptional()
-  @IsBooleanString()
-  recitedVerse?: 'true' | 'false';
 
   @IsOptional()
   @IsString()

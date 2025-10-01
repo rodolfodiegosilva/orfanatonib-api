@@ -1,5 +1,5 @@
 import { UserRole } from 'src/auth/auth.types';
-import { CoordinatorProfileEntity } from 'src/modules/coordinator-profiles/entities/coordinator-profile.entity/coordinator-profile.entity';
+import { LeaderProfileEntity } from 'src/modules/leader-profiles/entities/leader-profile.entity/leader-profile.entity';
 import { TeacherProfileEntity } from 'src/modules/teacher-profiles/entities/teacher-profile.entity/teacher-profile.entity';
 import { BaseEntity } from 'src/share/share-entity/base.entity';
 import { Entity, Column, OneToOne } from 'typeorm';
@@ -37,6 +37,6 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => TeacherProfileEntity, (p) => p.user)
   teacherProfile?: TeacherProfileEntity | null;
 
-  @OneToOne(() => CoordinatorProfileEntity, (p) => p.user)
-  coordinatorProfile?: CoordinatorProfileEntity | null;
+  @OneToOne(() => LeaderProfileEntity, (p) => p.user)
+  leaderProfile?: LeaderProfileEntity | null;
 }
