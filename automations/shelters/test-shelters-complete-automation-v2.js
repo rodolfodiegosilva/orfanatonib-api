@@ -222,7 +222,7 @@ async function testLeaderRelationships() {
 
   // 1. Atribuir líder ao shelter
   console.log(`  🔸 Teste 1: Atribuir líder ${leader.user?.name} ao shelter ${shelter.name}`);
-  const assignResponse = await makeRequest('PATCH', `/shelters/${shelter.id}/leaders`, {
+  const assignResponse = await makeRequest('PATCH', `/shelters/${shelter.id}`, {
     leaderProfileIds: [leader.id]
   });
   
@@ -239,8 +239,8 @@ async function testLeaderRelationships() {
 
     // 3. Remover líder do shelter
     console.log('  🔸 Teste 3: Remover líder do shelter');
-    const removeResponse = await makeRequest('DELETE', `/shelters/${shelter.id}/leaders`, {
-      leaderProfileIds: [leader.id]
+    const removeResponse = await makeRequest('PATCH', `/shelters/${shelter.id}`, {
+      leaderProfileIds: []
     });
     
     if (removeResponse && removeResponse.status === 200) {
@@ -263,7 +263,7 @@ async function testTeacherRelationships() {
 
   // 1. Atribuir professor ao shelter
   console.log(`  🔸 Teste 1: Atribuir professor ${teacher.user?.name} ao shelter ${shelter.name}`);
-  const assignResponse = await makeRequest('PATCH', `/shelters/${shelter.id}/teachers`, {
+  const assignResponse = await makeRequest('PATCH', `/shelters/${shelter.id}`, {
     teacherProfileIds: [teacher.id]
   });
   
@@ -280,8 +280,8 @@ async function testTeacherRelationships() {
 
     // 3. Remover professor do shelter
     console.log('  🔸 Teste 3: Remover professor do shelter');
-    const removeResponse = await makeRequest('DELETE', `/shelters/${shelter.id}/teachers`, {
-      teacherProfileIds: [teacher.id]
+    const removeResponse = await makeRequest('PATCH', `/shelters/${shelter.id}`, {
+      teacherProfileIds: []
     });
     
     if (removeResponse && removeResponse.status === 200) {
@@ -314,7 +314,7 @@ async function testErrorScenarios() {
   // 3. Atribuir líder inexistente
   console.log('  🔸 Teste 3: Atribuir líder inexistente');
   if (testData.shelters.length > 0) {
-    const invalidLeaderResponse = await makeRequest('PATCH', `/shelters/${testData.shelters[0].id}/leaders`, {
+    const invalidLeaderResponse = await makeRequest('PATCH', `/shelters/${testData.shelters[0].id}`, {
       leaderProfileIds: ['00000000-0000-0000-0000-000000000000']
     });
     if (invalidLeaderResponse && invalidLeaderResponse.status === 404) {
@@ -325,7 +325,7 @@ async function testErrorScenarios() {
   // 4. Atribuir professor inexistente
   console.log('  🔸 Teste 4: Atribuir professor inexistente');
   if (testData.shelters.length > 0) {
-    const invalidTeacherResponse = await makeRequest('PATCH', `/shelters/${testData.shelters[0].id}/teachers`, {
+    const invalidTeacherResponse = await makeRequest('PATCH', `/shelters/${testData.shelters[0].id}`, {
       teacherProfileIds: ['00000000-0000-0000-0000-000000000000']
     });
     if (invalidTeacherResponse && invalidTeacherResponse.status === 404) {

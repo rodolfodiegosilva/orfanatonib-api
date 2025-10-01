@@ -232,8 +232,8 @@ export class TeacherProfilesRepository {
       .createQueryBuilder('teacher')
       .leftJoin('teacher.user', 'user')
       .addSelect(['user.id', 'user.name', 'user.email', 'user.active'])
-      .leftJoinAndSelect('teacher.shelter', 'shelter')
       .where('user.active = true')
+      .andWhere('teacher.shelter_id IS NULL')
       .orderBy('teacher.createdAt', 'ASC');
 
     if (ctx?.role === 'teacher') {

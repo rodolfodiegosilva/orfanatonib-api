@@ -11,36 +11,35 @@
       "completed": true,
       "commonUser": false
     },
-    "shelters": [
-      {
-        "id": "uuid-shelter-1",
-        "name": "Abrigo Central",
-        "number": 1,
-        "weekday": "monday",
-        "teachers": [
-          {
-            "id": "uuid-teacher-1",
-            "active": true,
-            "user": {
-              "id": "uuid-teacher-user-1",
-              "name": "Maria Santos",
-              "email": "maria.santos@example.com",
-              "phone": "+5511888888888",
-              "active": true,
-              "completed": true,
-              "commonUser": false
-            }
-          }
-        ]
+    "shelter": {
+      "id": "uuid-shelter-1",
+      "name": "Abrigo Central",
+      "address": {
+        "id": "uuid-address-1",
+        "street": "Rua das Flores",
+        "number": "123",
+        "district": "Centro",
+        "city": "São Paulo",
+        "state": "SP",
+        "postalCode": "01234-567",
+        "complement": "Apto 45"
       },
-      {
-        "id": "uuid-shelter-2",
-        "name": "Abrigo Norte",
-        "number": 2,
-        "weekday": "tuesday",
-        "teachers": []
-      }
-    ],
+      "teachers": [
+        {
+          "id": "uuid-teacher-1",
+          "active": true,
+          "user": {
+            "id": "uuid-teacher-user-1",
+            "name": "Maria Santos",
+            "email": "maria.santos@example.com",
+            "phone": "+5511888888888",
+            "active": true,
+            "completed": true,
+            "commonUser": false
+          }
+        }
+      ]
+    },
     "createdAt": "2025-09-27T21:00:00.000Z",
     "updatedAt": "2025-09-27T21:00:00.000Z"
   },
@@ -219,13 +218,10 @@
       "leaderProfile": {
         "id": "uuid-leader-1",
         "active": true,
-        "clubs": [
-          {
-            "id": "uuid-shelter-1",
-            "number": 1,
-            "weekday": "monday"
-          }
-        ]
+        "shelter": {
+          "id": "uuid-shelter-1",
+          "name": "Abrigo Central"
+        }
       }
     }
   },

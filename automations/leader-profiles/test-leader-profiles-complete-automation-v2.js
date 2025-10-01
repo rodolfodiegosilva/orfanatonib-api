@@ -384,3 +384,4 @@ runCompleteLeaderAutomation()
     console.error('\n❌ Erro durante a automação:', error);
     process.exit(1);
   });
+
