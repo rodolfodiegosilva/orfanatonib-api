@@ -75,44 +75,67 @@ export class SheltersRepository {
     const {
       page = 1,
       limit = 10,
-      searchString,
-      nameSearchString,
-      leaderId,
-      leaderIds,
       sort = 'name',
       order = 'ASC',
+      shelterName,
+      staffFilters,
+      addressFilter,
+      shelterId, // Filtro legado
     } = q;
 
     const qb = this.buildShelterBaseQB().distinct(true);
     this.applyRoleFilter(qb, ctx);
 
-    if (searchString?.trim()) {
-      const like = `%${searchString.trim()}%`;
+    // 🏠 Filtro de nome do abrigo - busca em todos os campos relacionados ao nome
+    if (shelterName?.trim()) {
+      const like = `%${shelterName.trim()}%`;
       qb.andWhere(
         `(
-          LOWER(shelter.name)      LIKE LOWER(:like) OR
-          LOWER(address.street)    LIKE LOWER(:like) OR
-          LOWER(address.district) LIKE LOWER(:like) OR
-          LOWER(address.city)      LIKE LOWER(:like) OR
-          LOWER(address.state)    LIKE LOWER(:like)
+          LOWER(shelter.name) LIKE LOWER(:shelterName)
         )`,
-        { like },
+        { shelterName: like }
       );
     }
 
-    if (nameSearchString?.trim()) {
-      const like = `%${nameSearchString.trim()}%`;
-      qb.andWhere('LOWER(shelter.name) LIKE LOWER(:like)', { like });
+    // 👥 Filtros de staff - busca em todos os campos relacionados a líderes e professores
+    if (staffFilters?.trim()) {
+      const like = `%${staffFilters.trim()}%`;
+      qb.andWhere(
+        `(
+          LOWER(leaderUser.name) LIKE LOWER(:staffFilters) OR
+          LOWER(leaderUser.email) LIKE LOWER(:staffFilters) OR
+          leaderUser.phone LIKE :staffFiltersRaw OR
+          LOWER(teacherUser.name) LIKE LOWER(:staffFilters) OR
+          LOWER(teacherUser.email) LIKE LOWER(:staffFilters) OR
+          teacherUser.phone LIKE :staffFiltersRaw
+        )`,
+        { staffFilters: like, staffFiltersRaw: `%${staffFilters.trim()}%` }
+      );
     }
 
-    if (leaderId) {
-      qb.andWhere('leaders.id = :leaderId', { leaderId });
+    // 🏙️ Filtro de endereço - busca em todos os campos relacionados ao endereço
+    if (addressFilter?.trim()) {
+      const like = `%${addressFilter.trim()}%`;
+      qb.andWhere(
+        `(
+          LOWER(address.street) LIKE LOWER(:addressFilter) OR
+          LOWER(address.number) LIKE LOWER(:addressFilter) OR
+          LOWER(address.district) LIKE LOWER(:addressFilter) OR
+          LOWER(address.city) LIKE LOWER(:addressFilter) OR
+          LOWER(address.state) LIKE LOWER(:addressFilter) OR
+          address.postalCode LIKE :addressFilterRaw OR
+          LOWER(address.complement) LIKE LOWER(:addressFilter)
+        )`,
+        { addressFilter: like, addressFilterRaw: `%${addressFilter.trim()}%` }
+      );
     }
 
-    if (leaderIds?.length) {
-      qb.andWhere('leaders.id IN (:...leaderIds)', { leaderIds });
+    // Filtro legado
+    if (shelterId) {
+      qb.andWhere('shelter.id = :shelterId', { shelterId });
     }
 
+    // Ordenação
     const sortMap: Record<string, string> = {
       name: 'shelter.name',
       createdAt: 'shelter.createdAt',
@@ -120,10 +143,12 @@ export class SheltersRepository {
       city: 'address.city',
       state: 'address.state',
     };
+    
     const orderBy = sortMap[sort] ?? 'shelter.name';
     const orderDir = (order || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
     qb.orderBy(orderBy, orderDir as 'ASC' | 'DESC');
 
+    // Paginação
     qb.skip((page - 1) * limit).take(limit);
 
     const [items, total] = await qb.getManyAndCount();
