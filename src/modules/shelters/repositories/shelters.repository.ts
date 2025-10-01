@@ -101,13 +101,25 @@ export class SheltersRepository {
     if (staffFilters?.trim()) {
       const like = `%${staffFilters.trim()}%`;
       qb.andWhere(
-        `(
-          LOWER(leaderUser.name) LIKE LOWER(:staffFilters) OR
-          LOWER(leaderUser.email) LIKE LOWER(:staffFilters) OR
-          leaderUser.phone LIKE :staffFiltersRaw OR
-          LOWER(teacherUser.name) LIKE LOWER(:staffFilters) OR
-          LOWER(teacherUser.email) LIKE LOWER(:staffFilters) OR
-          teacherUser.phone LIKE :staffFiltersRaw
+        `EXISTS (
+          SELECT 1 FROM shelter_leaders sl
+          JOIN leader_profiles lp ON lp.id = sl.leader_profile_id
+          JOIN users lu ON lu.id = lp.user_id
+          WHERE sl.shelter_id = shelter.id
+            AND (
+              LOWER(lu.name) LIKE LOWER(:staffFilters) OR
+              LOWER(lu.email) LIKE LOWER(:staffFilters) OR
+              lu.phone LIKE :staffFiltersRaw
+            )
+        ) OR EXISTS (
+          SELECT 1 FROM teacher_profiles tp
+          JOIN users tu ON tu.id = tp.user_id
+          WHERE tp.shelter_id = shelter.id
+            AND (
+              LOWER(tu.name) LIKE LOWER(:staffFilters) OR
+              LOWER(tu.email) LIKE LOWER(:staffFilters) OR
+              tu.phone LIKE :staffFiltersRaw
+            )
         )`,
         { staffFilters: like, staffFiltersRaw: `%${staffFilters.trim()}%` }
       );
