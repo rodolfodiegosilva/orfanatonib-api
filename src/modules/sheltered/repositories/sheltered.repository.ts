@@ -21,7 +21,8 @@ export class ShelteredRepository {
     return this.repo
       .createQueryBuilder('c')
       .leftJoinAndSelect('c.shelter', 'shelter')
-      .leftJoinAndSelect('c.address', 'addr');
+      .leftJoinAndSelect('c.address', 'addr')
+      .leftJoinAndSelect('shelter.address', 'shelterAddress');
   }
   
   private applyRoleFilter(qb: SelectQueryBuilder<ShelteredEntity>, ctx?: RoleCtx) {
@@ -43,39 +44,153 @@ export class ShelteredRepository {
   }
 
   async findAllPaginated(q: QueryShelteredDto, ctx?: RoleCtx): Promise<PaginatedRows<ShelteredEntity>> {
-    const page = q.page ?? 1;
-    const limit = q.limit ?? 20;
+    const {
+      page = 1,
+      limit = 20,
+      orderBy = 'name',
+      order = 'ASC',
+      shelteredName,
+      shelterFilters,
+      addressFilter,
+      geographicSearchString,
+      gender,
+      birthDate,
+      birthDateFrom,
+      birthDateTo,
+      joinedAt,
+      joinedFrom,
+      joinedTo,
+      // Filtros legados para compatibilidade
+      searchString,
+      shelterId,
+      shelterName,
+      city,
+      state,
+    } = q;
 
-    const qb = this.baseQB();
+    const qb = this.baseQB().distinct(true);
+    this.applyRoleFilter(qb, ctx);
 
-    if (q.searchString) {
-      const s = `%${q.searchString.trim().toLowerCase()}%`;
+    // 👶 Filtro de nome do abrigado - busca específica no nome
+    if (shelteredName?.trim()) {
+      const like = `%${shelteredName.trim()}%`;
       qb.andWhere(
-        '(LOWER(c.name) LIKE :s OR LOWER(COALESCE(c.guardianName, \'\')) LIKE :s OR LOWER(COALESCE(c.guardianPhone, \'\')) LIKE :s)',
-        { s },
+        `LOWER(c.name) LIKE LOWER(:shelteredName)`,
+        { shelteredName: like }
       );
     }
 
-    if (q.gender) qb.andWhere('c.gender = :gender', { gender: q.gender });
-    if (q.shelterName !== undefined) {
-      qb.andWhere('LOWER(shelter.name) LIKE :shelterName', { shelterName: `%${q.shelterName.toLowerCase()}%` });
-    } else if (q.shelterId) {
-      qb.andWhere('shelter.id = :shelterId', { shelterId: q.shelterId });
+    // 🏠 Filtros de abrigo - busca em nome do abrigo
+    if (shelterFilters?.trim()) {
+      const like = `%${shelterFilters.trim()}%`;
+      qb.andWhere(
+        `LOWER(shelter.name) LIKE LOWER(:shelterFilters)`,
+        { shelterFilters: like }
+      );
     }
 
-    if (q.city) qb.andWhere('LOWER(addr.city) LIKE :city', { city: `%${q.city.toLowerCase()}%` });
-    if (q.state) qb.andWhere('LOWER(addr.state) LIKE :state', { state: `%${q.state.toLowerCase()}%` });
+    // 🏙️ Filtro de endereço - busca em todos os campos relacionados ao endereço
+    if (addressFilter?.trim()) {
+      const like = `%${addressFilter.trim()}%`;
+      qb.andWhere(
+        `(
+          LOWER(addr.street) LIKE LOWER(:addressFilter) OR
+          LOWER(addr.number) LIKE LOWER(:addressFilter) OR
+          LOWER(addr.district) LIKE LOWER(:addressFilter) OR
+          LOWER(addr.city) LIKE LOWER(:addressFilter) OR
+          LOWER(addr.state) LIKE LOWER(:addressFilter) OR
+          addr.postalCode LIKE :addressFilterRaw OR
+          LOWER(addr.complement) LIKE LOWER(:addressFilter)
+        )`,
+        { addressFilter: like, addressFilterRaw: `%${addressFilter.trim()}%` }
+      );
+    }
 
-    if (q.birthDate) qb.andWhere('c.birthDate = :b', { b: q.birthDate });
-    if (q.birthDateFrom) qb.andWhere('c.birthDate >= :bf', { bf: q.birthDateFrom });
-    if (q.birthDateTo) qb.andWhere('c.birthDate <= :bt', { bt: q.birthDateTo });
+    // 🌍 Busca geográfica - busca em todos os campos geográficos (endereço + cidade/estado do abrigo)
+    if (geographicSearchString?.trim()) {
+      const like = `%${geographicSearchString.trim()}%`;
+      qb.andWhere(
+        `(
+          LOWER(addr.street) LIKE LOWER(:geographicSearchString) OR
+          LOWER(addr.number) LIKE LOWER(:geographicSearchString) OR
+          LOWER(addr.district) LIKE LOWER(:geographicSearchString) OR
+          LOWER(addr.city) LIKE LOWER(:geographicSearchString) OR
+          LOWER(addr.state) LIKE LOWER(:geographicSearchString) OR
+          addr.postalCode LIKE :geographicSearchStringRaw OR
+          LOWER(addr.complement) LIKE LOWER(:geographicSearchString) OR
+          LOWER(shelterAddress.city) LIKE LOWER(:geographicSearchString) OR
+          LOWER(shelterAddress.state) LIKE LOWER(:geographicSearchString) OR
+          LOWER(shelterAddress.district) LIKE LOWER(:geographicSearchString)
+        )`,
+        { 
+          geographicSearchString: like, 
+          geographicSearchStringRaw: `%${geographicSearchString.trim()}%` 
+        }
+      );
+    }
 
-    if (q.joinedAt) qb.andWhere('c.joinedAt = :j', { j: q.joinedAt });
-    if (q.joinedFrom) qb.andWhere('c.joinedAt >= :jf', { jf: q.joinedFrom });
-    if (q.joinedTo) qb.andWhere('c.joinedAt <= :jt', { jt: q.joinedTo });
+    // 👤 Filtros pessoais
+    if (gender?.trim()) {
+      qb.andWhere('c.gender = :gender', { gender: gender.trim() });
+    }
 
-    this.applyRoleFilter(qb, ctx);
+    if (birthDate?.trim()) {
+      qb.andWhere('c.birthDate = :birthDate', { birthDate: birthDate.trim() });
+    }
+    if (birthDateFrom?.trim()) {
+      qb.andWhere('c.birthDate >= :birthDateFrom', { birthDateFrom: birthDateFrom.trim() });
+    }
+    if (birthDateTo?.trim()) {
+      qb.andWhere('c.birthDate <= :birthDateTo', { birthDateTo: birthDateTo.trim() });
+    }
 
+    if (joinedAt?.trim()) {
+      qb.andWhere('c.joinedAt = :joinedAt', { joinedAt: joinedAt.trim() });
+    }
+    if (joinedFrom?.trim()) {
+      qb.andWhere('c.joinedAt >= :joinedFrom', { joinedFrom: joinedFrom.trim() });
+    }
+    if (joinedTo?.trim()) {
+      qb.andWhere('c.joinedAt <= :joinedTo', { joinedTo: joinedTo.trim() });
+    }
+
+    // 🔍 Compatibilidade com frontend - mapear parâmetros antigos para novos
+    // Se searchString foi enviado mas shelteredName não, usar searchString
+    if (searchString?.trim() && !shelteredName?.trim()) {
+      const like = `%${searchString.trim()}%`;
+      qb.andWhere(
+        `(
+          LOWER(c.name) LIKE LOWER(:searchString) OR
+          LOWER(COALESCE(c.guardianName, '')) LIKE LOWER(:searchString) OR
+          LOWER(COALESCE(c.guardianPhone, '')) LIKE LOWER(:searchString)
+        )`,
+        { searchString: like }
+      );
+    }
+
+    // Se shelterName foi enviado mas shelterFilters não, usar shelterName
+    if (shelterName?.trim() && !shelterFilters?.trim()) {
+      const like = `%${shelterName.trim()}%`;
+      qb.andWhere(
+        `LOWER(shelter.name) LIKE LOWER(:shelterName)`,
+        { shelterName: like }
+      );
+    }
+
+    // Filtro específico por shelter ID
+    if (shelterId?.trim()) {
+      qb.andWhere('shelter.id = :shelterId', { shelterId });
+    }
+
+    // Filtros de cidade e estado (legados)
+    if (city?.trim()) {
+      qb.andWhere('LOWER(addr.city) LIKE LOWER(:city)', { city: `%${city.trim()}%` });
+    }
+    if (state?.trim()) {
+      qb.andWhere('LOWER(addr.state) LIKE LOWER(:state)', { state: `%${state.trim()}%` });
+    }
+
+    // Ordenação
     const orderByMap: Record<string, string> = {
       name: 'c.name',
       birthDate: 'c.birthDate',
@@ -83,11 +198,12 @@ export class ShelteredRepository {
       createdAt: 'c.createdAt',
       updatedAt: 'c.updatedAt',
     };
-    const orderBy = orderByMap[q.orderBy ?? 'name'] ?? 'c.name';
-    const order: 'ASC' | 'DESC' =
-      (q.order ?? 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    const sortField = orderByMap[orderBy] ?? 'c.name';
+    const sortOrder = (order || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    qb.orderBy(sortField, sortOrder as 'ASC' | 'DESC');
 
-    qb.orderBy(orderBy, order).skip((page - 1) * limit).take(limit);
+    // Paginação
+    qb.skip((page - 1) * limit).take(limit);
 
     const [items, total] = await qb.getManyAndCount();
     return { items, total };

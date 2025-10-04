@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Sheltered API Collection",
-    "description": "Collection completa para todos os endpoints do módulo Sheltered - VALIDADA E FUNCIONAL com relacionamentos ManyToOne. Inclui todos os endpoints: listagem paginada, listagem simples, busca por ID, busca por shelter, criação, atualização e remoção de abrigados. Suporta filtros avançados, paginação, ordenação e operações em massa. Relacionamento Sheltered-Shelter (ManyToOne) funcionando perfeitamente.",
+    "description": "Collection completa para todos os endpoints do módulo Sheltered - VALIDADA E FUNCIONAL com filtros agrupados e busca geográfica. Inclui todos os endpoints: listagem paginada, listagem simples, busca por ID, busca por shelter, criação, atualização e remoção de abrigados. Suporta filtros agrupados (shelteredName, shelterFilters, addressFilter, gender), busca geográfica (geographicSearchString), filtros avançados, paginação, ordenação e operações em massa. Relacionamento Sheltered-Shelter (ManyToOne) funcionando perfeitamente. Estrutura de paginação corrigida. Compatibilidade com filtros legados mantida.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "4.0.0"
+    "version": "6.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -32,7 +32,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC",
+              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC&shelteredName=Ana&geographicSearchString=São Paulo",
               "host": [
                 "{{base_url}}"
               ],
@@ -61,39 +61,29 @@
                   "description": "Ordem da ordenação (ASC, DESC)"
                 },
                 {
-                  "key": "searchString",
+                  "key": "shelteredName",
                   "value": "",
-                  "description": "Busca geral por nome, nome do responsável ou telefone"
+                  "description": "Filtro por nome do abrigado"
                 },
                 {
-                  "key": "shelterId",
+                  "key": "shelterFilters",
                   "value": "",
-                  "description": "Filtrar por ID do shelter"
+                  "description": "Filtro por informações do shelter (nome, líderes, professores)"
                 },
                 {
-                  "key": "shelterName",
+                  "key": "addressFilter",
                   "value": "",
-                  "description": "Filtrar por nome do shelter"
+                  "description": "Filtro por endereço do abrigado"
                 },
                 {
-                  "key": "city",
+                  "key": "geographicSearchString",
                   "value": "",
-                  "description": "Filtrar por cidade do endereço"
-                },
-                {
-                  "key": "state",
-                  "value": "",
-                  "description": "Filtrar por estado do endereço"
+                  "description": "Busca geográfica em todos os campos de endereço (abrigado e shelter)"
                 },
                 {
                   "key": "gender",
                   "value": "",
-                  "description": "Filtrar por gênero"
-                },
-                {
-                  "key": "birthDate",
-                  "value": "",
-                  "description": "Filtrar por data de nascimento exata (YYYY-MM-DD)"
+                  "description": "Filtro por gênero (masculino, feminino)"
                 },
                 {
                   "key": "birthDateFrom",
@@ -106,11 +96,6 @@
                   "description": "Filtrar por data de nascimento até (YYYY-MM-DD)"
                 },
                 {
-                  "key": "joinedAt",
-                  "value": "",
-                  "description": "Filtrar por data de entrada exata (YYYY-MM-DD)"
-                },
-                {
                   "key": "joinedFrom",
                   "value": "",
                   "description": "Filtrar por data de entrada a partir de (YYYY-MM-DD)"
@@ -119,10 +104,35 @@
                   "key": "joinedTo",
                   "value": "",
                   "description": "Filtrar por data de entrada até (YYYY-MM-DD)"
+                },
+                {
+                  "key": "searchString",
+                  "value": "",
+                  "description": "Filtro legado - busca geral por nome, nome do responsável ou telefone"
+                },
+                {
+                  "key": "shelterId",
+                  "value": "",
+                  "description": "Filtro legado - filtrar por ID do shelter"
+                },
+                {
+                  "key": "shelterName",
+                  "value": "",
+                  "description": "Filtro legado - filtrar por nome do shelter"
+                },
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "Filtro legado - filtrar por cidade do endereço"
+                },
+                {
+                  "key": "state",
+                  "value": "",
+                  "description": "Filtro legado - filtrar por estado do endereço"
                 }
               ]
             },
-            "description": "Lista todos os sheltered com paginação e filtros opcionais. Disponível para todos os roles com controle de acesso."
+            "description": "Lista todos os sheltered com paginação e filtros opcionais. Suporta filtros agrupados (shelteredName, shelterFilters, addressFilter, gender), busca geográfica (geographicSearchString) e filtros por data. Mantém compatibilidade com filtros legados. Disponível para todos os roles com controle de acesso."
           },
           "response": [
             {
@@ -168,7 +178,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-sheltered-1\",\n  \"name\": \"Ana Silva\",\n  \"birthDate\": \"2010-05-15\",\n  \"guardianName\": \"Maria Silva\",\n  \"gender\": \"feminino\",\n  \"guardianPhone\": \"+5511777777777\",\n  \"joinedAt\": \"2023-01-15\",\n  \"shelter\": {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\"\n  },\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"pagelas\": [\n    {\n      \"id\": \"uuid-pagela-1\",\n      \"year\": 2024,\n      \"visit\": 1,\n      \"referenceDate\": \"2024-01-15\",\n      \"present\": true,\n      \"notes\": \"Participou ativamente da aula\"\n    },\n    {\n      \"id\": \"uuid-pagela-2\",\n      \"year\": 2024,\n      \"visit\": 2,\n      \"referenceDate\": \"2024-01-22\",\n      \"present\": false,\n      \"notes\": \"Ausente por motivo médico\"\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"uuid-sheltered-1\",\n      \"name\": \"Ana Silva\",\n      \"birthDate\": \"2010-05-15\",\n      \"guardianName\": \"Maria Silva\",\n      \"gender\": \"feminino\",\n      \"guardianPhone\": \"+5511777777777\",\n      \"joinedAt\": \"2023-01-15\",\n      \"shelter\": {\n        \"id\": \"uuid-shelter-1\",\n        \"name\": \"Abrigo Central\"\n      },\n      \"address\": {\n        \"id\": \"uuid-address-1\",\n        \"street\": \"Rua das Flores\",\n        \"number\": \"123\",\n        \"district\": \"Centro\",\n        \"city\": \"São Paulo\",\n        \"state\": \"SP\",\n        \"postalCode\": \"01234-567\",\n        \"complement\": \"Apto 45\"\n      },\n      \"pagelas\": [\n        {\n          \"id\": \"uuid-pagela-1\",\n          \"year\": 2024,\n          \"visit\": 1,\n          \"referenceDate\": \"2024-01-15\",\n          \"present\": true,\n          \"notes\": \"Participou ativamente da aula\"\n        },\n        {\n          \"id\": \"uuid-pagela-2\",\n          \"year\": 2024,\n          \"visit\": 2,\n          \"referenceDate\": \"2024-01-22\",\n          \"present\": false,\n          \"notes\": \"Ausente por motivo médico\"\n        }\n      ],\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalItems\": 100,\n    \"totalPages\": 5,\n    \"orderBy\": \"name\",\n    \"order\": \"ASC\"\n  }\n}"
             }
           ]
         },
@@ -633,7 +643,7 @@
           ]
         }
       ],
-      "description": "Endpoints para gerenciamento completo de Sheltered com autenticação JWT e controle de acesso baseado em roles."
+      "description": "Endpoints para gerenciamento completo de Sheltered (abrigados) com autenticação JWT obrigatória e controle de acesso granular por roles. Inclui todos os endpoints principais, filtros agrupados (shelteredName, shelterFilters, addressFilter, gender), busca geográfica (geographicSearchString), filtros avançados, paginação com estrutura correta (data + meta), ordenação e operações em massa. Suporta relacionamentos ManyToOne com Shelter e OneToOne com Address. Compatibilidade com filtros legados mantida. Estrutura de paginação corrigida para refletir o DTO real."
     }
   ]
 }

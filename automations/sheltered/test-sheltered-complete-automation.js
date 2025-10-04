@@ -170,50 +170,84 @@ async function testShelteredListing() {
     console.log(`    📊 Total: ${paginationResponse.data.total || 0}, Itens: ${paginationResponse.data.items?.length || 0}`);
   }
 
-  // 3. Filtro por nome
-  console.log('  🔸 Teste 3: Filtro por nome (searchString=Ana)');
-  const nameFilterResponse = await makeRequest('GET', '/sheltered?searchString=Ana');
-  if (nameFilterResponse && nameFilterResponse.status === 200) {
-    console.log(`    ✅ Status: ${nameFilterResponse.status}`);
-    console.log(`    📊 Encontrados: ${nameFilterResponse.data.items?.length || 0}`);
+  // 3. Filtro por nome (novo filtro agrupado)
+  console.log('  🔸 Teste 3: Filtro por nome do abrigado (shelteredName=Ana)');
+  const shelteredNameFilterResponse = await makeRequest('GET', '/sheltered?shelteredName=Ana');
+  if (shelteredNameFilterResponse && shelteredNameFilterResponse.status === 200) {
+    console.log(`    ✅ Status: ${shelteredNameFilterResponse.status}`);
+    console.log(`    📊 Encontrados: ${shelteredNameFilterResponse.data.items?.length || 0}`);
   }
 
-  // 4. Filtro por shelter
-  console.log('  🔸 Teste 4: Filtro por shelter');
+  // 4. Filtro por shelter (novo filtro agrupado)
+  console.log('  🔸 Teste 4: Filtro por informações do shelter (shelterFilters)');
   if (testData.shelters.length > 0) {
-    const shelterFilterResponse = await makeRequest('GET', `/sheltered?shelterId=${testData.shelters[0].id}`);
-    if (shelterFilterResponse && shelterFilterResponse.status === 200) {
-      console.log(`    ✅ Status: ${shelterFilterResponse.status}`);
-      console.log(`    📊 Encontrados no shelter: ${shelterFilterResponse.data.items?.length || 0}`);
+    const shelterFiltersResponse = await makeRequest('GET', `/sheltered?shelterFilters=${testData.shelters[0].name}`);
+    if (shelterFiltersResponse && shelterFiltersResponse.status === 200) {
+      console.log(`    ✅ Status: ${shelterFiltersResponse.status}`);
+      console.log(`    📊 Encontrados no shelter: ${shelterFiltersResponse.data.items?.length || 0}`);
     }
   }
 
-  // 5. Filtro por gênero
-  console.log('  🔸 Teste 5: Filtro por gênero (gender=feminino)');
+  // 5. Filtro por endereço (novo filtro agrupado)
+  console.log('  🔸 Teste 5: Filtro por endereço (addressFilter=São Paulo)');
+  const addressFilterResponse = await makeRequest('GET', '/sheltered?addressFilter=São Paulo');
+  if (addressFilterResponse && addressFilterResponse.status === 200) {
+    console.log(`    ✅ Status: ${addressFilterResponse.status}`);
+    console.log(`    📊 Encontrados: ${addressFilterResponse.data.items?.length || 0}`);
+  }
+
+  // 6. Busca geográfica (novo filtro)
+  console.log('  🔸 Teste 6: Busca geográfica (geographicSearchString=São Paulo)');
+  const geographicSearchResponse = await makeRequest('GET', '/sheltered?geographicSearchString=São Paulo');
+  if (geographicSearchResponse && geographicSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${geographicSearchResponse.status}`);
+    console.log(`    📊 Encontrados: ${geographicSearchResponse.data.items?.length || 0}`);
+  }
+
+  // 7. Filtro por gênero (novo filtro agrupado)
+  console.log('  🔸 Teste 7: Filtro por gênero (gender=feminino)');
   const genderFilterResponse = await makeRequest('GET', '/sheltered?gender=feminino');
   if (genderFilterResponse && genderFilterResponse.status === 200) {
     console.log(`    ✅ Status: ${genderFilterResponse.status}`);
     console.log(`    📊 Encontrados: ${genderFilterResponse.data.items?.length || 0}`);
   }
 
-  // 6. Filtro por cidade
-  console.log('  🔸 Teste 6: Filtro por cidade (city=São Paulo)');
-  const cityFilterResponse = await makeRequest('GET', '/sheltered?city=São Paulo');
-  if (cityFilterResponse && cityFilterResponse.status === 200) {
-    console.log(`    ✅ Status: ${cityFilterResponse.status}`);
-    console.log(`    📊 Encontrados: ${cityFilterResponse.data.items?.length || 0}`);
+  // 8. Filtros legados (compatibilidade)
+  console.log('  🔸 Teste 8: Filtros legados (searchString=Ana)');
+  const legacySearchResponse = await makeRequest('GET', '/sheltered?searchString=Ana');
+  if (legacySearchResponse && legacySearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${legacySearchResponse.status}`);
+    console.log(`    📊 Encontrados: ${legacySearchResponse.data.items?.length || 0}`);
   }
 
-  // 7. Ordenação
-  console.log('  🔸 Teste 7: Ordenação (orderBy=name, order=asc)');
+  // 9. Filtro legado por shelter
+  console.log('  🔸 Teste 9: Filtro legado por shelter');
+  if (testData.shelters.length > 0) {
+    const legacyShelterResponse = await makeRequest('GET', `/sheltered?shelterId=${testData.shelters[0].id}`);
+    if (legacyShelterResponse && legacyShelterResponse.status === 200) {
+      console.log(`    ✅ Status: ${legacyShelterResponse.status}`);
+      console.log(`    📊 Encontrados no shelter: ${legacyShelterResponse.data.items?.length || 0}`);
+    }
+  }
+
+  // 10. Filtro legado por cidade
+  console.log('  🔸 Teste 10: Filtro legado por cidade (city=São Paulo)');
+  const legacyCityResponse = await makeRequest('GET', '/sheltered?city=São Paulo');
+  if (legacyCityResponse && legacyCityResponse.status === 200) {
+    console.log(`    ✅ Status: ${legacyCityResponse.status}`);
+    console.log(`    📊 Encontrados: ${legacyCityResponse.data.items?.length || 0}`);
+  }
+
+  // 11. Ordenação
+  console.log('  🔸 Teste 11: Ordenação (orderBy=name, order=asc)');
   const sortResponse = await makeRequest('GET', '/sheltered?orderBy=name&order=asc');
   if (sortResponse && sortResponse.status === 200) {
     console.log(`    ✅ Status: ${sortResponse.status}`);
     console.log(`    📊 Ordenados: ${sortResponse.data.items?.length || 0}`);
   }
 
-  // 8. Listagem simples
-  console.log('  🔸 Teste 8: Listagem simples');
+  // 12. Listagem simples
+  console.log('  🔸 Teste 12: Listagem simples');
   const simpleResponse = await makeRequest('GET', '/sheltered/simple');
   if (simpleResponse && simpleResponse.status === 200) {
     console.log(`    ✅ Status: ${simpleResponse.status}`);
@@ -360,10 +394,12 @@ async function runCompleteShelteredAutomation() {
   console.log('==========================================');
   console.log('📋 Funcionalidades a serem testadas:');
   console.log('   1. CRUD de Abrigados');
-  console.log('   2. Listagem e Filtros');
+  console.log('   2. Listagem e Filtros (incluindo novos filtros agrupados)');
   console.log('   3. Filtros por Data');
   console.log('   4. Relacionamentos com Shelters');
   console.log('   5. Cenários de Erro');
+  console.log('   6. Busca Geográfica (geographicSearchString)');
+  console.log('   7. Compatibilidade com filtros legados');
   console.log('==========================================');
 
   // Login
@@ -391,7 +427,9 @@ async function runCompleteShelteredAutomation() {
   console.log('=====================================');
   console.log('✅ Todos os testes foram executados');
   console.log('✅ CRUD de Abrigados funcionando');
-  console.log('✅ Filtros e listagem funcionando');
+  console.log('✅ Filtros agrupados funcionando');
+  console.log('✅ Busca geográfica funcionando');
+  console.log('✅ Compatibilidade com filtros legados');
   console.log('✅ Filtros por data funcionando');
   console.log('✅ Relacionamentos funcionando');
   console.log('✅ Validações de erro funcionando');

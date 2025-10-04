@@ -72,7 +72,7 @@ import { AcceptedChristEntity } from 'src/modules/accepted-christs/entities/acce
             PagelaEntity,
             AcceptedChristEntity
           ],
-          synchronize: true,
+          synchronize: false,
         };
 
         logger.debug(`Tentando conectar ao banco de dados MySQL:

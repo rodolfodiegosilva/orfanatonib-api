@@ -34,4 +34,14 @@ export class QuerySheltersDto {
   // Filtros legados (para compatibilidade)
   @IsOptional() @IsString() @IsUUID()
   shelterId?: string;
+
+  // 🔍 Filtros de busca do frontend (compatibilidade)
+  @IsOptional() @IsString()
+  searchString?: string;
+
+  @IsOptional() @IsString()
+  nameSearchString?: string;
+
+  @IsOptional() @IsString() @IsUUID()
+  leaderId?: string;
 }

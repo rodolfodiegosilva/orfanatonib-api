@@ -1,22 +1,43 @@
 import { IsIn, IsInt, IsOptional, IsString, IsUUID, Min, IsNumber } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
+/**
+ * 📋 DTO para query de sheltered com filtros agrupados logicamente
+ */
 export class QueryShelteredDto {
+  // Paginação
+  @Transform(({ value }) => Number(value))
+  @IsOptional() @IsInt() @Min(1)
+  page?: number = 1;
+
+  @Transform(({ value }) => Number(value))
+  @IsOptional() @IsInt() @Min(1)
+  limit?: number = 20;
+
+  // Ordenação
+  @IsOptional() @IsIn(['name', 'birthDate', 'joinedAt', 'createdAt', 'updatedAt'])
+  orderBy?: 'name' | 'birthDate' | 'joinedAt' | 'createdAt' | 'updatedAt' = 'name';
+
+  @IsOptional() @IsIn(['ASC', 'DESC', 'asc', 'desc'])
+  order?: 'ASC' | 'DESC' | 'asc' | 'desc' = 'ASC';
+
+  // 👶 Filtro de nome do abrigado
   @IsOptional() @IsString()
-  searchString?: string;
+  shelteredName?: string;
 
-  @IsOptional() @IsUUID()
-  shelterId?: string;
-
+  // 🏠 Filtros de abrigo
   @IsOptional() @IsString()
-  shelterName?: string;
+  shelterFilters?: string;
 
+  // 🏙️ Filtro de endereço
   @IsOptional() @IsString()
-  city?: string;
+  addressFilter?: string;
 
+  // 🌍 Busca geográfica - busca em todos os campos geográficos
   @IsOptional() @IsString()
-  state?: string;
+  geographicSearchString?: string;
 
+  // 👤 Filtros pessoais
   @IsOptional() @IsString()
   gender?: string;
 
@@ -38,19 +59,21 @@ export class QueryShelteredDto {
   @IsOptional() @IsString()
   joinedTo?: string;
 
+  // Filtros legados (para compatibilidade)
   @IsOptional() @IsString()
-  orderBy?: 'name' | 'birthDate' | 'joinedAt' | 'createdAt';
+  searchString?: string;
 
-  @IsOptional() @IsIn(['ASC', 'DESC'])
-  order?: 'ASC' | 'DESC' = 'ASC';
+  @IsOptional() @IsUUID()
+  shelterId?: string;
 
-  @Transform(({ value }) => Number(value))
-  @IsOptional() @IsInt() @Min(1)
-  page?: number = 1;
+  @IsOptional() @IsString()
+  shelterName?: string;
 
-  @Transform(({ value }) => Number(value))
-  @IsOptional() @IsInt() @Min(1)
-  limit?: number = 20;
+  @IsOptional() @IsString()
+  city?: string;
+
+  @IsOptional() @IsString()
+  state?: string;
 }
 
 export class QueryShelteredSimpleDto {
