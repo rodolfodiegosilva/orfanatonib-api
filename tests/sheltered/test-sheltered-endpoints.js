@@ -218,7 +218,7 @@ async function main() {
     // Teste 5: Buscar com filtro de gênero
     const test5 = await testEndpoint(
       'Buscar com filtro de gênero',
-      '/sheltered?gender=Feminino&page=1&limit=3',
+      '/sheltered?gender=F&page=1&limit=3',
       'GET',
       accessToken
     );
@@ -275,7 +275,7 @@ async function main() {
       name: 'Teste Automatizado',
       birthDate: '2010-05-15',
       guardianName: 'Maria Teste',
-      gender: 'Feminino',
+      gender: 'F',
       guardianPhone: '+5511999999999',
       joinedAt: '2024-01-01',
       address: {
@@ -304,7 +304,7 @@ async function main() {
     const newShelteredDataNoGuardian = {
       name: 'Teste Sem Responsável',
       birthDate: '2012-03-20',
-      gender: 'Masculino',
+      gender: 'M',
       joinedAt: '2024-02-01',
       address: {
         street: 'Rua Sem Responsável',

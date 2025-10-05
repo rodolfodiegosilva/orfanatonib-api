@@ -1,125 +1,149 @@
-# 🤖 Automações - Sistema de Orfanato
+# 🎯 Automações do Sistema Orfanato
 
-## 📋 Visão Geral
+Este diretório contém automações completas para testar todos os módulos do sistema Orfanato.
 
-Esta pasta contém todos os scripts de automação para criação em massa de dados no sistema de orfanato.
+## 📋 Estrutura das Automações
 
-## 🗂️ Estrutura por Módulo
+### 🏠 **Shelters** - `shelters/shelters-complete-automation.js`
+- ✅ CRUD completo de Shelters
+- ✅ Filtros e buscas (nome, cidade, estado, capacidade)
+- ✅ Listagens paginadas e simples
+- ✅ Validações de dados
+- ✅ Relacionamentos com Users/Profiles
+- ✅ Estatísticas e relatórios
 
-### 🔐 [Auth Module](auth/)
-**Automações de Autenticação**
-- Criação em massa de usuários
-- Configuração de credenciais
-- Validação de dados
+### 👥 **Sheltered** - `sheltered/sheltered-complete-automation.js`
+- ✅ CRUD completo de Sheltered
+- ✅ Filtros avançados (gender, nome, shelter, endereço)
+- ✅ Busca geográfica inteligente
+- ✅ Validação de gender (M/F)
+- ✅ Relacionamentos com Shelters
+- ✅ Filtros por data (nascimento, entrada)
 
-### 👥 [Users Module](users/)
-**Automações de Usuários**
-- Criação de usuários em massa
-- Ativação/desativação em lote
-- Importação de dados
+### 👤 **Users** - `users/users-complete-automation.js`
+- ✅ CRUD completo de Users
+- ✅ Filtros por nome, email, role, status
+- ✅ Autenticação e login
+- ✅ Validação de roles (admin, leader, teacher)
+- ✅ Estatísticas de users
+- ✅ Validações de email e senha
 
-### 🏠 [Shelters Module](shelters/)
-**Automações de Abrigos**
-- Criação de abrigos em massa
-- Vinculação com endereços
-- Configuração de líderes
+### 📚 **Pagelas** - `pagelas/pagelas-complete-automation.js`
+- ✅ CRUD completo de Pagelas
+- ✅ Filtros por sheltered, título, data, conteúdo
+- ✅ Relacionamentos com Sheltered
+- ✅ Busca avançada e múltiplos critérios
+- ✅ Estatísticas de pagelas
+- ✅ Ordenação por data
 
-### 👶 [Sheltered Module](sheltered/)
-**Automações de Crianças Abrigadas**
-- Criação de registros em massa
-- Vinculação com abrigos
-- Dados de responsáveis
+### 👨‍💼 **Leader Profiles** - `leader-profiles/leader-profiles-complete-automation.js`
+- ✅ CRUD completo de Leader Profiles
+- ✅ Filtros por nome, shelter, email, cidade
+- ✅ Relacionamentos com Users e Shelters
+- ✅ Validações de dados
+- ✅ Listagens e paginação
 
-### 👨‍💼 [Leader Profiles Module](leader-profiles/)
-**Automações de Líderes**
-- `create-leader-profiles-smart.js` - Criação inteligente de perfis de líderes
+### 👩‍🏫 **Teacher Profiles** - `teacher-profiles/teacher-profiles-complete-automation.js`
+- ✅ CRUD completo de Teacher Profiles
+- ✅ Filtros por nome, shelter, especialização, experiência
+- ✅ Relacionamentos com Users e Shelters
+- ✅ Testes de especializações (Matemática, Português, etc.)
+- ✅ Validações de dados
 
-### 👨‍🏫 [Teacher Profiles Module](teacher-profiles/)
-**Automações de Professores**
-- `create-teacher-profiles-automation.js` - Criação de perfis de professores
+### 🔧 **Sistema Completo** - `complete-system-automation.js`
+- ✅ Teste geral de todos os módulos
+- ✅ Validações de gender (M/F)
+- ✅ Testes de erro e validação
+- ✅ Listagens básicas
 
 ## 🚀 Como Executar
 
 ### Pré-requisitos
-- Node.js instalado
-- API rodando (`npm run start:dev`)
-- Credenciais de admin configuradas
+- Servidor da API rodando em `http://localhost:3000`
+- Banco de dados configurado
+- Usuário admin criado (`joao@example.com` / `password123`)
 
-### Executar Automações
+### Executar Automação Individual
 ```bash
-# Criar perfis de líderes
-node automations/leader-profiles/create-leader-profiles-smart.js
+# Testar módulo Sheltered
+node automations/sheltered/sheltered-complete-automation.js
 
-# Criar perfis de professores
-node automations/teacher-profiles/create-teacher-profiles-automation.js
+# Testar módulo Shelters
+node automations/shelters/shelters-complete-automation.js
+
+# Testar módulo Users
+node automations/users/users-complete-automation.js
+
+# Testar módulo Pagelas
+node automations/pagelas/pagelas-complete-automation.js
+
+# Testar módulo Leader Profiles
+node automations/leader-profiles/leader-profiles-complete-automation.js
+
+# Testar módulo Teacher Profiles
+node automations/teacher-profiles/teacher-profiles-complete-automation.js
 ```
 
-## 📊 Dados Criados
+### Executar Sistema Completo
+```bash
+# Testar todos os módulos
+node automations/complete-system-automation.js
+```
 
-### Leader Profiles
-- ✅ 10 perfis de líderes criados
-- ✅ Vinculação com usuários existentes
-- ✅ Validação de dados
+## 📊 O que Cada Automação Testa
 
-### Teacher Profiles
-- ✅ 40 perfis de professores criados
-- ✅ Vinculação com usuários existentes
-- ✅ Validação de dados
+### ✅ **Funcionalidades Testadas**
+1. **CRUD Completo** - Criar, buscar, atualizar, deletar
+2. **Filtros e Buscas** - Todos os tipos de filtro disponíveis
+3. **Listagens** - Paginadas, simples, ordenação
+4. **Validações** - Dados inválidos, campos obrigatórios
+5. **Relacionamentos** - Vinculações entre entidades
+6. **Autenticação** - Login, roles, permissões
+7. **Estatísticas** - Contadores, relatórios
+
+### ✅ **Validações Especiais**
+- **Gender**: Apenas "M" ou "F" são aceitos
+- **Email**: Formato válido e único
+- **Senha**: Mínimo de caracteres
+- **Roles**: admin, leader, teacher
+- **Datas**: Formato ISO válido
+- **UUIDs**: Identificadores válidos
+
+## 🎯 Resultados Esperados
+
+Cada automação deve:
+- ✅ Fazer login com sucesso
+- ✅ Obter dados necessários
+- ✅ Executar todos os testes CRUD
+- ✅ Testar filtros e buscas
+- ✅ Validar dados corretamente
+- ✅ Testar relacionamentos
+- ✅ Mostrar estatísticas
+- ✅ Finalizar com sucesso
+
+## 📝 Logs e Debugging
+
+As automações fornecem logs detalhados:
+- 🔐 Status de login
+- 📊 Dados obtidos
+- ✅ Sucessos dos testes
+- ❌ Erros encontrados
+- 📈 Estatísticas finais
 
 ## 🔧 Configuração
 
-### Credenciais Padrão
-```json
-{
-  "email": "joao@example.com",
-  "password": "password123"
-}
-```
+Para personalizar as automações, edite:
+- `BASE_URL`: URL da API
+- `ADMIN_CREDENTIALS`: Credenciais de admin
+- Parâmetros de teste (nomes, emails, etc.)
 
-### URL Base
-```
-http://localhost:3000
-```
+## 📁 Arquivos de Resultado
 
-## 📝 Logs e Resultados
-
-### Logs de Sucesso
-- ✅ Login realizado com sucesso
-- ✅ Usuários encontrados: X
-- ✅ Perfis criados: X
-- ✅ Processo concluído
-
-### Tratamento de Erros
-- ❌ Erro de autenticação
-- ❌ Usuários não encontrados
-- ❌ Falha na criação de perfis
-- ❌ Erro de validação
-
-## 🔄 Fluxo de Execução
-
-1. **Autenticação** - Login com credenciais de admin
-2. **Busca de Dados** - Lista usuários existentes
-3. **Validação** - Verifica dados necessários
-4. **Criação** - Cria perfis em massa
-5. **Relatório** - Exibe resultados finais
-
-## 📁 Arquivos por Módulo
-
-### Leader Profiles
-- `create-leader-profiles-smart.js` - Automação principal
-
-### Teacher Profiles
-- `create-teacher-profiles-automation.js` - Automação principal
-
-## 🤝 Contribuição
-
-Para adicionar novas automações:
-1. Crie o arquivo na pasta do módulo correspondente
-2. Siga o padrão de nomenclatura: `create-[module]-automation.js`
-3. Inclua logs detalhados
-4. Trate erros adequadamente
-5. Documente no README do módulo
+Alguns testes geram arquivos JSON com resultados:
+- `created-shelters-*.json`
+- `created-leader-profiles-*.json`
+- Resultados em `docs/results/`
 
 ---
 
-**Automações - Sistema de Orfanato** 🤖
+**🎉 Todas as automações estão prontas para uso e testam completamente cada módulo do sistema!**

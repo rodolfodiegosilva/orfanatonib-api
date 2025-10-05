@@ -10,13 +10,16 @@ Esta pasta contém todas as collections do Postman para os módulos da API do si
 - `Auth_API_Collection.postman_collection.json` - Collection completa do módulo Auth
 
 ### 👥 Users Module  
-- `User_API_Collection.postman_collection.json` - Collection completa do módulo Users
+- `Users_API_Collection.postman_collection.json` - Collection completa do módulo Users (consolidada)
 
 ### 🏠 Shelters Module
 - `Shelters_API_Collection.postman_collection.json` - Collection completa do módulo Shelters
 
 ### 👶 Sheltered Module
 - `Sheltered_API_Collection.postman_collection.json` - Collection completa do módulo Sheltered
+
+### 📚 Pagelas Module
+- `Pagelas_API_Collection.postman_collection.json` - Collection completa do módulo Pagelas (atualizada com estrutura correta)
 
 ### 👨‍💼 Leader Profiles Module
 - `Leader_Profiles_API_Collection.postman_collection.json` - Collection completa do módulo Leader Profiles

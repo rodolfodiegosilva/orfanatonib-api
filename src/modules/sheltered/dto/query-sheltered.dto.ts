@@ -38,8 +38,11 @@ export class QueryShelteredDto {
   geographicSearchString?: string;
 
   // 👤 Filtros pessoais
-  @IsOptional() @IsString()
+  @IsOptional() @IsIn(['M', 'F'])
   gender?: string;
+
+  @IsOptional() @IsString()
+  guardianName?: string;
 
   @IsOptional() @IsString()
   birthDate?: string;

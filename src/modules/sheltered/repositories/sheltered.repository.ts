@@ -131,7 +131,18 @@ export class ShelteredRepository {
 
     // 👤 Filtros pessoais
     if (gender?.trim()) {
-      qb.andWhere('c.gender = :gender', { gender: gender.trim() });
+      const normalizedGender = gender.trim().toUpperCase();
+      if (['M', 'F'].includes(normalizedGender)) {
+        qb.andWhere('c.gender = :gender', { gender: normalizedGender });
+      }
+    }
+
+    if (q.guardianName?.trim()) {
+      const like = `%${q.guardianName.trim()}%`;
+      qb.andWhere(
+        `LOWER(c.guardianName) LIKE LOWER(:guardianName)`,
+        { guardianName: like }
+      );
     }
 
     if (birthDate?.trim()) {

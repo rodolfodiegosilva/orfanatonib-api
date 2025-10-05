@@ -38,7 +38,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"shelteredId\": \"{{sheltered_id}}\",\n  \"teacherProfileId\": \"{{teacher_profile_id}}\",\n  \"referenceDate\": \"2025-01-15\",\n  \"visit\": 3,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
+              "raw": "{\n  \"shelteredId\": \"{{sheltered_id}}\",\n  \"teacherProfileId\": \"{{teacher_profile_id}}\",\n  \"referenceDate\": \"2025-01-15T10:00:00.000Z\",\n  \"visit\": 3,\n  \"present\": true,\n  \"notes\": \"Participou ativamente da aula\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/pagelas",
@@ -204,7 +204,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/pagelas?shelteredId={{sheltered_id}}&year=2025&present=true",
+              "raw": "{{base_url}}/pagelas?shelteredId={{sheltered_id}}&year=2024&visit=1&present=true&searchString=pagela",
               "host": [
                 "{{base_url}}"
               ],
@@ -291,7 +291,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/pagelas/paginated?page=1&limit=20&year=2025&present=true",
+              "raw": "{{base_url}}/pagelas/paginated?page=1&limit=20&year=2024&present=true",
               "host": [
                 "{{base_url}}"
               ],
@@ -346,7 +346,7 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/pagelas/paginated?page=1&limit=20&year=2025&present=true",
+                  "raw": "{{base_url}}/pagelas/paginated?page=1&limit=20&year=2024&present=true",
                   "host": [
                     "{{base_url}}"
                   ],

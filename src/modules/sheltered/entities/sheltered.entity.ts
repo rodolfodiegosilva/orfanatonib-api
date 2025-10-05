@@ -20,7 +20,7 @@ export class ShelteredEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   guardianName?: string | null;
 
-  @Column({ length: 255 })
+  @Column({ type: 'char', length: 1 })
   gender: string;
 
   @Column({ type: 'varchar', length: 32, nullable: true })

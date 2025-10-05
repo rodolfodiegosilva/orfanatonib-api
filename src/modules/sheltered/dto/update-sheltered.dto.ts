@@ -5,10 +5,16 @@ import {
   Length,
   IsUUID,
   ValidateNested,
+  IsIn,
+  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class AddressUpdateDto {
+  @IsOptional()
+  @IsUUID()
+  id?: string;
+
   @IsOptional()
   @IsString()
   street?: string;
@@ -50,16 +56,17 @@ export class UpdateShelteredDto {
   birthDate?: string;
 
   @IsOptional()
+  @ValidateIf((o) => o.guardianName && o.guardianName.trim().length > 0)
   @IsString()
   @Length(2, 255)
   guardianName?: string;
 
   @IsOptional()
-  @IsString()
-  @Length(2, 255)
+  @IsIn(['M', 'F'])
   gender?: string;
 
   @IsOptional()
+  @ValidateIf((o) => o.guardianPhone && o.guardianPhone.trim().length > 0)
   @IsString()
   @Length(5, 32)
   guardianPhone?: string;

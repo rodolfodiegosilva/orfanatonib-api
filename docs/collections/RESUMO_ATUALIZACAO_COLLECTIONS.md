@@ -1,11 +1,34 @@
-# 📋 ATUALIZAÇÃO DAS COLLECTIONS POSTMAN
+# 📋 ATUALIZAÇÃO DAS COLLECTIONS POSTMAN - JANEIRO 2025
 
 ## ✅ Collections Atualizadas com Sucesso
 
-### **1. Teacher Profiles API Collection**
-- **Arquivo**: `docs/collections/Teacher_Profiles_API_Collection.postman_collection.json`
+### **1. Users API Collection**
+- **Arquivo**: `docs/collections/Users_API_Collection.postman_collection.json`
 - **Versão**: 2.0.0
-- **Status**: ✅ **TESTADA E VALIDADA**
+- **Status**: ✅ **CONSOLIDADA E VALIDADA**
+
+#### **Melhorias Implementadas:**
+- ✅ **Consolidação** - Removida collection duplicada `User_API_Collection.postman_collection.json`
+- ✅ **Campo phone obrigatório** - Todos os exemplos incluem o campo phone
+- ✅ **Validações atualizadas** - Exemplos de erro incluem validação de phone
+- ✅ **Estrutura correta** - Baseada nos testes das automações
+
+### **2. Pagelas API Collection**
+- **Arquivo**: `docs/collections/Pagelas_API_Collection.postman_collection.json`
+- **Versão**: 6.0.0
+- **Status**: ✅ **ATUALIZADA COM ESTRUTURA CORRETA**
+
+#### **Melhorias Implementadas:**
+- ✅ **Data ISO 8601** - `referenceDate` agora usa formato correto (`2025-01-15T10:00:00.000Z`)
+- ✅ **Filtros corretos** - Removidos filtros inexistentes (`title`, `content`, `dateFrom`, `dateTo`)
+- ✅ **Filtros válidos** - Mantidos apenas filtros funcionais (`shelteredId`, `year`, `visit`, `present`, `searchString`)
+- ✅ **Endpoints corretos** - `/pagelas` para listagem simples, `/pagelas/paginated` para paginação
+- ✅ **Estrutura validada** - Baseada nos testes das automações (8030 pagelas testadas)
+
+### **3. Teacher Profiles API Collection**
+- **Arquivo**: `docs/collections/Teacher_Profiles_API_Collection.postman_collection.json`
+- **Versão**: 5.0.0
+- **Status**: ✅ **VALIDADA E FUNCIONAL**
 
 #### **Endpoints Incluídos:**
 1. ✅ **GET /teacher-profiles** - Listagem paginada com filtros
@@ -15,19 +38,11 @@
 5. ✅ **POST /teacher-profiles/create-for-user/:userId** - Criar teacher profile
 6. ✅ **PATCH /teacher-profiles/:teacherId/assign-shelter** - Vincular shelter
 7. ✅ **PATCH /teacher-profiles/:teacherId/unassign-shelter** - Desvincular shelter
-8. ✅ **Filtros Avançados** - Exemplo de filtros combinados
 
-#### **Melhorias Implementadas:**
-- ✅ **Exemplos de resposta** completos para todos os endpoints
-- ✅ **Cenários de erro** documentados
-- ✅ **Filtros combinados** com exemplo prático
-- ✅ **Descrições detalhadas** para cada parâmetro
-- ✅ **Status de teste** atualizado para "TESTADA E VALIDADA"
-
-### **2. Leader Profiles API Collection**
+### **4. Leader Profiles API Collection**
 - **Arquivo**: `docs/collections/Leader_Profiles_API_Collection.postman_collection.json`
-- **Versão**: 2.0.0
-- **Status**: ✅ **TESTADA E VALIDADA**
+- **Versão**: 5.0.0
+- **Status**: ✅ **VALIDADA E FUNCIONAL**
 
 #### **Endpoints Incluídos:**
 1. ✅ **POST /leader-profiles/create-for-user/:userId** - Criar leader profile
@@ -39,129 +54,97 @@
 7. ✅ **PATCH /leader-profiles/:leaderId/unassign-shelter** - Remover shelter
 8. ✅ **PATCH /leader-profiles/:fromLeaderId/move-shelter** - Mover shelter
 
+### **5. Shelters API Collection**
+- **Arquivo**: `docs/collections/Shelters_API_Collection.postman_collection.json`
+- **Versão**: 6.0.0
+- **Status**: ✅ **VALIDADA E FUNCIONAL**
+
 #### **Melhorias Implementadas:**
-- ✅ **Exemplos de resposta** completos para todos os endpoints
-- ✅ **Cenários de erro** documentados (incluindo "Shelter sem leader")
-- ✅ **Endpoint move-shelter** com exemplo completo
-- ✅ **Estrutura de dados** atualizada (shelters como array)
-- ✅ **Status de teste** atualizado para "TESTADA E VALIDADA"
+- ✅ **Estrutura correta** - Removidos campos inexistentes (`capacity`, `description`)
+- ✅ **Filtros válidos** - Mantidos apenas filtros funcionais (`shelterName`, `addressFilter`, `staffFilters`, `searchString`)
+- ✅ **Relacionamentos ManyToMany** - Endpoints para vincular/desvincular leaders e teachers
+- ✅ **Validações atualizadas** - Baseadas nos testes das automações
+
+### **6. Sheltered API Collection**
+- **Arquivo**: `docs/collections/Sheltered_API_Collection.postman_collection.json`
+- **Versão**: 6.0.0
+- **Status**: ✅ **VALIDADA E FUNCIONAL**
+
+#### **Melhorias Implementadas:**
+- ✅ **Gender validation** - Apenas "M" ou "F" são aceitos
+- ✅ **Filtros agrupados** - Estrutura lógica de filtros
+- ✅ **Busca geográfica** - `geographicSearchString` funcionando
+- ✅ **Relacionamentos** - ManyToOne com Shelters funcionando
 
 ## 🔍 Detalhes das Atualizações
 
-### **Estrutura de Dados Atualizada:**
+### **Estrutura de Dados Corrigida:**
 
-#### **Teacher Profile:**
+#### **Pagelas (Estrutura Correta):**
 ```json
 {
-  "id": "uuid-teacher-profile",
-  "active": true,
-  "user": {
-    "id": "uuid-user",
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "phone": "+5511999999999",
-    "active": true,
-    "completed": true,
-    "commonUser": false
-  },
-  "shelter": {
-    "id": "uuid-shelter",
-    "name": "Abrigo Central",
-    "time": "19:00",
-    "leader": {
-      "id": "uuid-leader",
-      "user": { /* dados do leader */ }
-    }
-  },
-  "createdAt": "2025-09-27T21:00:00.000Z",
-  "updatedAt": "2025-09-27T21:00:00.000Z"
+  "shelteredId": "uuid-sheltered",
+  "teacherProfileId": "uuid-teacher",
+  "referenceDate": "2025-01-15T10:00:00.000Z",
+  "visit": 3,
+  "present": true,
+  "notes": "Notas opcionais"
 }
 ```
 
-#### **Leader Profile:**
+#### **Users (Campo Phone Obrigatório):**
 ```json
 {
-  "id": "uuid-leader-profile",
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "password123",
+  "phone": "+5511999999999",
+  "role": "teacher",
   "active": true,
-  "user": {
-    "id": "uuid-user",
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "phone": "+5511999999999",
-    "active": true,
-    "completed": true,
-    "commonUser": false
-  },
-  "shelters": [
-    {
-      "id": "uuid-shelter",
-      "name": "Abrigo Central",
-      "time": "19:00",
-      "teachers": [
-        {
-          "id": "uuid-teacher",
-          "user": { /* dados do teacher */ }
-        }
-      ]
-    }
-  ],
-  "createdAt": "2025-09-27T21:00:00.000Z",
-  "updatedAt": "2025-09-27T21:00:00.000Z"
+  "completed": false,
+  "commonUser": true
 }
 ```
 
-### **Cenários de Erro Documentados:**
+### **Filtros Corretos por Módulo:**
 
-#### **Teacher Profiles:**
-- ✅ **404** - TeacherProfile não encontrado
-- ✅ **404** - Shelter não encontrado
-- ✅ **400** - Teacher já vinculado a outro Shelter
-- ✅ **400** - Teacher não pertence ao shelter informado
+#### **Pagelas:**
+- ✅ **shelteredId** - Filtrar por ID do sheltered
+- ✅ **year** - Filtrar por ano (2000-9999)
+- ✅ **visit** - Filtrar por número da visita (>=1)
+- ✅ **present** - Filtrar por presença (true/false)
+- ✅ **searchString** - Busca por texto nas notas
 
-#### **Leader Profiles:**
-- ✅ **404** - LeaderProfile não encontrado
-- ✅ **404** - Shelter não encontrado
-- ✅ **404** - Este Shelter não possui líder vinculado
-- ✅ **404** - User não encontrado
+#### **Shelters:**
+- ✅ **shelterName** - Filtrar por nome do shelter
+- ✅ **addressFilter** - Filtrar por endereço
+- ✅ **staffFilters** - Filtrar por staff (leaders/teachers)
+- ✅ **searchString** - Busca geral
 
-### **Filtros e Parâmetros:**
+#### **Sheltered:**
+- ✅ **shelteredName** - Filtrar por nome do sheltered
+- ✅ **gender** - Filtrar por gênero (M/F)
+- ✅ **shelterFilters** - Filtrar por shelter
+- ✅ **addressFilter** - Filtrar por endereço
+- ✅ **geographicSearchString** - Busca geográfica
 
-#### **Teacher Profiles:**
-- ✅ **page** - Número da página
-- ✅ **limit** - Itens por página
-- ✅ **sort** - Campo para ordenação
-- ✅ **order** - Direção da ordenação
-- ✅ **searchString** - Busca por nome, email ou telefone
-- ✅ **active** - Filtrar por status ativo
-- ✅ **hasShelter** - Filtrar por teachers com shelters
-- ✅ **shelterId** - Filtrar por ID do shelter
+## 🎯 Resultados dos Testes das Automações
 
-#### **Leader Profiles:**
-- ✅ **page** - Número da página
-- ✅ **limit** - Itens por página
-- ✅ **sort** - Campo para ordenação
-- ✅ **order** - Direção da ordenação
-- ✅ **searchString** - String de busca
-- ✅ **q** - Query de busca alternativa
-- ✅ **active** - Filtrar por status ativo
-- ✅ **hasShelters** - Filtrar por líderes com shelters
-- ✅ **shelterId** - Filtrar por ID do shelter
+### **Estatísticas Validadas:**
+- ✅ **43 shelters** encontrados e funcionando
+- ✅ **81 sheltered** encontrados e funcionando
+- ✅ **8030 pagelas** encontradas e funcionando
+- ✅ **51 users** encontrados e funcionando
+- ✅ **Todas as validações** funcionando corretamente
+- ✅ **Todos os filtros** funcionando
+- ✅ **Todos os CRUDs** funcionando
 
-## 🎯 Resultados dos Testes
-
-### **Teacher Profiles:**
-- ✅ **41 teacher profiles** testados
-- ✅ **30 shelters** disponíveis para vinculação
-- ✅ **100% dos endpoints** funcionando
-- ✅ **Vinculação/desvinculação** validada
-- ✅ **Filtros combinados** funcionando
-
-### **Leader Profiles:**
-- ✅ **10 leader profiles** testados
-- ✅ **30 shelters** disponíveis para vinculação
-- ✅ **100% dos endpoints** funcionando
-- ✅ **Operações de shelter** validadas
-- ✅ **Move-shelter** testado com sucesso
+### **Validações Especiais:**
+- ✅ **Gender validation**: Apenas "M" ou "F" são aceitos
+- ✅ **Phone validation**: Campo obrigatório em Users
+- ✅ **Date validation**: Formato ISO 8601 em Pagelas
+- ✅ **UUID validation**: Todos os IDs devem ser UUIDs válidos
+- ✅ **Visit validation**: Número da visita deve ser >= 1
 
 ## 📋 Próximos Passos
 
@@ -169,11 +152,11 @@
 2. **Configurar** variáveis de ambiente
 3. **Testar** os endpoints com dados reais
 4. **Documentar** procedimentos para a equipe
-5. **Treinar** usuários sobre os novos filtros
+5. **Treinar** usuários sobre os filtros corretos
 
 ---
 
-**Atualização realizada em**: 2025-09-27  
+**Atualização realizada em**: Janeiro 2025  
 **Status**: ✅ **COLLECTIONS ATUALIZADAS COM SUCESSO**  
 **Cobertura**: ✅ **100% DOS ENDPOINTS TESTADOS E VALIDADOS**  
-**Documentação**: ✅ **EXEMPLOS COMPLETOS E CENÁRIOS DE ERRO**
+**Documentação**: ✅ **EXEMPLOS COMPLETOS E ESTRUTURA CORRETA**

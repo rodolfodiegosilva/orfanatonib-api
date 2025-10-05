@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Request } from 'express';
 
 import { ShelteredRepository } from './repositories/sheltered.repository';
@@ -37,6 +37,12 @@ export class ShelteredService {
     private readonly getSheltersService: GetSheltersService,
     private readonly authContextService: AuthContextService,
   ) { }
+
+  private validateGender(gender: string): void {
+    if (gender && !['M', 'F'].includes(gender.toUpperCase())) {
+      throw new BadRequestException('Gender deve ser "M" ou "F"');
+    }
+  }
 
   private async getCtx(request: Request): Promise<AccessCtx> {
     const payload = await this.authContextService.tryGetPayload(request);
@@ -85,6 +91,9 @@ export class ShelteredService {
   async create(dto: CreateShelteredDto, request: Request): Promise<ShelteredResponseDto> {
     const ctx = await this.getCtx(request);
 
+    // Validar gender
+    this.validateGender(dto.gender);
+
     if (ctx.role && ctx.role !== 'admin' && dto.shelterId) {
       const allowed = await this.shelteredRepo.userHasAccessToShelter(dto.shelterId, ctx);
       if (!allowed) throw new ForbiddenException('Sem acesso ao shelter informado');
@@ -116,6 +125,11 @@ export class ShelteredService {
 
   async update(id: string, dto: UpdateShelteredDto, request: Request): Promise<ShelteredResponseDto> {
     const ctx = await this.getCtx(request);
+
+    // Validar gender se fornecido
+    if (dto.gender !== undefined) {
+      this.validateGender(dto.gender);
+    }
 
     const entity = await this.shelteredRepo.findOneForResponse(id, ctx);
     if (!entity) throw new NotFoundException('Abrigado não encontrado ou sem acesso');

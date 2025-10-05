@@ -32,7 +32,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC&shelteredName=Ana&geographicSearchString=São Paulo",
+              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC&shelteredName=Ana&guardianName=Maria&geographicSearchString=São Paulo",
               "host": [
                 "{{base_url}}"
               ],
@@ -83,7 +83,12 @@
                 {
                   "key": "gender",
                   "value": "",
-                  "description": "Filtro por gênero (masculino, feminino)"
+                  "description": "Filtro por gênero (M, F)"
+                },
+                {
+                  "key": "guardianName",
+                  "value": "",
+                  "description": "Filtro por nome do guardião"
                 },
                 {
                   "key": "birthDateFrom",
