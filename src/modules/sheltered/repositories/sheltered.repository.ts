@@ -51,6 +51,7 @@ export class ShelteredRepository {
       order = 'ASC',
       // Filtros consolidados
       shelteredSearchingString,
+      shelterSearchingString,
       addressFilter,
       gender,
       birthDateFrom,
@@ -74,6 +75,27 @@ export class ShelteredRepository {
           LOWER(COALESCE(c.guardianPhone, '')) LIKE LOWER(:shelteredSearchingString)
         )`,
         { shelteredSearchingString: like }
+      );
+    }
+
+    // Busca por dados do abrigo: nome, endereço, cidade, estado
+    if (shelterSearchingString?.trim()) {
+      const like = `%${shelterSearchingString.trim()}%`;
+      qb.andWhere(
+        `(
+          LOWER(shelter.name) LIKE LOWER(:shelterSearchingString) OR
+          LOWER(shelterAddress.street) LIKE LOWER(:shelterSearchingString) OR
+          LOWER(shelterAddress.number) LIKE LOWER(:shelterSearchingString) OR
+          LOWER(shelterAddress.district) LIKE LOWER(:shelterSearchingString) OR
+          LOWER(shelterAddress.city) LIKE LOWER(:shelterSearchingString) OR
+          LOWER(shelterAddress.state) LIKE LOWER(:shelterSearchingString) OR
+          shelterAddress.postalCode LIKE :shelterSearchingStringRaw OR
+          LOWER(shelterAddress.complement) LIKE LOWER(:shelterSearchingString)
+        )`,
+        { 
+          shelterSearchingString: like, 
+          shelterSearchingStringRaw: `%${shelterSearchingString.trim()}%` 
+        }
       );
     }
 

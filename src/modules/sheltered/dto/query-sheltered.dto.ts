@@ -27,6 +27,10 @@ export class QueryShelteredDto {
   @IsOptional() @IsString()
   shelteredSearchingString?: string;
 
+  // Busca por dados do abrigo: nome, endereço, cidade, estado
+  @IsOptional() @IsString()
+  shelterSearchingString?: string;
+
   // Filtro de endereço: todos os campos de endereço
   @IsOptional() @IsString()
   addressFilter?: string;

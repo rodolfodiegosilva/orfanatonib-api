@@ -32,7 +32,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC&shelteredSearchingString=Ana&gender=F&addressFilter=São Paulo&birthDateFrom=2010-01-01&birthDateTo=2015-12-31&joinedFrom=2024-01-01&joinedTo=2024-12-31",
+              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC&shelteredSearchingString=Ana&shelterSearchingString=Abrigo&gender=F&addressFilter=São Paulo&birthDateFrom=2010-01-01&birthDateTo=2015-12-31&joinedFrom=2024-01-01&joinedTo=2024-12-31",
               "host": [
                 "{{base_url}}"
               ],
@@ -66,6 +66,11 @@
                   "description": "Busca geral: nome do abrigado, responsável ou telefone"
                 },
                 {
+                  "key": "shelterSearchingString",
+                  "value": "",
+                  "description": "Busca por dados do abrigo: nome, endereço, cidade, estado"
+                },
+                {
                   "key": "addressFilter",
                   "value": "",
                   "description": "Filtro de endereço: todos os campos de endereço"
@@ -97,7 +102,7 @@
                 }
               ]
             },
-            "description": "Lista todos os sheltered com paginação e filtros consolidados. Suporta: shelteredSearchingString (nome, responsável, telefone), addressFilter (todos os campos de endereço), gender (M/F), ranges de data para nascimento e entrada no abrigo. Disponível para todos os roles com controle de acesso."
+            "description": "Lista todos os sheltered com paginação e filtros consolidados. Suporta: shelteredSearchingString (nome, responsável, telefone), shelterSearchingString (dados do abrigo), addressFilter (todos os campos de endereço), gender (M/F), ranges de data para nascimento e entrada no abrigo. Disponível para todos os roles com controle de acesso."
           },
           "response": [
             {

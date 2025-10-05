@@ -67,12 +67,13 @@
 
 ### **6. Sheltered API Collection**
 - **Arquivo**: `docs/collections/Sheltered_API_Collection.postman_collection.json`
-- **Versão**: 7.0.0
-- **Status**: ✅ **ATUALIZADA COM FILTROS CONSOLIDADOS**
+- **Versão**: 8.0.0
+- **Status**: ✅ **ATUALIZADA COM FILTRO SHELTER SEARCHING**
 
 #### **Melhorias Implementadas:**
 - ✅ **Filtros consolidados** - Implementados filtros mais organizados e eficientes
 - ✅ **shelteredSearchingString** - Busca unificada por nome, responsável ou telefone
+- ✅ **shelterSearchingString** - Busca por dados do abrigo (nome, endereço, cidade, estado)
 - ✅ **addressFilter** - Filtro por todos os campos de endereço
 - ✅ **Ranges de data** - birthDateFrom/birthDateTo e joinedFrom/joinedTo
 - ✅ **Filtros legados removidos** - Código mais limpo e focado

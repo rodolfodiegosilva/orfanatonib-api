@@ -20,6 +20,7 @@ Esta pasta contém todas as collections do Postman para os módulos da API do si
 
 #### **Filtros Consolidados:**
 - **shelteredSearchingString**: Busca geral por nome do abrigado, responsável ou telefone
+- **shelterSearchingString**: Busca por dados do abrigo (nome, endereço, cidade, estado)
 - **addressFilter**: Filtro por todos os campos de endereço
 - **gender**: Filtro por gênero (M/F)
 - **birthDateFrom/birthDateTo**: Range de data de nascimento
