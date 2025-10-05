@@ -65,7 +65,8 @@ export class LeaderProfilesRepository {
         'teacher_user.completed',
         'teacher_user.commonUser',
       ])
-      .where('leader_user.active = true');
+      .where('leader_user.active = true')
+      .distinct(true);
   }
 
   private baseIdsQuery(): SelectQueryBuilder<LeaderProfileEntity> {
@@ -94,62 +95,66 @@ export class LeaderProfilesRepository {
     qb: SelectQueryBuilder<LeaderProfileEntity>,
     params: LeaderProfilesQueryDto,
   ) {
-    const text = (params.searchString ?? params.q)?.trim();
-    const { active, hasShelters, shelterName } = params;
-    const shelterId = this.coerceShelterId((params as any).shelterId);
+    const { leaderSearchString, shelterSearchString, hasShelter } = params;
 
-    if (text) {
-      const like = `%${text.toLowerCase()}%`;
-      const likeRaw = `%${text}%`;
+    // 🔍 FILTROS CONSOLIDADOS
+
+    // Busca pelos dados do líder: nome, email, telefone
+    if (leaderSearchString?.trim()) {
+      const like = `%${leaderSearchString.trim().toLowerCase()}%`;
+      const likeRaw = `%${leaderSearchString.trim()}%`;
       qb.andWhere(
         `(
-          LOWER(leader_user.name)  LIKE :like OR
-          LOWER(leader_user.email) LIKE :like OR
-          leader_user.phone        LIKE :likeRaw
-          OR EXISTS (
-            SELECT 1
-            FROM shelters s
-            JOIN teacher_profiles tp ON tp.shelter_id = s.id
-            JOIN users tu ON tu.id = tp.user_id
-            WHERE s.id = leader.shelter_id
-              AND (
-                LOWER(tu.name)  LIKE :like OR
-                LOWER(tu.email) LIKE :like OR
-                tu.phone        LIKE :likeRaw
-              )
-          )
+          LOWER(leader_user.name) LIKE :leaderSearchString OR
+          LOWER(leader_user.email) LIKE :leaderSearchString OR
+          leader_user.phone LIKE :leaderSearchStringRaw
         )`,
-        { like, likeRaw },
+        { 
+          leaderSearchString: like, 
+          leaderSearchStringRaw: likeRaw 
+        }
       );
     }
 
-    if (typeof active === 'boolean') {
-      qb.andWhere('leader.active = :active', { active });
-    }
-
-    if (shelterId !== undefined) {
-      qb.andWhere('leader.shelter_id = :shelterId', { shelterId });
-    }
-
-    if (shelterName) {
+    // Busca por todos os campos do shelter
+    if (shelterSearchString?.trim()) {
+      const like = `%${shelterSearchString.trim().toLowerCase()}%`;
+      const likeRaw = `%${shelterSearchString.trim()}%`;
       qb.andWhere(
         `EXISTS (
           SELECT 1
           FROM shelters s
+          LEFT JOIN addresses shelter_addr ON shelter_addr.id = s.address_id
           WHERE s.id = leader.shelter_id
-            AND LOWER(s.name) LIKE LOWER(:shelterName)
+            AND (
+              LOWER(s.name) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.street) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.number) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.district) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.city) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.state) LIKE :shelterSearchString OR
+              shelter_addr.postalCode LIKE :shelterSearchStringRaw OR
+              LOWER(shelter_addr.complement) LIKE :shelterSearchString
+            )
         )`,
-        { shelterName: `%${shelterName}%` },
+        { 
+          shelterSearchString: like, 
+          shelterSearchStringRaw: likeRaw 
+        }
       );
     }
 
-    if (hasShelters !== undefined) {
-      if (hasShelters === true) {
+    // Se está vinculado a algum shelter ou não
+    //  console.log(`🔍 Aplicando filtro hasShelter: ${hasShelter}`);
+      if (hasShelter === true) {
         qb.andWhere('leader.shelter_id IS NOT NULL');
+        console.log('✅ Filtro aplicado: shelter_id IS NOT NULL');
       } else {
         qb.andWhere('leader.shelter_id IS NULL');
+        console.log('✅ Filtro aplicado: shelter_id IS NULL');
       }
-    }
+  //    console.log(`📝 SQL Query: ${qb.getSql()}`);
+    
 
     return qb;
   }

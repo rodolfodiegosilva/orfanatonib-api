@@ -68,7 +68,6 @@ export class LeaderResponseDto {
 
   @Expose()
   @Type(() => ShelterWithTeachersDto)
-  @Transform(({ value }) => (value ? [value] : []))
   shelter!: ShelterWithTeachersDto | null;
 
   @Expose()

@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Teacher Profiles API Collection",
-    "description": "Collection completa para todos os endpoints do módulo Teacher Profiles - VALIDADA E FUNCIONAL com relacionamentos OneToMany. Inclui todos os 6 endpoints: listagem paginada, listagem simples, busca por ID, busca por shelter, vinculação e desvinculação de shelters. Suporta filtros avançados, paginação, ordenação e operações em massa. Relacionamento Teacher-Shelter (OneToMany) funcionando perfeitamente.",
+    "description": "Collection completa para todos os endpoints do módulo Teacher Profiles - VALIDADA E FUNCIONAL com filtros consolidados. Inclui todos os 6 endpoints: listagem paginada, listagem simples, busca por ID, busca por shelter, vinculação e desvinculação de shelters. Suporta filtros consolidados (teacherSearchString, shelterSearchString, hasShelter), paginação, ordenação e operações em massa. Relacionamento Teacher-Shelter (OneToMany) funcionando perfeitamente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "5.0.0"
+    "version": "6.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -61,38 +61,23 @@
                   "description": "Ordem da ordenação (asc, desc)"
                 },
                 {
-                  "key": "searchString",
+                  "key": "teacherSearchString",
                   "value": "",
-                  "description": "Busca por nome, email, telefone do teacher ou leader"
+                  "description": "🔍 FILTRO CONSOLIDADO: Busca por dados do teacher (nome, email, telefone)"
                 },
                 {
-                  "key": "q",
+                  "key": "shelterSearchString",
                   "value": "",
-                  "description": "Alias para searchString"
-                },
-                {
-                  "key": "active",
-                  "value": "",
-                  "description": "Filtrar por status ativo (true, false)"
+                  "description": "🔍 FILTRO CONSOLIDADO: Busca por dados do shelter (nome, descrição, endereço, líder)"
                 },
                 {
                   "key": "hasShelter",
                   "value": "",
-                  "description": "Filtrar por teachers com shelter (true, false)"
-                },
-                {
-                  "key": "shelterId",
-                  "value": "",
-                  "description": "Filtrar por ID do shelter"
-                },
-                {
-                  "key": "shelterName",
-                  "value": "",
-                  "description": "Filtrar por nome do shelter"
+                  "description": "🔍 FILTRO CONSOLIDADO: Filtrar por teachers com shelter (true, false)"
                 }
               ]
             },
-            "description": "Lista todos os teacher profiles com paginação e filtros opcionais. Disponível apenas para admin e leader (teachers não têm acesso)."
+            "description": "Lista todos os teacher profiles com paginação e filtros consolidados. FILTROS CONSOLIDADOS: teacherSearchString (busca por dados do teacher), shelterSearchString (busca por dados do shelter), hasShelter (teachers com/sem shelter). Disponível apenas para admin e leader (teachers não têm acesso)."
           },
           "response": [
             {
@@ -178,6 +163,167 @@
               "body": "{\n  \"statusCode\": 403,\n  \"message\": \"Acesso negado\",\n  \"error\": \"Forbidden\"\n}"
             }
           ]
+        },
+        {
+          "name": "🔍 Filtros Consolidados - Exemplos",
+          "item": [
+            {
+              "name": "Buscar por Teacher (teacherSearchString)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles?teacherSearchString=Maria&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "teacher-profiles"
+                  ],
+                  "query": [
+                    {
+                      "key": "teacherSearchString",
+                      "value": "Maria",
+                      "description": "Busca por nome, email ou telefone do teacher"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Exemplo de uso do filtro teacherSearchString para buscar teachers por nome, email ou telefone."
+              }
+            },
+            {
+              "name": "Buscar por Shelter (shelterSearchString)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles?shelterSearchString=Casa&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "teacher-profiles"
+                  ],
+                  "query": [
+                    {
+                      "key": "shelterSearchString",
+                      "value": "Casa",
+                      "description": "Busca por nome, descrição, endereço ou líder do shelter"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Exemplo de uso do filtro shelterSearchString para buscar teachers por dados do shelter vinculado."
+              }
+            },
+            {
+              "name": "Teachers COM Shelter (hasShelter=true)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles?hasShelter=true&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "teacher-profiles"
+                  ],
+                  "query": [
+                    {
+                      "key": "hasShelter",
+                      "value": "true",
+                      "description": "Filtrar apenas teachers vinculados a shelters"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Exemplo de uso do filtro hasShelter=true para buscar apenas teachers vinculados a shelters."
+              }
+            },
+            {
+              "name": "Teachers SEM Shelter (hasShelter=false)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles?hasShelter=false&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "teacher-profiles"
+                  ],
+                  "query": [
+                    {
+                      "key": "hasShelter",
+                      "value": "false",
+                      "description": "Filtrar apenas teachers sem shelter vinculado"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Exemplo de uso do filtro hasShelter=false para buscar apenas teachers sem shelter vinculado."
+              }
+            },
+            {
+              "name": "Combinação de Filtros",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/teacher-profiles?teacherSearchString=João&hasShelter=true&sort=name&order=asc&limit=5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "teacher-profiles"
+                  ],
+                  "query": [
+                    {
+                      "key": "teacherSearchString",
+                      "value": "João",
+                      "description": "Busca por teacher chamado João"
+                    },
+                    {
+                      "key": "hasShelter",
+                      "value": "true",
+                      "description": "Que esteja vinculado a um shelter"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "name",
+                      "description": "Ordenar por nome"
+                    },
+                    {
+                      "key": "order",
+                      "value": "asc",
+                      "description": "Ordem crescente"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5"
+                    }
+                  ]
+                },
+                "description": "Exemplo de combinação de filtros consolidados: buscar teachers chamados João que estejam vinculados a shelters, ordenados por nome."
+              }
+            }
+          ],
+          "description": "Exemplos práticos de uso dos filtros consolidados do Teacher Profiles API."
         },
         {
           "name": "Listar Teacher Profiles Simples",
@@ -910,7 +1056,7 @@
           ]
         }
       ],
-      "description": "Endpoints para gerenciamento completo de Teacher Profiles com autenticação JWT obrigatória e controle de acesso granular por roles. TESTADO E VALIDADO COM 100% DE SUCESSO. Inclui todos os 6 endpoints principais, filtros avançados (busca por nome, status, vinculação), paginação, ordenação, vinculação/desvinculação de shelters e operações em massa. Suporta 43 teacher profiles e 50 shelters com distribuição equilibrada."
+      "description": "Endpoints para gerenciamento completo de Teacher Profiles com autenticação JWT obrigatória e controle de acesso granular por roles. TESTADO E VALIDADO COM 100% DE SUCESSO. Inclui todos os 6 endpoints principais, FILTROS CONSOLIDADOS (teacherSearchString, shelterSearchString, hasShelter), paginação, ordenação, vinculação/desvinculação de shelters e operações em massa. Suporta 43 teacher profiles e 50 shelters com distribuição equilibrada."
     }
   ]
 }

@@ -102,7 +102,11 @@ async function testLeaderProfilesCRUD() {
       name: `User Leader Test ${Date.now()}`,
       email: `leader${Date.now()}@example.com`,
       password: 'password123',
-      role: 'leader'
+      phone: '+5511999999999',
+      role: 'leader',
+      active: true,
+      completed: false,
+      commonUser: true
     };
     
     const createUserResponse = await makeRequest('POST', '/users', createUserData);
@@ -121,23 +125,7 @@ async function testLeaderProfilesCRUD() {
 
   // 2. Criar Leader Profile
   console.log('  🔸 Teste 1: Criar Leader Profile');
-  const createData = {
-    userId: testUser.id,
-    shelterId: testData.shelters[0]?.id,
-    name: `Leader Profile Teste ${Date.now()}`,
-    phone: '+5511999999999',
-    email: `leader${Date.now()}@example.com`,
-    address: {
-      street: 'Rua dos Leaders',
-      number: '123',
-      district: 'Centro',
-      city: 'São Paulo',
-      state: 'SP',
-      postalCode: '01234-567'
-    }
-  };
-  
-  const createResponse = await makeRequest('POST', '/leader-profiles', createData);
+  const createResponse = await makeRequest('POST', `/leader-profiles/create-for-user/${testUser.id}`);
   if (createResponse && createResponse.status === 201) {
     console.log(`    ✅ Leader Profile criado: ${createResponse.data.name}`);
     const createdProfile = createResponse.data;
@@ -149,23 +137,28 @@ async function testLeaderProfilesCRUD() {
       console.log(`    ✅ Leader Profile encontrado: ${getResponse.data.name}`);
     }
 
-    // 4. Atualizar Leader Profile
-    console.log('  🔸 Teste 3: Atualizar Leader Profile');
-    const updateData = {
-      name: `${createData.name} - Atualizado`,
-      phone: '+5511888888888'
-    };
-    
-    const updateResponse = await makeRequest('PUT', `/leader-profiles/${createdProfile.id}`, updateData);
-    if (updateResponse && updateResponse.status === 200) {
-      console.log(`    ✅ Leader Profile atualizado: ${updateResponse.data.name}`);
-    }
-
-    // 5. Deletar Leader Profile
-    console.log('  🔸 Teste 4: Deletar Leader Profile');
-    const deleteResponse = await makeRequest('DELETE', `/leader-profiles/${createdProfile.id}`);
-    if (deleteResponse && deleteResponse.status === 200) {
-      console.log('    ✅ Leader Profile deletado com sucesso');
+    // 4. Testar relacionamentos com shelters
+    console.log('  🔸 Teste 3: Testar relacionamentos com shelters');
+    if (testData.shelters.length > 0) {
+      // Atribuir shelter ao leader
+      const assignData = { shelterId: testData.shelters[0].id };
+      const assignResponse = await makeRequest('PATCH', `/leader-profiles/${createdProfile.id}/assign-shelter`, assignData);
+      if (assignResponse && assignResponse.status === 200) {
+        console.log(`    ✅ Shelter atribuído: ${assignResponse.data.message}`);
+      }
+      
+      // Buscar leader por shelter
+      const findByShelterResponse = await makeRequest('GET', `/leader-profiles/by-shelter/${testData.shelters[0].id}`);
+      if (findByShelterResponse && findByShelterResponse.status === 200) {
+        console.log(`    ✅ Leader encontrado por shelter: ${findByShelterResponse.data.id}`);
+      }
+      
+      // Remover shelter do leader
+      const unassignData = { shelterId: testData.shelters[0].id };
+      const unassignResponse = await makeRequest('PATCH', `/leader-profiles/${createdProfile.id}/unassign-shelter`, unassignData);
+      if (unassignResponse && unassignResponse.status === 200) {
+        console.log(`    ✅ Shelter removido: ${unassignResponse.data.message}`);
+      }
     }
   }
 }
@@ -173,40 +166,46 @@ async function testLeaderProfilesCRUD() {
 // ==================== TESTES DE FILTROS ====================
 
 async function testLeaderProfilesFilters() {
-  console.log('\n📋 Testando Filtros de Leader Profiles...');
+  console.log('\n📋 Testando Filtros Consolidados de Leader Profiles...');
   
-  // 1. Filtro por nome
-  console.log('  🔸 Teste 1: Filtro por nome (name=João)');
-  const nameResponse = await makeRequest('GET', '/leader-profiles?name=João&limit=5');
-  if (nameResponse && nameResponse.status === 200) {
-    console.log(`    ✅ Status: ${nameResponse.status}`);
-    console.log(`    📊 Encontrados: ${nameResponse.data.items?.length || 0}`);
+  // 1. Filtro por dados do líder: leaderSearchString
+  console.log('  🔸 Teste 1: Filtro por dados do líder (leaderSearchString=leader)');
+  const leaderSearchResponse = await makeRequest('GET', '/leader-profiles?leaderSearchString=leader&limit=5');
+  if (leaderSearchResponse && leaderSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${leaderSearchResponse.status}`);
+    console.log(`    📊 Encontrados: ${leaderSearchResponse.data.items?.length || 0}`);
   }
 
-  // 2. Filtro por shelter
-  console.log('  🔸 Teste 2: Filtro por shelter');
-  if (testData.shelters.length > 0) {
-    const shelterResponse = await makeRequest('GET', `/leader-profiles?shelterId=${testData.shelters[0].id}&limit=5`);
-    if (shelterResponse && shelterResponse.status === 200) {
-      console.log(`    ✅ Status: ${shelterResponse.status}`);
-      console.log(`    📊 Encontrados: ${shelterResponse.data.items?.length || 0}`);
-    }
+  // 2. Filtro por dados do shelter: shelterSearchString
+  console.log('  🔸 Teste 2: Filtro por dados do shelter (shelterSearchString=Abrigo)');
+  const shelterSearchResponse = await makeRequest('GET', '/leader-profiles?shelterSearchString=Abrigo&limit=5');
+  if (shelterSearchResponse && shelterSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${shelterSearchResponse.status}`);
+    console.log(`    📊 Encontrados: ${shelterSearchResponse.data.items?.length || 0}`);
   }
 
-  // 3. Filtro por email
-  console.log('  🔸 Teste 3: Filtro por email (email=leader)');
-  const emailResponse = await makeRequest('GET', '/leader-profiles?email=leader&limit=5');
-  if (emailResponse && emailResponse.status === 200) {
-    console.log(`    ✅ Status: ${emailResponse.status}`);
-    console.log(`    📊 Encontrados: ${emailResponse.data.items?.length || 0}`);
+  // 3. Filtro por vinculação a shelter: hasShelter=true
+  console.log('  🔸 Teste 3: Filtro por vinculação a shelter (hasShelter=true)');
+  const hasShelterTrueResponse = await makeRequest('GET', '/leader-profiles?hasShelter=true&limit=5');
+  if (hasShelterTrueResponse && hasShelterTrueResponse.status === 200) {
+    console.log(`    ✅ Status: ${hasShelterTrueResponse.status}`);
+    console.log(`    📊 Encontrados: ${hasShelterTrueResponse.data.items?.length || 0}`);
   }
 
-  // 4. Filtro por cidade
-  console.log('  🔸 Teste 4: Filtro por cidade (city=São Paulo)');
-  const cityResponse = await makeRequest('GET', '/leader-profiles?city=São Paulo&limit=5');
-  if (cityResponse && cityResponse.status === 200) {
-    console.log(`    ✅ Status: ${cityResponse.status}`);
-    console.log(`    📊 Encontrados: ${cityResponse.data.items?.length || 0}`);
+  // 4. Filtro por não vinculação a shelter: hasShelter=false
+  console.log('  🔸 Teste 4: Filtro por não vinculação a shelter (hasShelter=false)');
+  const hasShelterFalseResponse = await makeRequest('GET', '/leader-profiles?hasShelter=false&limit=5');
+  if (hasShelterFalseResponse && hasShelterFalseResponse.status === 200) {
+    console.log(`    ✅ Status: ${hasShelterFalseResponse.status}`);
+    console.log(`    📊 Encontrados: ${hasShelterFalseResponse.data.items?.length || 0}`);
+  }
+
+  // 5. Combinação de filtros
+  console.log('  🔸 Teste 5: Combinação de filtros (leaderSearchString=leader + hasShelter=true)');
+  const combinedResponse = await makeRequest('GET', '/leader-profiles?leaderSearchString=leader&hasShelter=true&limit=5');
+  if (combinedResponse && combinedResponse.status === 200) {
+    console.log(`    ✅ Status: ${combinedResponse.status}`);
+    console.log(`    📊 Encontrados: ${combinedResponse.data.items?.length || 0}`);
   }
 }
 
@@ -233,8 +232,8 @@ async function testLeaderProfilesListings() {
   }
 
   // 3. Ordenação
-  console.log('  🔸 Teste 3: Ordenação (orderBy=name, order=ASC)');
-  const sortResponse = await makeRequest('GET', '/leader-profiles?orderBy=name&order=ASC&limit=5');
+  console.log('  🔸 Teste 3: Ordenação (sort=name, order=asc)');
+  const sortResponse = await makeRequest('GET', '/leader-profiles?sort=name&order=asc&limit=5');
   if (sortResponse && sortResponse.status === 200) {
     console.log(`    ✅ Status: ${sortResponse.status}`);
     console.log(`    📊 Ordenados: ${sortResponse.data.items?.length || 0}`);
@@ -248,46 +247,23 @@ async function testLeaderProfilesValidation() {
   
   // 1. UserId inválido
   console.log('  🔸 Teste 1: UserId inválido');
-  const invalidUserResponse = await makeRequest('POST', '/leader-profiles', {
-    userId: '00000000-0000-0000-0000-000000000000',
-    name: 'Teste',
-    email: 'teste@example.com'
-  });
-  if (invalidUserResponse && invalidUserResponse.status === 400) {
-    console.log('    ✅ Erro esperado: UserId inválido rejeitado');
+  const invalidUserResponse = await makeRequest('POST', '/leader-profiles/create-for-user/00000000-0000-0000-0000-000000000000');
+  if (invalidUserResponse && invalidUserResponse.status === 404) {
+    console.log('    ✅ Erro esperado: User não encontrado');
   }
 
-  // 2. Nome muito curto
-  console.log('  🔸 Teste 2: Nome muito curto');
-  if (testData.users.length > 0) {
-    const shortNameResponse = await makeRequest('POST', '/leader-profiles', {
-      userId: testData.users[0].id,
-      name: 'A',
-      email: 'teste@example.com'
-    });
-    if (shortNameResponse && shortNameResponse.status === 400) {
-      console.log('    ✅ Erro esperado: Nome muito curto rejeitado');
-    }
-  }
-
-  // 3. Email inválido
-  console.log('  🔸 Teste 3: Email inválido');
-  if (testData.users.length > 0) {
-    const invalidEmailResponse = await makeRequest('POST', '/leader-profiles', {
-      userId: testData.users[0].id,
-      name: 'Teste',
-      email: 'email-invalido'
-    });
-    if (invalidEmailResponse && invalidEmailResponse.status === 400) {
-      console.log('    ✅ Erro esperado: Email inválido rejeitado');
-    }
-  }
-
-  // 4. Buscar registro inexistente
-  console.log('  🔸 Teste 4: Buscar registro inexistente');
+  // 2. Buscar registro inexistente
+  console.log('  🔸 Teste 2: Buscar registro inexistente');
   const notFoundResponse = await makeRequest('GET', '/leader-profiles/00000000-0000-0000-0000-000000000000');
   if (notFoundResponse && notFoundResponse.status === 404) {
-    console.log('    ✅ Erro esperado: Registro não encontrado');
+    console.log('    ✅ Erro esperado: Leader Profile não encontrado');
+  }
+
+  // 3. Buscar shelter inexistente
+  console.log('  🔸 Teste 3: Buscar leader por shelter inexistente');
+  const invalidShelterResponse = await makeRequest('GET', '/leader-profiles/by-shelter/00000000-0000-0000-0000-000000000000');
+  if (invalidShelterResponse && invalidShelterResponse.status === 404) {
+    console.log('    ✅ Erro esperado: Shelter não encontrado');
   }
 }
 

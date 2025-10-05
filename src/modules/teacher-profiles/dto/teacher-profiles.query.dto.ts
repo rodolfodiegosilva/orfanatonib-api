@@ -1,18 +1,32 @@
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
-const toBool = (v: any): boolean | undefined => {
-  if (v === undefined || v === null || v === '') return undefined;
-  const s = String(v).trim().toLowerCase();
-  if (['true', '1', 'yes', 'y'].includes(s)) return true;
-  if (['false', '0', 'no', 'n'].includes(s)) return false;
-  return undefined;
+// Decorator customizado para boolean que funciona antes da conversão implícita
+const BooleanQuery = () => {
+  return Transform(({ value, key, obj }) => {
+    // Intercepta o valor original antes de qualquer conversão
+    const originalValue = obj[key];
+    
+    if (originalValue === undefined || originalValue === null || originalValue === '') return undefined;
+    
+    // Se já é boolean, retorna como está
+    if (typeof originalValue === 'boolean') return originalValue;
+    
+    // Se é string, converte baseado no conteúdo
+    const s = String(originalValue).trim().toLowerCase();
+    if (['true', '1', 'yes', 'y'].includes(s)) return true;
+    if (['false', '0', 'no', 'n'].includes(s)) return false;
+    
+    return undefined;
+  });
 };
+
 const toInt = (v: any): number | undefined => {
   if (v === undefined || v === null || v === '') return undefined;
   const n = Number(String(v).trim());
   return Number.isFinite(n) ? n : undefined;
 };
+
 const trimOrUndef = (v: any): string | undefined => {
   if (typeof v !== 'string') return undefined;
   const t = v.trim();
@@ -20,35 +34,24 @@ const trimOrUndef = (v: any): string | undefined => {
 };
 
 export class TeacherProfilesQueryDto {
+  // 🔍 FILTROS CONSOLIDADOS
+  
+  // Busca pelos dados do teacher: nome, email, telefone
   @IsOptional()
   @Transform(({ value }) => trimOrUndef(value))
   @IsString()
-  searchString?: string;
+  teacherSearchString?: string;
 
+  // Busca por todos os campos do shelter
   @IsOptional()
   @Transform(({ value }) => trimOrUndef(value))
   @IsString()
-  q?: string;
+  shelterSearchString?: string;
 
+  // Se está vinculado a algum shelter ou não
   @IsOptional()
-  @Transform(({ value }) => toBool(value))
-  @IsBoolean()
-  active?: boolean;
-
-  @IsOptional()
-  @Transform(({ value }) => toBool(value))
-  @IsBoolean()
+  @BooleanQuery()
   hasShelter?: boolean;
-
-  @IsOptional()
-  @Transform(({ value }) => trimOrUndef(value))
-  @IsString()
-  shelterId?: string;
-
-  @IsOptional()
-  @Transform(({ value }) => trimOrUndef(value))
-  @IsString()
-  shelterName?: string;
 
   @IsOptional()
   @Transform(({ value }) => toInt(value))

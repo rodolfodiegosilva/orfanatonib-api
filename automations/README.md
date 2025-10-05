@@ -1,6 +1,6 @@
-# 🎯 Automações do Sistema Orfanato
+# 🎯 Automações dos Módulos do Sistema Orfanato
 
-Este diretório contém automações completas para testar todos os módulos do sistema Orfanato.
+Este diretório contém automações completas para testar cada módulo específico do sistema Orfanato.
 
 ## 📋 Estrutura das Automações
 
@@ -50,11 +50,6 @@ Este diretório contém automações completas para testar todos os módulos do 
 - ✅ Testes de especializações (Matemática, Português, etc.)
 - ✅ Validações de dados
 
-### 🔧 **Sistema Completo** - `complete-system-automation.js`
-- ✅ Teste geral de todos os módulos
-- ✅ Validações de gender (M/F)
-- ✅ Testes de erro e validação
-- ✅ Listagens básicas
 
 ## 🚀 Como Executar
 
@@ -84,11 +79,6 @@ node automations/leader-profiles/leader-profiles-complete-automation.js
 node automations/teacher-profiles/teacher-profiles-complete-automation.js
 ```
 
-### Executar Sistema Completo
-```bash
-# Testar todos os módulos
-node automations/complete-system-automation.js
-```
 
 ## 📊 O que Cada Automação Testa
 

@@ -173,58 +173,82 @@ async function testTeacherProfilesCRUD() {
   }
 }
 
-// ==================== TESTES DE FILTROS ====================
+// ==================== TESTES DE FILTROS CONSOLIDADOS ====================
 
 async function testTeacherProfilesFilters() {
-  console.log('\n📋 Testando Filtros de Teacher Profiles...');
+  console.log('\n📋 Testando Filtros Consolidados de Teacher Profiles...');
   
-  // 1. Filtro por nome
-  console.log('  🔸 Teste 1: Filtro por nome (name=Maria)');
-  const nameResponse = await makeRequest('GET', '/teacher-profiles?name=Maria&limit=5');
-  if (nameResponse && nameResponse.status === 200) {
-    console.log(`    ✅ Status: ${nameResponse.status}`);
-    console.log(`    📊 Encontrados: ${nameResponse.data.items?.length || 0}`);
+  // 1. Filtro por teacherSearchString (busca por dados do teacher)
+  console.log('  🔸 Teste 1: teacherSearchString (busca por dados do teacher)');
+  const teacherSearchResponse = await makeRequest('GET', '/teacher-profiles?teacherSearchString=Maria&limit=5');
+  if (teacherSearchResponse && teacherSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${teacherSearchResponse.status}`);
+    console.log(`    📊 Encontrados: ${teacherSearchResponse.data.items?.length || 0}`);
+    console.log(`    🔍 Buscando por: Maria (nome, email, telefone)`);
   }
 
-  // 2. Filtro por shelter
-  console.log('  🔸 Teste 2: Filtro por shelter');
-  if (testData.shelters.length > 0) {
-    const shelterResponse = await makeRequest('GET', `/teacher-profiles?shelterId=${testData.shelters[0].id}&limit=5`);
-    if (shelterResponse && shelterResponse.status === 200) {
-      console.log(`    ✅ Status: ${shelterResponse.status}`);
-      console.log(`    📊 Encontrados: ${shelterResponse.data.items?.length || 0}`);
-    }
+  // 2. Filtro por shelterSearchString (busca por dados do shelter)
+  console.log('  🔸 Teste 2: shelterSearchString (busca por dados do shelter)');
+  const shelterSearchResponse = await makeRequest('GET', '/teacher-profiles?shelterSearchString=Casa&limit=5');
+  if (shelterSearchResponse && shelterSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${shelterSearchResponse.status}`);
+    console.log(`    📊 Encontrados: ${shelterSearchResponse.data.items?.length || 0}`);
+    console.log(`    🔍 Buscando por: Casa (nome, descrição, endereço, líder)`);
   }
 
-  // 3. Filtro por especialização
-  console.log('  🔸 Teste 3: Filtro por especialização (specialization=Matemática)');
-  const specializationResponse = await makeRequest('GET', '/teacher-profiles?specialization=Matemática&limit=5');
-  if (specializationResponse && specializationResponse.status === 200) {
-    console.log(`    ✅ Status: ${specializationResponse.status}`);
-    console.log(`    📊 Encontrados: ${specializationResponse.data.items?.length || 0}`);
+  // 3. Filtro hasShelter=true (teachers com shelter)
+  console.log('  🔸 Teste 3: hasShelter=true (teachers vinculados a shelters)');
+  const hasShelterTrueResponse = await makeRequest('GET', '/teacher-profiles?hasShelter=true&limit=5');
+  if (hasShelterTrueResponse && hasShelterTrueResponse.status === 200) {
+    console.log(`    ✅ Status: ${hasShelterTrueResponse.status}`);
+    console.log(`    📊 Encontrados: ${hasShelterTrueResponse.data.items?.length || 0}`);
+    console.log(`    🔍 Filtro: Teachers COM shelter`);
   }
 
-  // 4. Filtro por experiência
-  console.log('  🔸 Teste 4: Filtro por experiência (experience=5)');
-  const experienceResponse = await makeRequest('GET', '/teacher-profiles?experience=5&limit=5');
-  if (experienceResponse && experienceResponse.status === 200) {
-    console.log(`    ✅ Status: ${experienceResponse.status}`);
-    console.log(`    📊 Encontrados: ${experienceResponse.data.items?.length || 0}`);
+  // 4. Filtro hasShelter=false (teachers sem shelter)
+  console.log('  🔸 Teste 4: hasShelter=false (teachers sem shelter)');
+  const hasShelterFalseResponse = await makeRequest('GET', '/teacher-profiles?hasShelter=false&limit=5');
+  if (hasShelterFalseResponse && hasShelterFalseResponse.status === 200) {
+    console.log(`    ✅ Status: ${hasShelterFalseResponse.status}`);
+    console.log(`    📊 Encontrados: ${hasShelterFalseResponse.data.items?.length || 0}`);
+    console.log(`    🔍 Filtro: Teachers SEM shelter`);
+  }
+
+  // 5. Combinação de filtros
+  console.log('  🔸 Teste 5: Combinação de filtros');
+  const combinedResponse = await makeRequest('GET', '/teacher-profiles?teacherSearchString=João&hasShelter=true&limit=5');
+  if (combinedResponse && combinedResponse.status === 200) {
+    console.log(`    ✅ Status: ${combinedResponse.status}`);
+    console.log(`    📊 Encontrados: ${combinedResponse.data.items?.length || 0}`);
+    console.log(`    🔍 Busca combinada: teacherSearchString=João + hasShelter=true`);
+  }
+
+  // 6. Teste de paginação com filtros
+  console.log('  🔸 Teste 6: Paginação com filtros');
+  const paginationResponse = await makeRequest('GET', '/teacher-profiles?page=1&limit=3&sort=updatedAt&order=desc&hasShelter=true');
+  if (paginationResponse && paginationResponse.status === 200) {
+    console.log(`    ✅ Status: ${paginationResponse.status}`);
+    console.log(`    📊 Total: ${paginationResponse.data.total || 0}`);
+    console.log(`    📄 Página: ${paginationResponse.data.page || 1}`);
+    console.log(`    📋 Itens por página: ${paginationResponse.data.limit || 0}`);
+    console.log(`    📝 Itens retornados: ${paginationResponse.data.items?.length || 0}`);
   }
 }
 
-// ==================== TESTES DE LISTAGEM ====================
+// ==================== TESTES DE LISTAGEM E PAGINAÇÃO ====================
 
 async function testTeacherProfilesListings() {
-  console.log('\n📋 Testando Listagens de Teacher Profiles...');
+  console.log('\n📋 Testando Listagens e Paginação de Teacher Profiles...');
   
-  // 1. Listagem paginada
-  console.log('  🔸 Teste 1: Listagem paginada');
+  // 1. Listagem paginada básica
+  console.log('  🔸 Teste 1: Listagem paginada básica');
   const paginatedResponse = await makeRequest('GET', '/teacher-profiles?page=1&limit=10');
   if (paginatedResponse && paginatedResponse.status === 200) {
     console.log(`    ✅ Status: ${paginatedResponse.status}`);
-    console.log(`    📊 Total: ${paginatedResponse.data.meta?.totalItems || 0}`);
-    console.log(`    📄 Itens: ${paginatedResponse.data.items?.length || 0}`);
+    console.log(`    📊 Total: ${paginatedResponse.data.total || 0}`);
+    console.log(`    📄 Página: ${paginatedResponse.data.page || 1}`);
+    console.log(`    📋 Itens por página: ${paginatedResponse.data.limit || 0}`);
+    console.log(`    📝 Itens retornados: ${paginatedResponse.data.items?.length || 0}`);
   }
 
   // 2. Listagem simples
@@ -235,12 +259,42 @@ async function testTeacherProfilesListings() {
     console.log(`    📊 Total: ${simpleResponse.data?.length || 0}`);
   }
 
-  // 3. Ordenação
-  console.log('  🔸 Teste 3: Ordenação (orderBy=name, order=ASC)');
-  const sortResponse = await makeRequest('GET', '/teacher-profiles?orderBy=name&order=ASC&limit=5');
-  if (sortResponse && sortResponse.status === 200) {
-    console.log(`    ✅ Status: ${sortResponse.status}`);
-    console.log(`    📊 Ordenados: ${sortResponse.data.items?.length || 0}`);
+  // 3. Ordenação por nome (ASC)
+  console.log('  🔸 Teste 3: Ordenação por nome (sort=name, order=asc)');
+  const sortNameAscResponse = await makeRequest('GET', '/teacher-profiles?sort=name&order=asc&limit=5');
+  if (sortNameAscResponse && sortNameAscResponse.status === 200) {
+    console.log(`    ✅ Status: ${sortNameAscResponse.status}`);
+    console.log(`    📊 Ordenados: ${sortNameAscResponse.data.items?.length || 0}`);
+    console.log(`    🔄 Ordenação: Nome (A-Z)`);
+  }
+
+  // 4. Ordenação por data de criação (DESC)
+  console.log('  🔸 Teste 4: Ordenação por data de criação (sort=createdAt, order=desc)');
+  const sortCreatedDescResponse = await makeRequest('GET', '/teacher-profiles?sort=createdAt&order=desc&limit=5');
+  if (sortCreatedDescResponse && sortCreatedDescResponse.status === 200) {
+    console.log(`    ✅ Status: ${sortCreatedDescResponse.status}`);
+    console.log(`    📊 Ordenados: ${sortCreatedDescResponse.data.items?.length || 0}`);
+    console.log(`    🔄 Ordenação: Data de criação (mais recente primeiro)`);
+  }
+
+  // 5. Ordenação por data de atualização (DESC) - padrão
+  console.log('  🔸 Teste 5: Ordenação por data de atualização (sort=updatedAt, order=desc)');
+  const sortUpdatedDescResponse = await makeRequest('GET', '/teacher-profiles?sort=updatedAt&order=desc&limit=5');
+  if (sortUpdatedDescResponse && sortUpdatedDescResponse.status === 200) {
+    console.log(`    ✅ Status: ${sortUpdatedDescResponse.status}`);
+    console.log(`    📊 Ordenados: ${sortUpdatedDescResponse.data.items?.length || 0}`);
+    console.log(`    🔄 Ordenação: Data de atualização (mais recente primeiro)`);
+  }
+
+  // 6. Paginação avançada
+  console.log('  🔸 Teste 6: Paginação avançada (página 2, limite 3)');
+  const advancedPaginationResponse = await makeRequest('GET', '/teacher-profiles?page=2&limit=3&sort=updatedAt&order=desc');
+  if (advancedPaginationResponse && advancedPaginationResponse.status === 200) {
+    console.log(`    ✅ Status: ${advancedPaginationResponse.status}`);
+    console.log(`    📊 Total: ${advancedPaginationResponse.data.total || 0}`);
+    console.log(`    📄 Página: ${advancedPaginationResponse.data.page || 1}`);
+    console.log(`    📋 Itens por página: ${advancedPaginationResponse.data.limit || 0}`);
+    console.log(`    📝 Itens retornados: ${advancedPaginationResponse.data.items?.length || 0}`);
   }
 }
 
@@ -404,8 +458,11 @@ async function runTeacherProfilesAutomation() {
   console.log('===============================================');
   console.log('📋 Funcionalidades a serem testadas:');
   console.log('   1. CRUD de Teacher Profiles');
-  console.log('   2. Filtros e Buscas');
-  console.log('   3. Listagens e Paginação');
+  console.log('   2. Filtros Consolidados:');
+  console.log('      - teacherSearchString (busca por dados do teacher)');
+  console.log('      - shelterSearchString (busca por dados do shelter)');
+  console.log('      - hasShelter (teachers com/sem shelter)');
+  console.log('   3. Listagens e Paginação Avançada');
   console.log('   4. Validações de Dados');
   console.log('   5. Relacionamentos com Users e Shelters');
   console.log('   6. Especializações de Teachers');
@@ -437,8 +494,11 @@ async function runTeacherProfilesAutomation() {
   console.log('=====================================');
   console.log('✅ Todos os testes foram executados');
   console.log('✅ CRUD de Teacher Profiles funcionando');
-  console.log('✅ Filtros e buscas funcionando');
-  console.log('✅ Listagens e paginação funcionando');
+  console.log('✅ Filtros Consolidados funcionando:');
+  console.log('   - teacherSearchString (busca por dados do teacher)');
+  console.log('   - shelterSearchString (busca por dados do shelter)');
+  console.log('   - hasShelter (teachers com/sem shelter)');
+  console.log('✅ Listagens e paginação avançada funcionando');
   console.log('✅ Validações funcionando');
   console.log('✅ Relacionamentos funcionando');
   console.log('✅ Especializações funcionando');

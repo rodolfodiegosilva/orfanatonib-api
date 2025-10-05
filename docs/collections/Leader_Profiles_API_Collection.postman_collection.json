@@ -118,7 +118,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/leader-profiles?page=1&limit=12&sort=updatedAt&order=desc",
+              "raw": "{{base_url}}/leader-profiles?page=1&limit=12&sort=updatedAt&order=desc&leaderSearchString=leader&shelterSearchString=Abrigo&hasShelter=true",
               "host": [
                 "{{base_url}}"
               ],
@@ -147,38 +147,23 @@
                   "description": "Ordem da ordenação (asc, desc)"
                 },
                 {
-                  "key": "searchString",
+                  "key": "leaderSearchString",
                   "value": "",
-                  "description": "Busca por nome, email, telefone do leader"
+                  "description": "Busca pelos dados do líder: nome, email, telefone"
                 },
                 {
-                  "key": "q",
+                  "key": "shelterSearchString",
                   "value": "",
-                  "description": "Alias para searchString"
+                  "description": "Busca por todos os campos do shelter"
                 },
                 {
-                  "key": "active",
+                  "key": "hasShelter",
                   "value": "",
-                  "description": "Filtrar por status ativo (true, false)"
-                },
-                {
-                  "key": "hasShelters",
-                  "value": "",
-                  "description": "Filtrar por leaders com shelters (true, false)"
-                },
-                {
-                  "key": "shelterId",
-                  "value": "",
-                  "description": "Filtrar por ID do shelter"
-                },
-                {
-                  "key": "shelterName",
-                  "value": "",
-                  "description": "Filtrar por nome do shelter"
+                  "description": "Se está vinculado a algum shelter ou não (true, false)"
                 }
               ]
             },
-            "description": "Lista todos os leader profiles com paginação e filtros opcionais. Disponível para todos os roles."
+            "description": "Lista todos os leader profiles com paginação e filtros consolidados. Suporta: leaderSearchString (dados do líder), shelterSearchString (dados do shelter), hasShelter (vinculação). Disponível para todos os roles."
           },
           "response": [
             {

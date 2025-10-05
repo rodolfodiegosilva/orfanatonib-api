@@ -34,6 +34,7 @@ export class TeacherProfilesRepository {
     return this.teacherRepo
       .createQueryBuilder('teacher')
       .leftJoinAndSelect('teacher.shelter', 'shelter')
+      .leftJoinAndSelect('shelter.address', 'shelter_address')
       .leftJoinAndSelect('shelter.leaders', 'leaders')
       .leftJoin('teacher.user', 'teacher_user')
       .addSelect([
@@ -63,6 +64,7 @@ export class TeacherProfilesRepository {
       .createQueryBuilder('teacher')
       .leftJoin('teacher.user', 'teacher_user')
       .leftJoin('teacher.shelter', 'shelter')
+      .leftJoin('shelter.address', 'shelter_address')
       .leftJoin('shelter.leaders', 'leaders')
       .leftJoin('leaders.user', 'leader_user')
       .where('teacher_user.active = true');
@@ -99,43 +101,56 @@ export class TeacherProfilesRepository {
     qb: SelectQueryBuilder<TeacherProfileEntity>,
     params: TeacherProfilesQueryDto,
   ) {
-    const text = (params.searchString ?? params.q)?.trim();
-    const { active, hasShelter, shelterName } = params;
-    const shelterId = (params as any).shelterId;
+    const { teacherSearchString, shelterSearchString, hasShelter } = params;
 
-    if (text) {
+    // 🔍 FILTRO: teacherSearchString - busca por dados do teacher
+    if (teacherSearchString?.trim()) {
+      const text = teacherSearchString.trim();
       const like = `%${text.toLowerCase()}%`;
       const likeRaw = `%${text}%`;
+      
       qb.andWhere(
         `(
-          LOWER(teacher_user.name)  LIKE :like OR
-          LOWER(teacher_user.email) LIKE :like OR
-          teacher_user.phone        LIKE :likeRaw OR
-          LOWER(leader_user.name)    LIKE :like OR
-          LOWER(leader_user.email)   LIKE :like OR
-          leader_user.phone          LIKE :likeRaw
+          LOWER(teacher_user.name)  LIKE :teacherLike OR
+          LOWER(teacher_user.email) LIKE :teacherLike OR
+          teacher_user.phone        LIKE :teacherLikeRaw
         )`,
-        { like, likeRaw },
+        { teacherLike: like, teacherLikeRaw: likeRaw },
       );
+      console.log('✅ Filtro aplicado: teacherSearchString');
     }
 
-    if (typeof active === 'boolean') {
-      qb.andWhere('teacher.active = :active', { active });
+    // 🔍 FILTRO: shelterSearchString - busca por dados do shelter
+    if (shelterSearchString?.trim()) {
+      const text = shelterSearchString.trim();
+      const like = `%${text.toLowerCase()}%`;
+      const likeRaw = `%${text}%`;
+      
+      qb.andWhere(
+        `(
+          LOWER(shelter.name)        LIKE :shelterLike OR
+          LOWER(shelter_address.street) LIKE :shelterLike OR
+          LOWER(shelter_address.district) LIKE :shelterLike OR
+          LOWER(shelter_address.city) LIKE :shelterLike OR
+          LOWER(shelter_address.state) LIKE :shelterLike OR
+          shelter_address.postalCode LIKE :shelterLikeRaw OR
+          LOWER(leader_user.name)    LIKE :shelterLike OR
+          LOWER(leader_user.email)   LIKE :shelterLike OR
+          leader_user.phone          LIKE :shelterLikeRaw
+        )`,
+        { shelterLike: like, shelterLikeRaw: likeRaw },
+      );
+      console.log('✅ Filtro aplicado: shelterSearchString');
     }
 
-    if (shelterId) {
-      qb.andWhere('shelter.id = :shelterId', { shelterId });
-    }
-
-    if (shelterName) {
-      qb.andWhere('LOWER(shelter.name) LIKE LOWER(:shelterName)', { shelterName: `%${shelterName}%` });
-    }
-
+    // 🔍 FILTRO: hasShelter - se está vinculado a algum shelter
     if (hasShelter !== undefined) {
       if (hasShelter === true) {
-        qb.andWhere('teacher.shelter IS NOT NULL');
+        qb.andWhere('teacher.shelter_id IS NOT NULL');
+        console.log('✅ Filtro aplicado: shelter_id IS NOT NULL');
       } else {
-        qb.andWhere('teacher.shelter IS NULL');
+        qb.andWhere('teacher.shelter_id IS NULL');
+        console.log('✅ Filtro aplicado: shelter_id IS NULL');
       }
     }
 
