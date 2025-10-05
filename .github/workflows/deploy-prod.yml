@@ -1,4 +1,4 @@
-name: Deploy Prod Clubinho API
+name: Deploy Prod Chelterinho API
 
 on:
   push:

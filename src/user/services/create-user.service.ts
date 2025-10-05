@@ -9,7 +9,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UserEntity } from '../user.entity';
 
 import { TeacherProfilesService } from 'src/modules/teacher-profiles/services/teacher-profiles.service';
-import { CoordinatorProfilesService } from 'src/modules/coordinator-profiles/services/coordinator-profiles.service';
+import { LeaderProfilesService } from 'src/modules/leader-profiles/services/leader-profiles.service';
 import { UserRole } from 'src/auth/auth.types';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class CreateUserService {
   constructor(
     private readonly userRepo: UserRepository,
     private readonly teacherService: TeacherProfilesService,
-    private readonly coordinatorService: CoordinatorProfilesService,
+    private readonly leaderService: LeaderProfilesService,
   ) { }
 
   async create(dto: CreateUserDto): Promise<UserEntity> {
@@ -37,7 +37,7 @@ export class CreateUserService {
     });
 
     if (user.role === UserRole.COORDINATOR) {
-      await this.coordinatorService.createForUser(user.id);
+      await this.leaderService.createForUser(user.id);
     } else if (user.role === UserRole.TEACHER) {
       await this.teacherService.createForUser(user.id);
     }

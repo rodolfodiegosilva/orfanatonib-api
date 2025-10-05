@@ -1,5 +1,4 @@
 import { Exclude, Expose, Type, Transform, plainToInstance } from 'class-transformer';
-import { Weekday } from 'src/modules/clubs/enums/weekday.enum/weekday.enum';
 import { TeacherProfileEntity } from '../entities/teacher-profile.entity/teacher-profile.entity';
 
 @Exclude()
@@ -34,15 +33,14 @@ export class CoordinatorMiniDto {
 }
 
 @Exclude()
-export class ClubMiniWithCoordinatorDto {
+export class ShelterMiniWithCoordinatorDto {
   @Expose() id!: string;
-  @Expose() number!: number;
-  @Expose() weekday!: Weekday;
+  @Expose() name!: string;
 
   @Expose()
   @Type(() => CoordinatorMiniDto)
   @Transform(({ value }) => value ?? null)
-  coordinator!: CoordinatorMiniDto | null;
+  leader!: CoordinatorMiniDto | null;
 }
 
 @Exclude()
@@ -55,9 +53,9 @@ export class TeacherResponseDto {
   user!: UserMiniDto;
 
   @Expose()
-  @Type(() => ClubMiniWithCoordinatorDto)
+  @Type(() => ShelterMiniWithCoordinatorDto)
   @Transform(({ value }) => value ?? null)
-  club!: ClubMiniWithCoordinatorDto | null;
+  shelter!: ShelterMiniWithCoordinatorDto | null;
 
   @Expose() createdAt!: Date;
   @Expose() updatedAt!: Date;

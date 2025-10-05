@@ -1,12 +1,12 @@
 import { IsOptional, IsUUID } from 'class-validator';
 
-export class AssignTeacherToClubDto {
+export class AssignTeacherToShelterDto {
   @IsUUID()
-  clubId!: string;
+  shelterId!: string;
 }
 
-export class UnassignTeacherFromClubDto {
+export class UnassignTeacherFromShelterDto {
   @IsOptional()
   @IsUUID()
-  clubId?: string;
+  shelterId?: string;
 }

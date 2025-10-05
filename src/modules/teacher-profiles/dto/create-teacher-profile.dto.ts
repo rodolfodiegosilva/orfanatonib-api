@@ -11,5 +11,5 @@ export class CreateTeacherProfileDto {
 
   @IsOptional()
   @IsUUID()
-  coordinatorUserId?: string;
+  leaderUserId?: string;
 }

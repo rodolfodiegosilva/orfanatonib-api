@@ -1,0 +1,165 @@
+{
+  "success": 8,
+  "failed": 0,
+  "details": [
+    {
+      "name": "GET /teacher-profiles (listagem paginada)",
+      "status": "SUCCESS",
+      "result": {
+        "status": 200,
+        "total": 43,
+        "items": 10,
+        "firstTeacher": "Teste Teacher"
+      }
+    },
+    {
+      "name": "GET /teacher-profiles/simple (listagem simples)",
+      "status": "SUCCESS",
+      "result": {
+        "status": 200,
+        "count": 43
+      }
+    },
+    {
+      "name": "GET /teacher-profiles/:id (buscar por ID)",
+      "status": "SUCCESS",
+      "result": {
+        "status": 200,
+        "teacherId": "6ee8970b-ebbb-4bef-af5a-714683e24196",
+        "teacherName": "Teste Teacher"
+      }
+    },
+    {
+      "name": "GET /teacher-profiles/by-shelter/:shelterId (buscar por shelter)",
+      "status": "SUCCESS",
+      "result": {
+        "status": 200,
+        "shelterId": "14bf7db7-8ee7-44d8-b1c2-2f319c477774",
+        "shelterName": "Abrigo Barra da Tijuca 10",
+        "teachersCount": 1
+      }
+    },
+    {
+      "name": "PATCH /teacher-profiles/:id/assign-shelter (vincular shelter)",
+      "status": "SUCCESS",
+      "result": {
+        "status": 200,
+        "teacherId": "6ee8970b-ebbb-4bef-af5a-714683e24196",
+        "teacherName": "Teste Teacher",
+        "shelterId": "14bf7db7-8ee7-44d8-b1c2-2f319c477774",
+        "shelterName": "Abrigo Barra da Tijuca 10"
+      }
+    },
+    {
+      "name": "PATCH /teacher-profiles/:id/unassign-shelter (desvincular shelter)",
+      "status": "SUCCESS",
+      "result": {
+        "status": 200,
+        "teacherId": "6ee8970b-ebbb-4bef-af5a-714683e24196",
+        "teacherName": "Teste Teacher",
+        "shelterId": "14bf7db7-8ee7-44d8-b1c2-2f319c477774",
+        "shelterName": "Abrigo Barra da Tijuca 10"
+      }
+    },
+    {
+      "name": "Filtros avançados",
+      "status": "SUCCESS",
+      "result": {
+        "filters": [
+          {
+            "filter": "Busca por nome",
+            "status": 200,
+            "count": 2,
+            "total": 2
+          },
+          {
+            "filter": "Filtro por ativo",
+            "status": 200,
+            "count": 12,
+            "total": 43
+          },
+          {
+            "filter": "Filtro por inativo",
+            "status": 200,
+            "count": 12,
+            "total": 43
+          },
+          {
+            "filter": "Filtro com shelter",
+            "status": 200,
+            "count": 6,
+            "total": 6
+          },
+          {
+            "filter": "Filtro sem shelter",
+            "status": 200,
+            "count": 6,
+            "total": 6
+          },
+          {
+            "filter": "Ordenação por nome ASC",
+            "status": 200,
+            "count": 12,
+            "total": 43
+          },
+          {
+            "filter": "Ordenação por data DESC",
+            "status": 200,
+            "count": 12,
+            "total": 43
+          },
+          {
+            "filter": "Paginação",
+            "status": 200,
+            "count": 5,
+            "total": 43
+          },
+          {
+            "filter": "Filtros combinados",
+            "status": 200,
+            "count": 3,
+            "total": 6
+          }
+        ]
+      }
+    },
+    {
+      "name": "Cenários de erro",
+      "status": "SUCCESS",
+      "result": {
+        "errorTests": [
+          {
+            "name": "Buscar teacher inexistente",
+            "status": 404,
+            "error": {
+              "message": "TeacherProfile não encontrado",
+              "error": "Not Found",
+              "statusCode": 404
+            },
+            "success": true
+          },
+          {
+            "name": "Vincular shelter inexistente",
+            "status": 404,
+            "error": {
+              "message": "Shelter não encontrado",
+              "error": "Not Found",
+              "statusCode": 404
+            },
+            "success": true
+          },
+          {
+            "name": "Desvincular shelter inexistente",
+            "status": 400,
+            "error": {
+              "message": "Teacher não pertence ao shelter informado",
+              "error": "Bad Request",
+              "statusCode": 400
+            },
+            "success": true
+          }
+        ]
+      }
+    }
+  ]
+}

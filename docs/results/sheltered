@@ -1,0 +1,413 @@
+{
+  "created_at": "2025-09-28T00:36:31.972Z",
+  "total_created": 20,
+  "total_errors": 0,
+  "sheltered": [
+    {
+      "id": "afd9ea58-2c02-482f-a8c0-a1ca572e4972",
+      "name": "Ana Silva",
+      "birthDate": "2018-12-19",
+      "guardianName": "Guardião de Ana Silva",
+      "gender": "Feminino",
+      "guardianPhone": null,
+      "joinedAt": null,
+      "shelter": {
+        "id": "29369713-25c4-436f-8c9e-138b3560a175",
+        "name": "Abrigo Barra da Tijuca 10"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:27.304Z",
+      "updatedAt": "2025-09-28T00:36:27.304Z"
+    },
+    {
+      "id": "1a6b3422-db8f-443a-b0fc-a15932ef9567",
+      "name": "Bruno Santos",
+      "birthDate": "2017-03-05",
+      "guardianName": "Guardião de Bruno Santos",
+      "gender": "Masculino",
+      "guardianPhone": "+5511761723491",
+      "joinedAt": null,
+      "shelter": {
+        "id": "56016b7f-0552-45f7-9e7a-d66d9f3453bb",
+        "name": "Abrigo Barra da Tijuca 10"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:27.542Z",
+      "updatedAt": "2025-09-28T00:36:27.542Z"
+    },
+    {
+      "id": "3305a377-0e44-42f4-b97d-095288f920d7",
+      "name": "Carlos Oliveira",
+      "birthDate": "2011-08-08",
+      "guardianName": "Guardião de Carlos Oliveira",
+      "gender": "Masculino",
+      "guardianPhone": "+5511267096706",
+      "joinedAt": null,
+      "shelter": {
+        "id": "74d9aae6-6d5f-4684-9662-747caf550c7a",
+        "name": "Abrigo Barra da Tijuca 10"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:27.776Z",
+      "updatedAt": "2025-09-28T00:36:27.776Z"
+    },
+    {
+      "id": "f3cdfacb-b381-4df5-9d50-e6ebcb8578d6",
+      "name": "Diana Costa",
+      "birthDate": "2018-08-17",
+      "guardianName": "Guardião de Diana Costa",
+      "gender": "Masculino",
+      "guardianPhone": "+5511875157435",
+      "joinedAt": null,
+      "shelter": {
+        "id": "a841b229-379a-4e03-a6d0-e71f00c0ec8e",
+        "name": "Abrigo Botafogo 7"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:28.025Z",
+      "updatedAt": "2025-09-28T00:36:28.025Z"
+    },
+    {
+      "id": "7eccfac9-08dd-4d9a-9935-f79f2cf8fcf5",
+      "name": "Eduardo Lima",
+      "birthDate": "2020-11-27",
+      "guardianName": "Guardião de Eduardo Lima",
+      "gender": "Feminino",
+      "guardianPhone": null,
+      "joinedAt": null,
+      "shelter": {
+        "id": "b8c14610-3f8e-4ddd-a37b-6ce6076be1f1",
+        "name": "Abrigo Botafogo 7"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:28.255Z",
+      "updatedAt": "2025-09-28T00:36:28.255Z"
+    },
+    {
+      "id": "8b989018-40fd-42b2-8b33-7682a4a036c6",
+      "name": "Fernanda Rocha",
+      "birthDate": "2012-03-09",
+      "guardianName": "Guardião de Fernanda Rocha",
+      "gender": "Feminino",
+      "guardianPhone": "+5511589141062",
+      "joinedAt": null,
+      "shelter": {
+        "id": "c8b9c95a-602f-4ec5-bd10-6e115e890798",
+        "name": "Abrigo Botafogo 7"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:28.495Z",
+      "updatedAt": "2025-09-28T00:36:28.495Z"
+    },
+    {
+      "id": "a7392a7a-9d5a-479f-89a3-8bd795c9d26b",
+      "name": "Gabriel Alves",
+      "birthDate": "2011-03-02",
+      "guardianName": null,
+      "gender": "Masculino",
+      "guardianPhone": null,
+      "joinedAt": null,
+      "shelter": {
+        "id": "438b4a2c-7fed-4e88-8322-ed59ea2130c7",
+        "name": "Abrigo Central 1"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:28.739Z",
+      "updatedAt": "2025-09-28T00:36:28.739Z"
+    },
+    {
+      "id": "82ef2c18-94ec-4fad-917e-f35c7b5d4ff5",
+      "name": "Helena Pereira",
+      "birthDate": "2017-01-24",
+      "guardianName": null,
+      "gender": "Masculino",
+      "guardianPhone": "+5511262958881",
+      "joinedAt": null,
+      "shelter": {
+        "id": "5787e0e8-928e-448a-a9e1-1b2d1e2a1d03",
+        "name": "Abrigo Central 1"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:28.968Z",
+      "updatedAt": "2025-09-28T00:36:28.968Z"
+    },
+    {
+      "id": "c66421f9-8724-4b0e-a9f3-1e784c5fd876",
+      "name": "Igor Martins",
+      "birthDate": "2015-06-12",
+      "guardianName": null,
+      "gender": "Feminino",
+      "guardianPhone": "+5511928020950",
+      "joinedAt": null,
+      "shelter": {
+        "id": "80036f9a-26a1-40ef-aac8-5c227e58abcf",
+        "name": "Abrigo Central 1"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:29.205Z",
+      "updatedAt": "2025-09-28T00:36:29.205Z"
+    },
+    {
+      "id": "10eb2b44-4060-4140-8e2c-16d4c8ff3da2",
+      "name": "Julia Ferreira",
+      "birthDate": "2015-05-04",
+      "guardianName": "Guardião de Julia Ferreira",
+      "gender": "Masculino",
+      "guardianPhone": "+5511294303740",
+      "joinedAt": null,
+      "shelter": {
+        "id": "3cbcbeeb-e330-42a4-b401-c63ed52d5d4b",
+        "name": "Abrigo Copacabana 4"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:29.443Z",
+      "updatedAt": "2025-09-28T00:36:29.443Z"
+    },
+    {
+      "id": "f6fd90cb-474a-42b4-a868-24373593b008",
+      "name": "Kleber Souza",
+      "birthDate": "2013-10-03",
+      "guardianName": "Guardião de Kleber Souza",
+      "gender": "Masculino",
+      "guardianPhone": "+5511580872197",
+      "joinedAt": null,
+      "shelter": {
+        "id": "5273f0b9-3a8e-4799-b9bf-5bb0c68222ad",
+        "name": "Abrigo Copacabana 4"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:29.674Z",
+      "updatedAt": "2025-09-28T00:36:29.674Z"
+    },
+    {
+      "id": "c0ab8391-6194-4728-8b27-a183a3c78a83",
+      "name": "Larissa Barbosa",
+      "birthDate": "2013-07-28",
+      "guardianName": null,
+      "gender": "Feminino",
+      "guardianPhone": "+5511933331892",
+      "joinedAt": null,
+      "shelter": {
+        "id": "d3b48ba6-c738-4b14-b8f3-3cff58ef2a1e",
+        "name": "Abrigo Copacabana 4"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:29.910Z",
+      "updatedAt": "2025-09-28T00:36:29.910Z"
+    },
+    {
+      "id": "7eb09c06-8f9c-457c-962b-371898e0d2c0",
+      "name": "Marcos Dias",
+      "birthDate": "2019-12-14",
+      "guardianName": null,
+      "gender": "Feminino",
+      "guardianPhone": "+5511757866036",
+      "joinedAt": null,
+      "shelter": {
+        "id": "57dc7f9d-3585-427b-a4c1-3cacddc6aee5",
+        "name": "Abrigo Flamengo 8"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:30.139Z",
+      "updatedAt": "2025-09-28T00:36:30.139Z"
+    },
+    {
+      "id": "6c290d8d-e629-4361-bdb8-1443bfc3e479",
+      "name": "Natália Campos",
+      "birthDate": "2015-11-08",
+      "guardianName": "Guardião de Natália Campos",
+      "gender": "Feminino",
+      "guardianPhone": "+5511824946822",
+      "joinedAt": null,
+      "shelter": {
+        "id": "aa84294b-dbe2-4065-a61c-4d712d75f975",
+        "name": "Abrigo Flamengo 8"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:30.377Z",
+      "updatedAt": "2025-09-28T00:36:30.377Z"
+    },
+    {
+      "id": "fc79f1bd-0e77-41b1-a485-48a318119657",
+      "name": "Otávio Nunes",
+      "birthDate": "2015-10-10",
+      "guardianName": "Guardião de Otávio Nunes",
+      "gender": "Feminino",
+      "guardianPhone": "+5511301590466",
+      "joinedAt": null,
+      "shelter": {
+        "id": "bba0dc12-0905-4665-820e-702d6de79ce4",
+        "name": "Abrigo Flamengo 8"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:30.607Z",
+      "updatedAt": "2025-09-28T00:36:30.607Z"
+    },
+    {
+      "id": "ca670a71-488b-455f-8ed8-2e2d534dfe2c",
+      "name": "Patrícia Vieira",
+      "birthDate": "2013-05-23",
+      "guardianName": "Guardião de Patrícia Vieira",
+      "gender": "Feminino",
+      "guardianPhone": "+5511678117139",
+      "joinedAt": null,
+      "shelter": {
+        "id": "45a276c5-4167-483a-9d1b-60a57060f433",
+        "name": "Abrigo Ipanema 5"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:30.830Z",
+      "updatedAt": "2025-09-28T00:36:30.830Z"
+    },
+    {
+      "id": "3703fef8-7619-4e2a-b6a7-4d6fb42ba100",
+      "name": "Rafael Mendes",
+      "birthDate": "2016-10-05",
+      "guardianName": "Guardião de Rafael Mendes",
+      "gender": "Feminino",
+      "guardianPhone": null,
+      "joinedAt": null,
+      "shelter": {
+        "id": "a8e7b7b2-0def-4cd7-8709-d86743e63217",
+        "name": "Abrigo Ipanema 5"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:31.060Z",
+      "updatedAt": "2025-09-28T00:36:31.060Z"
+    },
+    {
+      "id": "309ca1da-a79f-41b2-86cf-df182c416b28",
+      "name": "Sandra Gomes",
+      "birthDate": "2014-05-24",
+      "guardianName": "Guardião de Sandra Gomes",
+      "gender": "Masculino",
+      "guardianPhone": "+5511287135861",
+      "joinedAt": null,
+      "shelter": {
+        "id": "e73ef756-9aa1-4d57-94b5-79f74bb36a52",
+        "name": "Abrigo Ipanema 5"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:31.295Z",
+      "updatedAt": "2025-09-28T00:36:31.295Z"
+    },
+    {
+      "id": "ad29064e-a784-4d41-bb79-dd53c1ea8682",
+      "name": "Thiago Ramos",
+      "birthDate": "2017-12-04",
+      "guardianName": "Guardião de Thiago Ramos",
+      "gender": "Masculino",
+      "guardianPhone": null,
+      "joinedAt": null,
+      "shelter": {
+        "id": "19afd323-b070-4634-902d-0ab9e0fe3872",
+        "name": "Abrigo Jardins 2"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:31.520Z",
+      "updatedAt": "2025-09-28T00:36:31.520Z"
+    },
+    {
+      "id": "ccdacf3c-33e9-4660-a687-2ea5829a9b1f",
+      "name": "Vanessa Lopes",
+      "birthDate": "2018-11-08",
+      "guardianName": "Guardião de Vanessa Lopes",
+      "gender": "Masculino",
+      "guardianPhone": "+5511982681175",
+      "joinedAt": null,
+      "shelter": {
+        "id": "57f5bf0e-8455-4258-8424-92abd77a8a35",
+        "name": "Abrigo Jardins 2"
+      },
+      "address": null,
+      "createdAt": "2025-09-28T00:36:31.753Z",
+      "updatedAt": "2025-09-28T00:36:31.753Z"
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "shelters_used": [
+      {
+        "id": "29369713-25c4-436f-8c9e-138b3560a175",
+        "name": "Abrigo Barra da Tijuca 10"
+      },
+      {
+        "id": "56016b7f-0552-45f7-9e7a-d66d9f3453bb",
+        "name": "Abrigo Barra da Tijuca 10"
+      },
+      {
+        "id": "74d9aae6-6d5f-4684-9662-747caf550c7a",
+        "name": "Abrigo Barra da Tijuca 10"
+      },
+      {
+        "id": "a841b229-379a-4e03-a6d0-e71f00c0ec8e",
+        "name": "Abrigo Botafogo 7"
+      },
+      {
+        "id": "b8c14610-3f8e-4ddd-a37b-6ce6076be1f1",
+        "name": "Abrigo Botafogo 7"
+      },
+      {
+        "id": "c8b9c95a-602f-4ec5-bd10-6e115e890798",
+        "name": "Abrigo Botafogo 7"
+      },
+      {
+        "id": "438b4a2c-7fed-4e88-8322-ed59ea2130c7",
+        "name": "Abrigo Central 1"
+      },
+      {
+        "id": "5787e0e8-928e-448a-a9e1-1b2d1e2a1d03",
+        "name": "Abrigo Central 1"
+      },
+      {
+        "id": "80036f9a-26a1-40ef-aac8-5c227e58abcf",
+        "name": "Abrigo Central 1"
+      },
+      {
+        "id": "3cbcbeeb-e330-42a4-b401-c63ed52d5d4b",
+        "name": "Abrigo Copacabana 4"
+      },
+      {
+        "id": "5273f0b9-3a8e-4799-b9bf-5bb0c68222ad",
+        "name": "Abrigo Copacabana 4"
+      },
+      {
+        "id": "d3b48ba6-c738-4b14-b8f3-3cff58ef2a1e",
+        "name": "Abrigo Copacabana 4"
+      },
+      {
+        "id": "57dc7f9d-3585-427b-a4c1-3cacddc6aee5",
+        "name": "Abrigo Flamengo 8"
+      },
+      {
+        "id": "aa84294b-dbe2-4065-a61c-4d712d75f975",
+        "name": "Abrigo Flamengo 8"
+      },
+      {
+        "id": "bba0dc12-0905-4665-820e-702d6de79ce4",
+        "name": "Abrigo Flamengo 8"
+      },
+      {
+        "id": "45a276c5-4167-483a-9d1b-60a57060f433",
+        "name": "Abrigo Ipanema 5"
+      },
+      {
+        "id": "a8e7b7b2-0def-4cd7-8709-d86743e63217",
+        "name": "Abrigo Ipanema 5"
+      },
+      {
+        "id": "e73ef756-9aa1-4d57-94b5-79f74bb36a52",
+        "name": "Abrigo Ipanema 5"
+      },
+      {
+        "id": "19afd323-b070-4634-902d-0ab9e0fe3872",
+        "name": "Abrigo Jardins 2"
+      },
+      {
+        "id": "57f5bf0e-8455-4258-8424-92abd77a8a35",
+        "name": "Abrigo Jardins 2"
+      }
+    ],
+    "success_rate": "100.0%"
+  }
+}

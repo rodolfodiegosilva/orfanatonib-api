@@ -33,6 +33,7 @@ export class TeacherProfilesService {
     const ctx = await this.getCtx(req);
     this.assertAllowed(ctx);
 
+    console.log("Buscando página com filtros:", query);
     const { items, total, page, limit } = await this.repo.findPageWithFilters(query, ctx);
     return {
       items: items.map(toTeacherDto),
@@ -50,7 +51,7 @@ export class TeacherProfilesService {
     const ctx = await this.getCtx(req);
     this.assertAllowed(ctx);
 
-    const teachers = await this.repo.findAllWithClubAndCoordinator(ctx);
+    const teachers = await this.repo.findAllWithShelterAndLeader(ctx);
     return teachers.map(toTeacherDto);
   }
 
@@ -65,50 +66,50 @@ export class TeacherProfilesService {
     const ctx = await this.getCtx(req);
     this.assertAllowed(ctx);
 
-    const teacher = await this.repo.findOneWithClubAndCoordinatorOrFail(id, ctx);
+    const teacher = await this.repo.findOneWithShelterAndLeaderOrFail(id, ctx);
     return toTeacherDto(teacher);
   }
 
-  async findByClubId(clubId: string, req: Request): Promise<TeacherResponseDto[]> {
+  async findByShelterId(shelterId: string, req: Request): Promise<TeacherResponseDto[]> {
     const ctx = await this.getCtx(req);
     this.assertAllowed(ctx);
 
-    const teachers = await this.repo.findByClubIdWithCoordinator(clubId, ctx);
+    const teachers = await this.repo.findByShelterIdWithLeader(shelterId, ctx);
     return teachers.map(toTeacherDto);
   }
 
-  async assignClub(teacherId: string, clubId: string, req: Request): Promise<void> {
+  async assignShelter(teacherId: string, shelterId: string, req: Request): Promise<void> {
     const ctx = await this.getCtx(req);
     this.assertAllowed(ctx);
 
     if (ctx.role !== 'admin') {
-      const allowed = await this.repo.userHasAccessToClub(clubId, ctx);
-      if (!allowed) throw new ForbiddenException('Sem acesso ao club informado');
+      const allowed = await this.repo.userHasAccessToShelter(shelterId, ctx);
+      if (!allowed) throw new ForbiddenException('Sem acesso ao shelter informado');
     }
-    await this.repo.assignTeacherToClub(teacherId, clubId);
+    await this.repo.assignTeacherToShelter(teacherId, shelterId);
   }
 
-  async unassignClub(teacherId: string, expectedClubId: string | undefined, req: Request): Promise<void> {
+  async unassignShelter(teacherId: string, expectedShelterId: string | undefined, req: Request): Promise<void> {
     const ctx = await this.getCtx(req);
     this.assertAllowed(ctx);
 
     if (ctx.role !== 'admin') {
-      if (expectedClubId) {
-        const allowed = await this.repo.userHasAccessToClub(expectedClubId, ctx);
-        if (!allowed) throw new ForbiddenException('Sem acesso ao club informado');
+      if (expectedShelterId) {
+        const allowed = await this.repo.userHasAccessToShelter(expectedShelterId, ctx);
+        if (!allowed) throw new ForbiddenException('Sem acesso ao shelter informado');
       } else {
-        const t = await this.repo.findOneWithClubAndCoordinatorOrFail(teacherId, ctx);
-        const currentClubId = t.club?.id;
-        if (currentClubId) {
-          const allowed = await this.repo.userHasAccessToClub(currentClubId, ctx);
-          if (!allowed) throw new ForbiddenException('Sem acesso ao club atual do teacher');
+        const t = await this.repo.findOneWithShelterAndLeaderOrFail(teacherId, ctx);
+        const currentShelterId = t.shelter?.id;
+        if (currentShelterId) {
+          const allowed = await this.repo.userHasAccessToShelter(currentShelterId, ctx);
+          if (!allowed) throw new ForbiddenException('Sem acesso ao shelter atual do teacher');
         } else {
-          throw new ForbiddenException('Teacher não possui club para desvincular');
+          throw new ForbiddenException('Teacher não possui shelter para desvincular');
         }
       }
     }
 
-    await this.repo.unassignTeacherFromClub(teacherId, expectedClubId);
+    await this.repo.unassignTeacherFromShelter(teacherId, expectedShelterId);
   }
 
   async createForUser(userId: string) {
