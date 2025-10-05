@@ -16,7 +16,14 @@ Esta pasta contém todas as collections do Postman para os módulos da API do si
 - `Shelters_API_Collection.postman_collection.json` - Collection completa do módulo Shelters
 
 ### 👶 Sheltered Module
-- `Sheltered_API_Collection.postman_collection.json` - Collection completa do módulo Sheltered
+- `Sheltered_API_Collection.postman_collection.json` - Collection completa do módulo Sheltered com filtros consolidados
+
+#### **Filtros Consolidados:**
+- **shelteredSearchingString**: Busca geral por nome do abrigado, responsável ou telefone
+- **addressFilter**: Filtro por todos os campos de endereço
+- **gender**: Filtro por gênero (M/F)
+- **birthDateFrom/birthDateTo**: Range de data de nascimento
+- **joinedFrom/joinedTo**: Range de data "no abrigo desde"
 
 ### 📚 Pagelas Module
 - `Pagelas_API_Collection.postman_collection.json` - Collection completa do módulo Pagelas (atualizada com estrutura correta)

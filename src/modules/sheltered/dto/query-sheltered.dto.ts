@@ -21,62 +21,33 @@ export class QueryShelteredDto {
   @IsOptional() @IsIn(['ASC', 'DESC', 'asc', 'desc'])
   order?: 'ASC' | 'DESC' | 'asc' | 'desc' = 'ASC';
 
-  // 👶 Filtro de nome do abrigado
+  // 🔍 FILTROS CONSOLIDADOS
+  
+  // Busca geral: nome do abrigado, responsável ou telefone
   @IsOptional() @IsString()
-  shelteredName?: string;
+  shelteredSearchingString?: string;
 
-  // 🏠 Filtros de abrigo
-  @IsOptional() @IsString()
-  shelterFilters?: string;
-
-  // 🏙️ Filtro de endereço
+  // Filtro de endereço: todos os campos de endereço
   @IsOptional() @IsString()
   addressFilter?: string;
 
-  // 🌍 Busca geográfica - busca em todos os campos geográficos
-  @IsOptional() @IsString()
-  geographicSearchString?: string;
-
-  // 👤 Filtros pessoais
+  // Filtro por gênero
   @IsOptional() @IsIn(['M', 'F'])
   gender?: string;
 
-  @IsOptional() @IsString()
-  guardianName?: string;
-
-  @IsOptional() @IsString()
-  birthDate?: string;
-
+  // Range de data de nascimento
   @IsOptional() @IsString()
   birthDateFrom?: string;
 
   @IsOptional() @IsString()
   birthDateTo?: string;
 
-  @IsOptional() @IsString()
-  joinedAt?: string;
-
+  // Range de data "no abrigo desde"
   @IsOptional() @IsString()
   joinedFrom?: string;
 
   @IsOptional() @IsString()
   joinedTo?: string;
-
-  // Filtros legados (para compatibilidade)
-  @IsOptional() @IsString()
-  searchString?: string;
-
-  @IsOptional() @IsUUID()
-  shelterId?: string;
-
-  @IsOptional() @IsString()
-  shelterName?: string;
-
-  @IsOptional() @IsString()
-  city?: string;
-
-  @IsOptional() @IsString()
-  state?: string;
 }
 
 export class QueryShelteredSimpleDto {

@@ -67,13 +67,16 @@
 
 ### **6. Sheltered API Collection**
 - **Arquivo**: `docs/collections/Sheltered_API_Collection.postman_collection.json`
-- **Versão**: 6.0.0
-- **Status**: ✅ **VALIDADA E FUNCIONAL**
+- **Versão**: 7.0.0
+- **Status**: ✅ **ATUALIZADA COM FILTROS CONSOLIDADOS**
 
 #### **Melhorias Implementadas:**
-- ✅ **Gender validation** - Apenas "M" ou "F" são aceitos
-- ✅ **Filtros agrupados** - Estrutura lógica de filtros
-- ✅ **Busca geográfica** - `geographicSearchString` funcionando
+- ✅ **Filtros consolidados** - Implementados filtros mais organizados e eficientes
+- ✅ **shelteredSearchingString** - Busca unificada por nome, responsável ou telefone
+- ✅ **addressFilter** - Filtro por todos os campos de endereço
+- ✅ **Ranges de data** - birthDateFrom/birthDateTo e joinedFrom/joinedTo
+- ✅ **Filtros legados removidos** - Código mais limpo e focado
+- ✅ **Documentação atualizada** - Descrições claras dos novos filtros
 - ✅ **Relacionamentos** - ManyToOne com Shelters funcionando
 
 ## 🔍 Detalhes das Atualizações
@@ -95,12 +98,12 @@
 #### **Users (Campo Phone Obrigatório):**
 ```json
 {
-  "name": "João Silva",
-  "email": "joao@example.com",
+    "name": "João Silva",
+    "email": "joao@example.com",
   "password": "password123",
-  "phone": "+5511999999999",
+    "phone": "+5511999999999",
   "role": "teacher",
-  "active": true,
+    "active": true,
   "completed": false,
   "commonUser": true
 }

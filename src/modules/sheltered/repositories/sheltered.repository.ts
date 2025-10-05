@@ -49,47 +49,35 @@ export class ShelteredRepository {
       limit = 20,
       orderBy = 'name',
       order = 'ASC',
-      shelteredName,
-      shelterFilters,
+      // Filtros consolidados
+      shelteredSearchingString,
       addressFilter,
-      geographicSearchString,
       gender,
-      birthDate,
       birthDateFrom,
       birthDateTo,
-      joinedAt,
       joinedFrom,
       joinedTo,
-      // Filtros legados para compatibilidade
-      searchString,
-      shelterId,
-      shelterName,
-      city,
-      state,
     } = q;
 
     const qb = this.baseQB().distinct(true);
     this.applyRoleFilter(qb, ctx);
 
-    // 👶 Filtro de nome do abrigado - busca específica no nome
-    if (shelteredName?.trim()) {
-      const like = `%${shelteredName.trim()}%`;
+    // 🔍 FILTROS CONSOLIDADOS
+
+    // Busca geral: nome do abrigado, responsável ou telefone
+    if (shelteredSearchingString?.trim()) {
+      const like = `%${shelteredSearchingString.trim()}%`;
       qb.andWhere(
-        `LOWER(c.name) LIKE LOWER(:shelteredName)`,
-        { shelteredName: like }
+        `(
+          LOWER(c.name) LIKE LOWER(:shelteredSearchingString) OR
+          LOWER(COALESCE(c.guardianName, '')) LIKE LOWER(:shelteredSearchingString) OR
+          LOWER(COALESCE(c.guardianPhone, '')) LIKE LOWER(:shelteredSearchingString)
+        )`,
+        { shelteredSearchingString: like }
       );
     }
 
-    // 🏠 Filtros de abrigo - busca em nome do abrigo
-    if (shelterFilters?.trim()) {
-      const like = `%${shelterFilters.trim()}%`;
-      qb.andWhere(
-        `LOWER(shelter.name) LIKE LOWER(:shelterFilters)`,
-        { shelterFilters: like }
-      );
-    }
-
-    // 🏙️ Filtro de endereço - busca em todos os campos relacionados ao endereço
+    // Filtro de endereço: todos os campos de endereço
     if (addressFilter?.trim()) {
       const like = `%${addressFilter.trim()}%`;
       qb.andWhere(
@@ -106,30 +94,7 @@ export class ShelteredRepository {
       );
     }
 
-    // 🌍 Busca geográfica - busca em todos os campos geográficos (endereço + cidade/estado do abrigo)
-    if (geographicSearchString?.trim()) {
-      const like = `%${geographicSearchString.trim()}%`;
-      qb.andWhere(
-        `(
-          LOWER(addr.street) LIKE LOWER(:geographicSearchString) OR
-          LOWER(addr.number) LIKE LOWER(:geographicSearchString) OR
-          LOWER(addr.district) LIKE LOWER(:geographicSearchString) OR
-          LOWER(addr.city) LIKE LOWER(:geographicSearchString) OR
-          LOWER(addr.state) LIKE LOWER(:geographicSearchString) OR
-          addr.postalCode LIKE :geographicSearchStringRaw OR
-          LOWER(addr.complement) LIKE LOWER(:geographicSearchString) OR
-          LOWER(shelterAddress.city) LIKE LOWER(:geographicSearchString) OR
-          LOWER(shelterAddress.state) LIKE LOWER(:geographicSearchString) OR
-          LOWER(shelterAddress.district) LIKE LOWER(:geographicSearchString)
-        )`,
-        { 
-          geographicSearchString: like, 
-          geographicSearchStringRaw: `%${geographicSearchString.trim()}%` 
-        }
-      );
-    }
-
-    // 👤 Filtros pessoais
+    // Filtro por gênero
     if (gender?.trim()) {
       const normalizedGender = gender.trim().toUpperCase();
       if (['M', 'F'].includes(normalizedGender)) {
@@ -137,17 +102,7 @@ export class ShelteredRepository {
       }
     }
 
-    if (q.guardianName?.trim()) {
-      const like = `%${q.guardianName.trim()}%`;
-      qb.andWhere(
-        `LOWER(c.guardianName) LIKE LOWER(:guardianName)`,
-        { guardianName: like }
-      );
-    }
-
-    if (birthDate?.trim()) {
-      qb.andWhere('c.birthDate = :birthDate', { birthDate: birthDate.trim() });
-    }
+    // Range de data de nascimento
     if (birthDateFrom?.trim()) {
       qb.andWhere('c.birthDate >= :birthDateFrom', { birthDateFrom: birthDateFrom.trim() });
     }
@@ -155,50 +110,12 @@ export class ShelteredRepository {
       qb.andWhere('c.birthDate <= :birthDateTo', { birthDateTo: birthDateTo.trim() });
     }
 
-    if (joinedAt?.trim()) {
-      qb.andWhere('c.joinedAt = :joinedAt', { joinedAt: joinedAt.trim() });
-    }
+    // Range de data "no abrigo desde"
     if (joinedFrom?.trim()) {
       qb.andWhere('c.joinedAt >= :joinedFrom', { joinedFrom: joinedFrom.trim() });
     }
     if (joinedTo?.trim()) {
       qb.andWhere('c.joinedAt <= :joinedTo', { joinedTo: joinedTo.trim() });
-    }
-
-    // 🔍 Compatibilidade com frontend - mapear parâmetros antigos para novos
-    // Se searchString foi enviado mas shelteredName não, usar searchString
-    if (searchString?.trim() && !shelteredName?.trim()) {
-      const like = `%${searchString.trim()}%`;
-      qb.andWhere(
-        `(
-          LOWER(c.name) LIKE LOWER(:searchString) OR
-          LOWER(COALESCE(c.guardianName, '')) LIKE LOWER(:searchString) OR
-          LOWER(COALESCE(c.guardianPhone, '')) LIKE LOWER(:searchString)
-        )`,
-        { searchString: like }
-      );
-    }
-
-    // Se shelterName foi enviado mas shelterFilters não, usar shelterName
-    if (shelterName?.trim() && !shelterFilters?.trim()) {
-      const like = `%${shelterName.trim()}%`;
-      qb.andWhere(
-        `LOWER(shelter.name) LIKE LOWER(:shelterName)`,
-        { shelterName: like }
-      );
-    }
-
-    // Filtro específico por shelter ID
-    if (shelterId?.trim()) {
-      qb.andWhere('shelter.id = :shelterId', { shelterId });
-    }
-
-    // Filtros de cidade e estado (legados)
-    if (city?.trim()) {
-      qb.andWhere('LOWER(addr.city) LIKE LOWER(:city)', { city: `%${city.trim()}%` });
-    }
-    if (state?.trim()) {
-      qb.andWhere('LOWER(addr.state) LIKE LOWER(:state)', { state: `%${state.trim()}%` });
     }
 
     // Ordenação

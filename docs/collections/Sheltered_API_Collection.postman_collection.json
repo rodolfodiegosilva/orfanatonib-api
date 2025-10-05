@@ -32,7 +32,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC&shelteredName=Ana&guardianName=Maria&geographicSearchString=São Paulo",
+              "raw": "{{base_url}}/sheltered?page=1&limit=20&orderBy=name&order=ASC&shelteredSearchingString=Ana&gender=F&addressFilter=São Paulo&birthDateFrom=2010-01-01&birthDateTo=2015-12-31&joinedFrom=2024-01-01&joinedTo=2024-12-31",
               "host": [
                 "{{base_url}}"
               ],
@@ -61,24 +61,14 @@
                   "description": "Ordem da ordenação (ASC, DESC)"
                 },
                 {
-                  "key": "shelteredName",
+                  "key": "shelteredSearchingString",
                   "value": "",
-                  "description": "Filtro por nome do abrigado"
-                },
-                {
-                  "key": "shelterFilters",
-                  "value": "",
-                  "description": "Filtro por informações do shelter (nome, líderes, professores)"
+                  "description": "Busca geral: nome do abrigado, responsável ou telefone"
                 },
                 {
                   "key": "addressFilter",
                   "value": "",
-                  "description": "Filtro por endereço do abrigado"
-                },
-                {
-                  "key": "geographicSearchString",
-                  "value": "",
-                  "description": "Busca geográfica em todos os campos de endereço (abrigado e shelter)"
+                  "description": "Filtro de endereço: todos os campos de endereço"
                 },
                 {
                   "key": "gender",
@@ -86,58 +76,28 @@
                   "description": "Filtro por gênero (M, F)"
                 },
                 {
-                  "key": "guardianName",
-                  "value": "",
-                  "description": "Filtro por nome do guardião"
-                },
-                {
                   "key": "birthDateFrom",
                   "value": "",
-                  "description": "Filtrar por data de nascimento a partir de (YYYY-MM-DD)"
+                  "description": "Range de data de nascimento - início (YYYY-MM-DD)"
                 },
                 {
                   "key": "birthDateTo",
                   "value": "",
-                  "description": "Filtrar por data de nascimento até (YYYY-MM-DD)"
+                  "description": "Range de data de nascimento - fim (YYYY-MM-DD)"
                 },
                 {
                   "key": "joinedFrom",
                   "value": "",
-                  "description": "Filtrar por data de entrada a partir de (YYYY-MM-DD)"
+                  "description": "Range 'no abrigo desde' - início (YYYY-MM-DD)"
                 },
                 {
                   "key": "joinedTo",
                   "value": "",
-                  "description": "Filtrar por data de entrada até (YYYY-MM-DD)"
-                },
-                {
-                  "key": "searchString",
-                  "value": "",
-                  "description": "Filtro legado - busca geral por nome, nome do responsável ou telefone"
-                },
-                {
-                  "key": "shelterId",
-                  "value": "",
-                  "description": "Filtro legado - filtrar por ID do shelter"
-                },
-                {
-                  "key": "shelterName",
-                  "value": "",
-                  "description": "Filtro legado - filtrar por nome do shelter"
-                },
-                {
-                  "key": "city",
-                  "value": "",
-                  "description": "Filtro legado - filtrar por cidade do endereço"
-                },
-                {
-                  "key": "state",
-                  "value": "",
-                  "description": "Filtro legado - filtrar por estado do endereço"
+                  "description": "Range 'no abrigo desde' - fim (YYYY-MM-DD)"
                 }
               ]
             },
-            "description": "Lista todos os sheltered com paginação e filtros opcionais. Suporta filtros agrupados (shelteredName, shelterFilters, addressFilter, gender), busca geográfica (geographicSearchString) e filtros por data. Mantém compatibilidade com filtros legados. Disponível para todos os roles com controle de acesso."
+            "description": "Lista todos os sheltered com paginação e filtros consolidados. Suporta: shelteredSearchingString (nome, responsável, telefone), addressFilter (todos os campos de endereço), gender (M/F), ranges de data para nascimento e entrada no abrigo. Disponível para todos os roles com controle de acesso."
           },
           "response": [
             {

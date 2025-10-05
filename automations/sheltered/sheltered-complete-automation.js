@@ -183,56 +183,54 @@ async function testShelteredCRUD() {
 // ==================== TESTES DE FILTROS ====================
 
 async function testShelteredFilters() {
-  console.log('\n📋 Testando Filtros de Sheltered...');
+  console.log('\n📋 Testando Filtros Consolidados de Sheltered...');
   
-  // 1. Filtro por gender
-  console.log('  🔸 Teste 1: Filtro por gender (gender=F)');
-  const genderResponse = await makeRequest('GET', '/sheltered?gender=F&limit=5');
-  if (genderResponse && genderResponse.status === 200) {
-    console.log(`    ✅ Status: ${genderResponse.status}`);
-    console.log(`    📊 Encontrados: ${genderResponse.data.items?.length || 0}`);
+  // 1. Filtro consolidado: shelteredSearchingString (nome, responsável, telefone)
+  console.log('  🔸 Teste 1: Filtro consolidado shelteredSearchingString (nome, responsável, telefone)');
+  const searchResponse = await makeRequest('GET', '/sheltered?shelteredSearchingString=Maria&limit=5');
+  if (searchResponse && searchResponse.status === 200) {
+    console.log(`    ✅ Status: ${searchResponse.status}`);
+    console.log(`    📊 Encontrados: ${searchResponse.data.items?.length || 0}`);
   }
 
-  // 2. Filtro por nome
-  console.log('  🔸 Teste 2: Filtro por nome (shelteredName=Ana)');
-  const nameResponse = await makeRequest('GET', '/sheltered?shelteredName=Ana&limit=5');
-  if (nameResponse && nameResponse.status === 200) {
-    console.log(`    ✅ Status: ${nameResponse.status}`);
-    console.log(`    📊 Encontrados: ${nameResponse.data.items?.length || 0}`);
-  }
-
-  // 3. Filtro por shelter
-  console.log('  🔸 Teste 3: Filtro por shelter');
-  if (testData.shelters.length > 0) {
-    const shelterResponse = await makeRequest('GET', `/sheltered?shelterId=${testData.shelters[0].id}&limit=5`);
-    if (shelterResponse && shelterResponse.status === 200) {
-      console.log(`    ✅ Status: ${shelterResponse.status}`);
-      console.log(`    📊 Encontrados: ${shelterResponse.data.items?.length || 0}`);
-    }
-  }
-
-  // 4. Filtro por endereço
-  console.log('  🔸 Teste 4: Filtro por endereço (addressFilter=São Paulo)');
+  // 2. Filtro de endereço: addressFilter
+  console.log('  🔸 Teste 2: Filtro de endereço (addressFilter=São Paulo)');
   const addressResponse = await makeRequest('GET', '/sheltered?addressFilter=São Paulo&limit=5');
   if (addressResponse && addressResponse.status === 200) {
     console.log(`    ✅ Status: ${addressResponse.status}`);
     console.log(`    📊 Encontrados: ${addressResponse.data.items?.length || 0}`);
   }
 
-  // 5. Busca geográfica
-  console.log('  🔸 Teste 5: Busca geográfica (geographicSearchString=São Paulo)');
-  const geoResponse = await makeRequest('GET', '/sheltered?geographicSearchString=São Paulo&limit=5');
-  if (geoResponse && geoResponse.status === 200) {
-    console.log(`    ✅ Status: ${geoResponse.status}`);
-    console.log(`    📊 Encontrados: ${geoResponse.data.items?.length || 0}`);
+  // 3. Filtro por gênero: gender
+  console.log('  🔸 Teste 3: Filtro por gênero (gender=F)');
+  const genderResponse = await makeRequest('GET', '/sheltered?gender=F&limit=5');
+  if (genderResponse && genderResponse.status === 200) {
+    console.log(`    ✅ Status: ${genderResponse.status}`);
+    console.log(`    📊 Encontrados: ${genderResponse.data.items?.length || 0}`);
   }
 
-  // 6. Filtro por guardianName
-  console.log('  🔸 Teste 6: Filtro por guardianName (guardianName=Maria)');
-  const guardianNameResponse = await makeRequest('GET', '/sheltered?guardianName=Maria&limit=5');
-  if (guardianNameResponse && guardianNameResponse.status === 200) {
-    console.log(`    ✅ Status: ${guardianNameResponse.status}`);
-    console.log(`    📊 Encontrados: ${guardianNameResponse.data.items?.length || 0}`);
+  // 4. Range de data de nascimento: birthDateFrom/birthDateTo
+  console.log('  🔸 Teste 4: Range de data de nascimento (birthDateFrom=2010-01-01, birthDateTo=2015-12-31)');
+  const birthDateResponse = await makeRequest('GET', '/sheltered?birthDateFrom=2010-01-01&birthDateTo=2015-12-31&limit=5');
+  if (birthDateResponse && birthDateResponse.status === 200) {
+    console.log(`    ✅ Status: ${birthDateResponse.status}`);
+    console.log(`    📊 Encontrados: ${birthDateResponse.data.items?.length || 0}`);
+  }
+
+  // 5. Range de data "no abrigo desde": joinedFrom/joinedTo
+  console.log('  🔸 Teste 5: Range "no abrigo desde" (joinedFrom=2024-01-01, joinedTo=2024-12-31)');
+  const joinedDateResponse = await makeRequest('GET', '/sheltered?joinedFrom=2024-01-01&joinedTo=2024-12-31&limit=5');
+  if (joinedDateResponse && joinedDateResponse.status === 200) {
+    console.log(`    ✅ Status: ${joinedDateResponse.status}`);
+    console.log(`    📊 Encontrados: ${joinedDateResponse.data.items?.length || 0}`);
+  }
+
+  // 6. Combinação de filtros
+  console.log('  🔸 Teste 6: Combinação de filtros (gender=F + addressFilter=São Paulo)');
+  const combinedResponse = await makeRequest('GET', '/sheltered?gender=F&addressFilter=São Paulo&limit=5');
+  if (combinedResponse && combinedResponse.status === 200) {
+    console.log(`    ✅ Status: ${combinedResponse.status}`);
+    console.log(`    📊 Encontrados: ${combinedResponse.data.items?.length || 0}`);
   }
 }
 
