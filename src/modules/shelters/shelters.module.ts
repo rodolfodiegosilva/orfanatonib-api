@@ -16,15 +16,22 @@ import { LeaderProfilesModule } from '../leader-profiles/leader-profiles.module'
 import { AddressEntity } from '../addresses/entities/address.entity/address.entity';
 import { ShelteredModule } from '../sheltered/sheltered.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { MediaModule } from 'src/share/media/media.module';
+import { AwsModule } from 'src/aws/aws.module';
+import { RouteModule } from 'src/route/route.module';
+import { RouteEntity } from 'src/route/route-page.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ShelterEntity, AddressEntity]),
+    TypeOrmModule.forFeature([ShelterEntity, AddressEntity, RouteEntity]),
     forwardRef(() => AddressesModule),
     forwardRef(() => TeacherProfilesModule),
     forwardRef(() => LeaderProfilesModule),
     forwardRef(() => ShelteredModule),
     forwardRef(() => AuthModule),
+    MediaModule,
+    AwsModule,
+    RouteModule,
   ],
   controllers: [SheltersController],
   providers: [

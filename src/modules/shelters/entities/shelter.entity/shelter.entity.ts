@@ -4,11 +4,15 @@ import { AddressEntity } from 'src/modules/addresses/entities/address.entity/add
 import { TeacherProfileEntity } from 'src/modules/teacher-profiles/entities/teacher-profile.entity/teacher-profile.entity';
 import { LeaderProfileEntity } from 'src/modules/leader-profiles/entities/leader-profile.entity/leader-profile.entity';
 import { ShelteredEntity } from 'src/modules/sheltered/entities/sheltered.entity';
+import { RouteEntity } from 'src/route/route-page.entity';
 
 @Entity('shelters')
 export class ShelterEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   name: string;
+
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
   @OneToOne(() => AddressEntity, { cascade: true, eager: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'address_id' })
@@ -25,4 +29,17 @@ export class ShelterEntity extends BaseEntity {
 
   @OneToMany(() => ShelteredEntity, (sheltered) => sheltered.shelter, { cascade: false })
   sheltered: ShelteredEntity[];
+
+  @OneToOne(() => RouteEntity, {
+    cascade: true,
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  route?: RouteEntity | null;
+
+  // Relação polimórfica unilateral com MediaItemEntity (apenas uma imagem)
+  // O mediaItem é buscado usando targetId = shelter.id e targetType = 'ShelterEntity'
+  // Sempre será do tipo MediaType.IMAGE
+  mediaItem?: any; // Será populado via query manual no repository
 }

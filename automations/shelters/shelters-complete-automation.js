@@ -97,15 +97,73 @@ async function getTestData() {
   }
 }
 
+// ==================== DADOS MOCKADOS ====================
+
+const SHELTER_DESCRIPTIONS = [
+  'Abrigo dedicado ao cuidado e desenvolvimento de crianças em situação de vulnerabilidade social.',
+  'Instituição comprometida com o bem-estar e educação de jovens em busca de um futuro melhor.',
+  'Lar acolhedor que proporciona amor, educação e oportunidades para crianças carentes.',
+  'Centro de acolhimento que oferece suporte integral para o desenvolvimento infantil.',
+  'Espaço seguro e afetuoso dedicado à formação de cidadãos conscientes e preparados para a vida.'
+];
+
+const SHELTER_IMAGES = [
+  'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800',
+  'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800',
+  'https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=800',
+  'https://images.unsplash.com/photo-1544776193-352d25ca82cd?w=800',
+  'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800'
+];
+
+function getRandomElement(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+// ==================== CRIAR MEDIA ITEM ====================
+
+async function createMediaItemForShelter(shelterId) {
+  console.log('  🖼️ Criando media item para shelter...');
+  
+  const mediaData = {
+    title: 'Foto do Abrigo',
+    description: 'Imagem principal do abrigo',
+    mediaType: 'IMAGE',
+    uploadType: 'LINK',
+    url: getRandomElement(SHELTER_IMAGES),
+    isLocalFile: false,
+    targetId: shelterId,
+    targetType: 'ShelterEntity'
+  };
+  
+  try {
+    // Criar media item diretamente via repository/service
+    // Nota: Pode ser necessário criar um endpoint específico para isso
+    const response = await makeRequest('POST', '/media-items', mediaData);
+    if (response && response.status === 201) {
+      console.log('    ✅ Media item criado com sucesso');
+      return response.data;
+    } else {
+      console.log('    ⚠️ Endpoint de media items não disponível, usando método alternativo');
+      // Alternativa: Salvar diretamente via SQL ou usar outro método
+      return null;
+    }
+  } catch (error) {
+    console.log('    ⚠️ Não foi possível criar media item automaticamente');
+    console.log('    💡 Dica: Adicione manualmente ou crie endpoint /media-items');
+    return null;
+  }
+}
+
 // ==================== TESTES DE CRUD ====================
 
 async function testSheltersCRUD() {
   console.log('\n📋 Testando CRUD de Shelters...');
   
   // 1. Criar Shelter
-  console.log('  🔸 Teste 1: Criar Shelter');
+  console.log('  🔸 Teste 1: Criar Shelter com descrição');
   const createData = {
     name: `Shelter Teste ${Date.now()}`,
+    description: getRandomElement(SHELTER_DESCRIPTIONS),
     address: {
       street: 'Rua dos Abrigos',
       number: '456',
@@ -120,7 +178,11 @@ async function testSheltersCRUD() {
   const createResponse = await makeRequest('POST', '/shelters', createData);
   if (createResponse && createResponse.status === 201) {
     console.log(`    ✅ Shelter criado: ${createResponse.data.name}`);
+    console.log(`    📝 Descrição: ${createResponse.data.description || 'N/A'}`);
     const createdShelter = createResponse.data;
+    
+    // 1.5 Criar media item para o shelter
+    await createMediaItemForShelter(createdShelter.id);
     
     // 2. Buscar Shelter por ID
     console.log('  🔸 Teste 2: Buscar Shelter por ID');
@@ -281,9 +343,10 @@ async function testSheltersRelationships() {
   }
 
   // 1. Criar shelter
-  console.log('  🔸 Teste 1: Criar shelter');
+  console.log('  🔸 Teste 1: Criar shelter com descrição e imagem');
   const createShelterData = {
     name: `Shelter com Relacionamentos ${Date.now()}`,
+    description: getRandomElement(SHELTER_DESCRIPTIONS),
     address: {
       street: 'Rua dos Relacionamentos',
       number: '789',
@@ -297,7 +360,11 @@ async function testSheltersRelationships() {
   const createShelterResponse = await makeRequest('POST', '/shelters', createShelterData);
   if (createShelterResponse && createShelterResponse.status === 201) {
     console.log(`    ✅ Shelter criado: ${createShelterResponse.data.name}`);
+    console.log(`    📝 Descrição: ${createShelterResponse.data.description || 'N/A'}`);
     const createdShelter = createShelterResponse.data;
+    
+    // 1.5 Criar media item
+    await createMediaItemForShelter(createdShelter.id);
 
     // 2. Vincular leader profile (se existir)
     if (testData.leaderProfiles.length > 0) {

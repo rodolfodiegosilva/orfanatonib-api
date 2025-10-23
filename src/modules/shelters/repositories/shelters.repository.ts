@@ -226,9 +226,10 @@ export class SheltersRepository {
       .select([
         'shelter.id',
         'shelter.name',
-        'address.id',
-        'address.city',
-        'address.state',
+        'shelter.description',
+        'shelter.createdAt',
+        'shelter.updatedAt',
+        'address',
       ])
       .orderBy('shelter.name', 'ASC');
 
@@ -373,6 +374,7 @@ export class SheltersRepository {
 
       const shelter = shelterRepo.create({
         name: dto.name,
+        description: dto.description,
         address,
       });
 
@@ -462,6 +464,7 @@ export class SheltersRepository {
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
       if (dto.name !== undefined) shelter.name = dto.name as any;
+      if (dto.description !== undefined) shelter.description = dto.description;
 
       if (dto.address) {
         if (shelter.address) {

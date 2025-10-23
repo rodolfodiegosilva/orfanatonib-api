@@ -6,8 +6,12 @@ import {
   ValidateNested,
   IsArray,
   Length,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { UploadType, PlatformType } from 'src/share/media/media-item/media-item.entity';
 
 export class AddressPatchDto {
   @IsOptional() @IsString() id?: string;
@@ -22,10 +26,25 @@ export class AddressPatchDto {
   @IsOptional() @IsString() updatedAt?: string;
 }
 
+export class MediaItemDto {
+  @IsOptional() @IsString() id?: string;
+  @IsOptional() @IsString() title?: string;
+  @IsOptional() @IsString() description?: string;
+  @IsOptional() @IsEnum(UploadType) uploadType?: UploadType;
+  @IsOptional() @IsEnum(PlatformType) platformType?: PlatformType;
+  @IsOptional() @IsString() url?: string;
+  @IsOptional() @IsBoolean() isLocalFile?: boolean;
+  @IsOptional() @IsString() originalName?: string;
+  @IsOptional() @IsNumber() size?: number;
+  @IsOptional() @IsString() fieldKey?: string;
+}
+
 export class UpdateShelterDto {
   @IsOptional() @IsString() @Length(2, 255)
   name?: string;
 
+  @IsOptional() @IsString()
+  description?: string;
 
   @IsOptional()
   @IsArray()
@@ -41,4 +60,9 @@ export class UpdateShelterDto {
   @IsArray()
   @IsUUID('4', { each: true })
   teacherProfileIds?: string[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MediaItemDto)
+  mediaItem?: MediaItemDto;
 }

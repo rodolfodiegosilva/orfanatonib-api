@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "Shelters API Collection",
-    "description": "Collection completa para todos os endpoints do módulo Shelters - ATUALIZADA COM ENDPOINTS MANYTOMANY COMPLETOS. Inclui todos os endpoints: listagem paginada, listagem simples, busca por ID, criação, atualização, remoção, atribuição/remoção de leaders e teachers. Suporta relacionamentos ManyToMany para leaders e teachers, filtros avançados, paginação, ordenação e operações em massa.",
+    "description": "Collection completa para todos os endpoints do módulo Shelters - ATUALIZADA COM UPLOAD DE ARQUIVOS! Inclui: POST/PUT com form-data + arquivo, PATCH /media com upload ou URL, listagens COM media items. NOVO: Upload de arquivos para S3 via form-data, remoção automática de arquivos antigos, suporte completo a multipart/form-data. Use 'shelterData' para JSON e arquivo com nome = fieldKey!",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "6.0.0"
+    "version": "9.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -225,7 +225,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\",\n    \"address\": {\n      \"id\": \"uuid-address-1\",\n      \"street\": \"Rua das Flores\",\n      \"number\": \"123\",\n      \"district\": \"Centro\",\n      \"city\": \"São Paulo\",\n      \"state\": \"SP\",\n      \"postalCode\": \"01234-567\",\n      \"complement\": \"Apto 45\",\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    },\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"uuid-shelter-1\",\n    \"name\": \"Abrigo Central\",\n    \"description\": \"Abrigo dedicado ao cuidado de crianças\",\n    \"address\": {\n      \"id\": \"uuid-address-1\",\n      \"street\": \"Rua das Flores\",\n      \"number\": \"123\",\n      \"district\": \"Centro\",\n      \"city\": \"São Paulo\",\n      \"state\": \"SP\",\n      \"postalCode\": \"01234-567\",\n      \"complement\": \"Apto 45\",\n      \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n      \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n    },\n    \"mediaItem\": {\n      \"id\": \"uuid-media-1\",\n      \"title\": \"Foto do Abrigo\",\n      \"description\": \"Imagem principal\",\n      \"mediaType\": \"image\",\n      \"uploadType\": \"link\",\n      \"url\": \"https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800\",\n      \"isLocalFile\": false,\n      \"createdAt\": \"2025-10-11T20:00:00.000Z\",\n      \"updatedAt\": \"2025-10-11T20:00:00.000Z\"\n    },\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n  }\n]"
             }
           ]
         },
@@ -361,7 +361,7 @@
           ]
         },
         {
-          "name": "Criar Shelter",
+          "name": "Criar Shelter (JSON Simples)",
           "request": {
             "method": "POST",
             "header": [
@@ -372,7 +372,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Abrigo Central\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  },\n  \"leaderProfileIds\": [\"{{leader_profile_id_1}}\", \"{{leader_profile_id_2}}\"],\n  \"teacherProfileIds\": [\"{{teacher_profile_id}}\"]\n}"
+              "raw": "{\n  \"name\": \"Abrigo Central\",\n  \"description\": \"Abrigo dedicado ao cuidado de crianças e adolescentes em situação de vulnerabilidade social.\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\"\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/shelters",
@@ -420,7 +420,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-shelter-novo\",\n  \"name\": \"Abrigo Central\",\n  \"address\": {\n    \"id\": \"uuid-address-novo\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\",\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n  },\n  \"leaders\": [\n    {\n      \"id\": \"uuid-leader-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-1\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    },\n    {\n      \"id\": \"uuid-leader-2\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-3\",\n        \"name\": \"Pedro Santos\",\n        \"email\": \"pedro@example.com\",\n        \"phone\": \"+5511777777777\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  ],\n  \"teachers\": [\n    {\n      \"id\": \"uuid-teacher-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-2\",\n        \"name\": \"Maria Santos\",\n        \"email\": \"maria@example.com\",\n        \"phone\": \"+5511888888888\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-shelter-novo\",\n  \"name\": \"Abrigo Central\",\n  \"description\": \"Abrigo dedicado ao cuidado de crianças e adolescentes em situação de vulnerabilidade social. Oferecemos acolhimento, educação e apoio psicossocial para promover o desenvolvimento integral dos nossos abrigados.\",\n  \"address\": {\n    \"id\": \"uuid-address-novo\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\",\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n  },\n  \"leaders\": [\n    {\n      \"id\": \"uuid-leader-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-1\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    },\n    {\n      \"id\": \"uuid-leader-2\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-3\",\n        \"name\": \"Pedro Santos\",\n        \"email\": \"pedro@example.com\",\n        \"phone\": \"+5511777777777\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  ],\n  \"teachers\": [\n    {\n      \"id\": \"uuid-teacher-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-2\",\n        \"name\": \"Maria Santos\",\n        \"email\": \"maria@example.com\",\n        \"phone\": \"+5511888888888\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  ],\n  \"mediaItem\": null,\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:00:00.000Z\"\n}"
             },
             {
               "name": "Erro - Nome Duplicado",
@@ -533,6 +533,56 @@
           ]
         },
         {
+          "name": "Criar Shelter COM Upload de Imagem",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "shelterData",
+                  "value": "{\"name\":\"Abrigo Novo com Foto\",\"description\":\"Abrigo criado com upload de imagem para o S3\",\"address\":{\"street\":\"Rua das Imagens\",\"number\":\"999\",\"district\":\"Fotografia\",\"city\":\"São Paulo\",\"state\":\"SP\",\"postalCode\":\"01234-567\"},\"mediaItem\":{\"title\":\"Foto Principal\",\"description\":\"Imagem enviada via upload\",\"uploadType\":\"upload\",\"isLocalFile\":true,\"fieldKey\":\"shelterImage\"}}",
+                  "type": "text",
+                  "description": "JSON com dados do shelter E mediaItem"
+                },
+                {
+                  "key": "shelterImage",
+                  "type": "file",
+                  "src": [],
+                  "description": "Arquivo de imagem (JPEG, PNG, GIF, WebP) - DEVE SER O MESMO NOME DO fieldKey"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/shelters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "shelters"
+              ]
+            },
+            "description": "Cria shelter COM upload de arquivo para S3. Use form-data com campo 'shelterData' (JSON) e arquivo com nome igual ao 'fieldKey' definido em mediaItem. O arquivo será enviado ao S3 automaticamente."
+          },
+          "response": [
+            {
+              "name": "Sucesso - Shelter Criado com Imagem",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-shelter-novo\",\n  \"name\": \"Abrigo Novo com Foto\",\n  \"description\": \"Abrigo criado com upload de imagem para o S3\",\n  \"address\": { ... },\n  \"leaders\": [],\n  \"teachers\": [],\n  \"mediaItem\": {\n    \"id\": \"uuid-media-novo\",\n    \"title\": \"Foto Principal\",\n    \"description\": \"Imagem enviada via upload\",\n    \"mediaType\": \"image\",\n    \"uploadType\": \"upload\",\n    \"url\": \"https://s3.amazonaws.com/bucket/shelters/abc123.jpg\",\n    \"isLocalFile\": true,\n    \"originalName\": \"foto.jpg\",\n    \"size\": 245678,\n    \"createdAt\": \"2025-10-11T...\",\n    \"updatedAt\": \"2025-10-11T...\"\n  },\n  \"createdAt\": \"2025-10-11T...\",\n  \"updatedAt\": \"2025-10-11T...\"\n}"
+            }
+          ]
+        },
+        {
           "name": "Atualizar Shelter",
           "request": {
             "method": "PUT",
@@ -544,7 +594,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Abrigo Jardins Atualizado\",\n  \"address\": {\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\"\n  },\n  \"leaderProfileIds\": [\"{{leader_profile_id_1}}\", \"{{leader_profile_id_2}}\"],\n  \"teacherProfileIds\": [\"{{teacher_profile_id}}\"]\n}"
+              "raw": "{\n  \"name\": \"Abrigo Jardins Atualizado\",\n  \"description\": \"Abrigo atualizado com foco no desenvolvimento educacional e psicossocial das crianças. Oferecemos atividades recreativas, apoio escolar e acompanhamento psicológico especializado.\",\n  \"address\": {\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\"\n  },\n  \"mediaItem\": {\n    \"title\": \"Foto Atualizada do Abrigo\",\n    \"description\": \"Nova imagem do abrigo\",\n    \"url\": \"https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800\",\n    \"uploadType\": \"link\"\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/shelters/:id",
@@ -601,7 +651,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-shelter-1\",\n  \"name\": \"Abrigo Jardins Atualizado\",\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\",\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:30:00.000Z\"\n  },\n  \"leaders\": [\n    {\n      \"id\": \"uuid-leader-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-1\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    },\n    {\n      \"id\": \"uuid-leader-2\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-3\",\n        \"name\": \"Pedro Santos\",\n        \"email\": \"pedro@example.com\",\n        \"phone\": \"+5511777777777\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  ],\n  \"teachers\": [\n    {\n      \"id\": \"uuid-teacher-2\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-4\",\n        \"name\": \"Ana Costa\",\n        \"email\": \"ana@example.com\",\n        \"phone\": \"+5511666666666\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  ],\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:30:00.000Z\"\n}"
+              "body": "{\n  \"id\": \"uuid-shelter-1\",\n  \"name\": \"Abrigo Jardins Atualizado\",\n  \"description\": \"Abrigo atualizado com foco no desenvolvimento educacional e psicossocial das crianças. Oferecemos atividades recreativas, apoio escolar e acompanhamento psicológico especializado.\",\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Palmeiras\",\n    \"number\": \"456\",\n    \"district\": \"Jardins\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-890\",\n    \"complement\": \"Casa 2\",\n    \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n    \"updatedAt\": \"2025-09-27T21:30:00.000Z\"\n  },\n  \"leaders\": [\n    {\n      \"id\": \"uuid-leader-1\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-1\",\n        \"name\": \"João Silva\",\n        \"email\": \"joao@example.com\",\n        \"phone\": \"+5511999999999\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    },\n    {\n      \"id\": \"uuid-leader-2\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-3\",\n        \"name\": \"Pedro Santos\",\n        \"email\": \"pedro@example.com\",\n        \"phone\": \"+5511777777777\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  ],\n  \"teachers\": [\n    {\n      \"id\": \"uuid-teacher-2\",\n      \"active\": true,\n      \"user\": {\n        \"id\": \"uuid-user-4\",\n        \"name\": \"Ana Costa\",\n        \"email\": \"ana@example.com\",\n        \"phone\": \"+5511666666666\",\n        \"active\": true,\n        \"completed\": true,\n        \"commonUser\": false\n      }\n    }\n  ],\n  \"mediaItem\": null,\n  \"createdAt\": \"2025-09-27T21:00:00.000Z\",\n  \"updatedAt\": \"2025-09-27T21:30:00.000Z\"\n}"
             },
             {
               "name": "Erro - Shelter Não Encontrado",
@@ -639,6 +689,272 @@
               ],
               "cookie": [],
               "body": "{\n  \"statusCode\": 404,\n  \"message\": \"Shelter não encontrado\",\n  \"error\": \"Not Found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar Shelter COM Upload de Imagem",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "shelterData",
+                  "value": "{\"name\":\"Abrigo Atualizado com Foto\",\"description\":\"Shelter atualizado com nova imagem via upload\",\"mediaItem\":{\"title\":\"Nova Foto do Abrigo\",\"description\":\"Imagem atualizada via upload\",\"uploadType\":\"upload\",\"isLocalFile\":true,\"fieldKey\":\"shelterImage\"}}",
+                  "type": "text",
+                  "description": "JSON com dados do shelter E mediaItem"
+                },
+                {
+                  "key": "shelterImage",
+                  "type": "file",
+                  "src": [],
+                  "description": "Arquivo de imagem - nome DEVE ser igual ao fieldKey"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/shelters/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "shelters",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{shelter_id}}",
+                  "description": "UUID do shelter"
+                }
+              ]
+            },
+            "description": "Atualiza shelter COM upload de arquivo para S3. Use form-data com 'shelterData' (JSON) e arquivo. Remove automaticamente arquivo antigo do S3."
+          },
+          "response": [
+            {
+              "name": "Sucesso - Upload Realizado",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-shelter\",\n  \"name\": \"Abrigo Atualizado com Foto\",\n  \"description\": \"Shelter atualizado com nova imagem via upload\",\n  \"mediaItem\": {\n    \"id\": \"uuid-media\",\n    \"title\": \"Nova Foto do Abrigo\",\n    \"description\": \"Imagem atualizada via upload\",\n    \"mediaType\": \"image\",\n    \"uploadType\": \"upload\",\n    \"url\": \"https://s3.amazonaws.com/bucket/shelters/nova-foto.jpg\",\n    \"isLocalFile\": true,\n    \"originalName\": \"minha-foto.jpg\",\n    \"size\": 345678\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar Media Item (URL)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Foto Principal do Abrigo\",\n  \"description\": \"Imagem de entrada do abrigo\",\n  \"url\": \"https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800\",\n  \"uploadType\": \"link\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/shelters/:id/media",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "shelters",
+                ":id",
+                "media"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{shelter_id}}",
+                  "description": "UUID do shelter"
+                }
+              ]
+            },
+            "description": "Atualiza ou cria media item para o shelter usando URL externa. Ideal para imagens do Unsplash ou outros CDNs. Requer role admin ou leader. Suporta apenas uma imagem por shelter."
+          },
+          "response": [
+            {
+              "name": "Sucesso - Media Atualizado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Foto Principal do Abrigo\",\n  \"description\": \"Imagem de entrada do abrigo\",\n  \"url\": \"https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800\",\n  \"uploadType\": \"link\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/shelters/uuid-shelter-1/media",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "shelters",
+                    "uuid-shelter-1",
+                    "media"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-shelter-1\",\n  \"name\": \"Abrigo Central\",\n  \"description\": \"Descrição do abrigo\",\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\",\n    \"createdAt\": \"2025-10-11T20:00:00.000Z\",\n    \"updatedAt\": \"2025-10-11T20:00:00.000Z\"\n  },\n  \"leaders\": [],\n  \"teachers\": [],\n  \"mediaItem\": {\n    \"id\": \"uuid-media-1\",\n    \"title\": \"Foto Principal do Abrigo\",\n    \"description\": \"Imagem de entrada do abrigo\",\n    \"mediaType\": \"image\",\n    \"uploadType\": \"link\",\n    \"url\": \"https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800\",\n    \"isLocalFile\": false,\n    \"platformType\": null,\n    \"originalName\": null,\n    \"size\": null,\n    \"createdAt\": \"2025-10-11T20:00:00.000Z\",\n    \"updatedAt\": \"2025-10-11T20:00:00.000Z\"\n  },\n  \"createdAt\": \"2025-10-11T20:00:00.000Z\",\n  \"updatedAt\": \"2025-10-11T20:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar Media Item (Upload)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "mediaData",
+                  "value": "{\"title\":\"Foto do Abrigo\",\"description\":\"Imagem principal do abrigo\",\"uploadType\":\"upload\",\"isLocalFile\":true,\"fieldKey\":\"shelterImage\"}",
+                  "type": "text",
+                  "description": "JSON com metadados da imagem"
+                },
+                {
+                  "key": "shelterImage",
+                  "type": "file",
+                  "src": [],
+                  "description": "Arquivo de imagem (JPEG, PNG, GIF, WebP) - nome DEVE ser igual ao fieldKey"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/shelters/:id/media",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "shelters",
+                ":id",
+                "media"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{shelter_id}}",
+                  "description": "UUID do shelter"
+                }
+              ]
+            },
+            "description": "Faz upload de arquivo de imagem para o S3 e vincula ao shelter. Remove automaticamente a imagem anterior do S3 se existir. Requer role admin ou leader. Tamanho máximo: 5MB."
+          },
+          "response": [
+            {
+              "name": "Sucesso - Upload Realizado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "/path/to/image.jpg"
+                    },
+                    {
+                      "key": "title",
+                      "value": "Foto do Abrigo",
+                      "type": "text"
+                    },
+                    {
+                      "key": "description",
+                      "value": "Imagem principal do abrigo",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/shelters/uuid-shelter-1/media",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "shelters",
+                    "uuid-shelter-1",
+                    "media"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"uuid-shelter-1\",\n  \"name\": \"Abrigo Central\",\n  \"description\": \"Descrição do abrigo\",\n  \"address\": {\n    \"id\": \"uuid-address-1\",\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01234-567\",\n    \"complement\": \"Apto 45\",\n    \"createdAt\": \"2025-10-11T20:00:00.000Z\",\n    \"updatedAt\": \"2025-10-11T20:00:00.000Z\"\n  },\n  \"leaders\": [],\n  \"teachers\": [],\n  \"mediaItem\": {\n    \"id\": \"uuid-media-1\",\n    \"title\": \"Foto do Abrigo\",\n    \"description\": \"Imagem principal do abrigo\",\n    \"mediaType\": \"image\",\n    \"uploadType\": \"upload\",\n    \"url\": \"https://s3.amazonaws.com/bucket/shelter-uuid-1/image-abc123.jpg\",\n    \"isLocalFile\": true,\n    \"platformType\": null,\n    \"originalName\": \"foto-abrigo.jpg\",\n    \"size\": 245678,\n    \"createdAt\": \"2025-10-11T20:00:00.000Z\",\n    \"updatedAt\": \"2025-10-11T20:00:00.000Z\"\n  },\n  \"createdAt\": \"2025-10-11T20:00:00.000Z\",\n  \"updatedAt\": \"2025-10-11T20:00:00.000Z\"\n}"
+            },
+            {
+              "name": "Erro - Arquivo Não Enviado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "title",
+                      "value": "Foto do Abrigo",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/shelters/uuid-shelter-1/media",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "shelters",
+                    "uuid-shelter-1",
+                    "media"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 400,\n  \"message\": \"Arquivo não encontrado para upload\",\n  \"error\": \"Bad Request\"\n}"
             }
           ]
         },

@@ -1,6 +1,7 @@
 import { Exclude, Expose, Type, Transform, plainToInstance } from 'class-transformer';
 import { AddressResponseDto } from 'src/modules/addresses/dto/address.response.dto';
 import { ShelterEntity } from '../entities/shelter.entity/shelter.entity';
+import { MediaItemEntity, MediaType, UploadType, PlatformType } from 'src/share/media/media-item/media-item.entity';
 
 @Exclude()
 class UserMiniDto {
@@ -11,6 +12,26 @@ class UserMiniDto {
   @Expose() active!: boolean;
   @Expose() completed!: boolean;
   @Expose() commonUser!: boolean;
+}
+
+@Exclude()
+class MediaItemResponseDto {
+  @Expose() id!: string;
+  @Expose() title!: string;
+  @Expose() description!: string;
+  @Expose() mediaType!: MediaType; // Sempre será MediaType.IMAGE
+  @Expose() uploadType!: UploadType;
+  @Expose() url!: string;
+  @Expose() isLocalFile!: boolean;
+  @Expose() platformType?: PlatformType;
+  @Expose() originalName?: string;
+  @Expose() size?: number;
+  @Expose() createdAt!: Date;
+  @Expose() updatedAt!: Date;
+
+  static fromEntity(entity: MediaItemEntity): MediaItemResponseDto {
+    return plainToInstance(MediaItemResponseDto, entity, { excludeExtraneousValues: true });
+  }
 }
 
 @Exclude()
@@ -43,10 +64,16 @@ export class ChelterMiniDto {
 export class ShelterSimpleResponseDto {
   @Expose() id!: string;
   @Expose() name!: string;
+  @Expose() description?: string;
 
   @Expose()
   @Type(() => AddressResponseDto)
   address!: AddressResponseDto;
+
+  @Expose()
+  @Type(() => MediaItemResponseDto)
+  @Transform(({ value }) => value ? MediaItemResponseDto.fromEntity(value) : null)
+  mediaItem?: MediaItemResponseDto | null;
 
   @Expose() createdAt!: Date;
   @Expose() updatedAt!: Date;
@@ -56,6 +83,7 @@ export class ShelterSimpleResponseDto {
 export class ShelterResponseDto {
   @Expose() id!: string;
   @Expose() name!: string;
+  @Expose() description?: string;
 
   @Expose()
   @Type(() => AddressResponseDto)
@@ -70,6 +98,11 @@ export class ShelterResponseDto {
   @Type(() => TeacherWithUserDto)
   @Transform(({ value }) => (Array.isArray(value) ? value : []))
   teachers!: TeacherWithUserDto[];
+
+  @Expose()
+  @Type(() => MediaItemResponseDto)
+  @Transform(({ value }) => value ? MediaItemResponseDto.fromEntity(value) : null)
+  mediaItem?: MediaItemResponseDto | null;
 
   @Expose() createdAt!: Date;
   @Expose() updatedAt!: Date;
