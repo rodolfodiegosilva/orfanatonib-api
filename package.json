@@ -17,7 +17,14 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:auto": "node test/run-all-automations.js",
+    "test:auto:users": "node test/automations/users/users-complete-automation.js",
+    "test:auto:shelters": "node test/automations/shelters/shelters-complete-automation.js",
+    "test:auto:leaders": "node test/automations/leader-profiles/leader-profiles-complete-automation.js",
+    "test:auto:teachers": "node test/automations/teacher-profiles/teacher-profiles-complete-automation.js",
+    "test:auto:sheltered": "node test/automations/sheltered/sheltered-complete-automation.js",
+    "test:auto:pagelas": "node test/automations/pagelas/pagelas-complete-automation.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",

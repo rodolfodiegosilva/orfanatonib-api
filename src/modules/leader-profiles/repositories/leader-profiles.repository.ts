@@ -145,16 +145,13 @@ export class LeaderProfilesRepository {
     }
 
     // Se está vinculado a algum shelter ou não
-    //  console.log(`🔍 Aplicando filtro hasShelter: ${hasShelter}`);
-      if (hasShelter === true) {
-        qb.andWhere('leader.shelter_id IS NOT NULL');
-        console.log('✅ Filtro aplicado: shelter_id IS NOT NULL');
-      } else {
-        qb.andWhere('leader.shelter_id IS NULL');
-        console.log('✅ Filtro aplicado: shelter_id IS NULL');
-      }
-  //    console.log(`📝 SQL Query: ${qb.getSql()}`);
-    
+    // ⚠️ Só aplica o filtro se hasShelter for explicitamente true ou false
+    if (hasShelter === true) {
+      qb.andWhere('leader.shelter_id IS NOT NULL');
+    } else if (hasShelter === false) {
+      qb.andWhere('leader.shelter_id IS NULL');
+    }
+    // Se hasShelter for undefined, não aplica filtro (retorna todos)
 
     return qb;
   }
@@ -401,8 +398,9 @@ export class LeaderProfilesRepository {
       .createQueryBuilder('leader')
       .leftJoin('leader.user', 'user')
       .addSelect(['user.id', 'user.name'])
+      .leftJoin('leader.shelter', 'shelter')
+      .addSelect(['shelter.id'])
       .where('user.active = true')
-      .andWhere('leader.shelter_id IS NULL')
       .orderBy('leader.createdAt', 'ASC')
       .getMany();
 

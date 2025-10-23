@@ -1,61 +1,238 @@
-# 📚 Documentação Completa - Sistema de Orfanato
+# 📑 Índice Geral da Documentação
 
-## 🎯 Visão Geral
+Índice completo de toda a documentação da API Orfanatonib, organizada por módulos.
 
-Este repositório contém um sistema completo de gerenciamento de orfanato desenvolvido com NestJS, incluindo documentação detalhada, testes automatizados e scripts de automação.
-
-## 📁 Estrutura do Projeto
+## 📚 Estrutura Geral
 
 ```
-orfanatonib-api/
-├── 📚 docs/                    # Documentação completa
-│   ├── auth/                   # Módulo de autenticação
-│   ├── users/                  # Módulo de usuários
-│   ├── shelters/               # Módulo de abrigos
-│   ├── sheltered/              # Módulo de crianças abrigadas
-│   ├── leader-profiles/        # Módulo de perfis de líderes
-│   ├── teacher-profiles/       # Módulo de perfis de professores
-│   ├── *_API_Collection.postman_collection.json
-│   ├── *_API_Documentation.md
-│   └── README.md
-├── 🧪 tests/                   # Scripts de teste
-│   ├── auth/                   # Testes de autenticação
-│   ├── users/                  # Testes de usuários
-│   ├── shelters/               # Testes de abrigos
-│   ├── sheltered/              # Testes de crianças
-│   ├── leader-profiles/        # Testes de líderes
-│   ├── teacher-profiles/       # Testes de professores
-│   └── README.md
-├── 🤖 automations/             # Scripts de automação
-│   ├── auth/                   # Automações de autenticação
-│   ├── users/                  # Automações de usuários
-│   ├── shelters/               # Automações de abrigos
-│   ├── sheltered/              # Automações de crianças
-│   ├── leader-profiles/        # Automações de líderes
-│   ├── teacher-profiles/       # Automações de professores
-│   └── README.md
-└── src/                        # Código fonte da aplicação
+docs/
+├── README.md                              # Documentação principal
+├── INDEX.md                               # Este índice
+├── Orfanatonib_API_Environment.postman_environment.json
+├── modules/                               # Documentação por módulo
+│   ├── auth/
+│   ├── users/
+│   ├── shelters/
+│   ├── leader-profiles/
+│   ├── teacher-profiles/
+│   ├── sheltered/
+│   └── pagelas/
+└── guides/                                # Guias gerais
 ```
 
-## 🚀 Início Rápido
+---
 
-### 1. Instalação
-```bash
-# Instalar dependências
-npm install
+## 🔐 1. Auth
 
-# Configurar variáveis de ambiente
-cp .env.example .env
+**Autenticação e Autorização**
 
-# Executar migrações
-npm run migration:run
+### Arquivos
+- [`modules/auth/README.md`](./modules/auth/README.md)
+- [`modules/auth/Auth_API_Collection.postman_collection.json`](./modules/auth/Auth_API_Collection.postman_collection.json)
+- [`modules/auth/Auth_API_Documentation.md`](./modules/auth/Auth_API_Documentation.md)
+- [`modules/auth/Auth_Collection_Usage_Example.md`](./modules/auth/Auth_Collection_Usage_Example.md)
 
-# Iniciar aplicação
-npm run start:dev
-```
+### Endpoints Principais
+- `POST /auth/login` - Login e geração de token
+- `POST /auth/refresh` - Refresh de token
+- `GET /auth/profile` - Perfil do usuário autenticado
 
-### 2. Credenciais de Teste
-```json
+---
+
+## 👥 2. Users
+
+**Gestão de Usuários**
+
+### Arquivos
+- [`modules/users/README.md`](./modules/users/README.md)
+- [`modules/users/Users_API_Collection.postman_collection.json`](./modules/users/Users_API_Collection.postman_collection.json)
+- [`modules/users/Users_API_Documentation.md`](./modules/users/Users_API_Documentation.md)
+- [`modules/users/RESUMO_AUTOMACAO_USERS_FINAL.md`](./modules/users/RESUMO_AUTOMACAO_USERS_FINAL.md)
+- [`modules/users/CONTROLE_VISIBILIDADE_ACTIVE.md`](./modules/users/CONTROLE_VISIBILIDADE_ACTIVE.md)
+
+### Endpoints Principais
+- `POST /users` - Criar usuário
+- `GET /users` - Listar com paginação e filtros
+- `GET /users/:id` - Buscar por ID
+- `PUT /users/:id` - Atualizar usuário
+- `DELETE /users/:id` - Deletar usuário
+
+### Guias Específicos
+- [Análise de Orquestração](./modules/users/ANALISE_ORQUESTRACAO_USERS.md)
+- [Controle de Visibilidade](./modules/users/CONTROLE_VISIBILIDADE_ACTIVE.md)
+- [Resumo de Atualizações](./modules/users/RESUMO_ATUALIZACOES_USERS.md)
+
+---
+
+## 🏠 3. Shelters
+
+**Gestão de Abrigos**
+
+### Arquivos
+- [`modules/shelters/README.md`](./modules/shelters/README.md)
+- [`modules/shelters/Shelters_API_Collection.postman_collection.json`](./modules/shelters/Shelters_API_Collection.postman_collection.json)
+- [`modules/shelters/Shelters_API_Documentation.md`](./modules/shelters/Shelters_API_Documentation.md)
+- [`modules/shelters/SHELTERS_COMPLETE_GUIDE.md`](./modules/shelters/SHELTERS_COMPLETE_GUIDE.md)
+- [`modules/shelters/SHELTERS_INDEX.md`](./modules/shelters/SHELTERS_INDEX.md)
+
+### Endpoints Principais
+- `POST /shelters` - Criar abrigo
+- `GET /shelters` - Listar com paginação
+- `GET /shelters/simple` - Listagem simplificada
+- `GET /shelters/:id` - Buscar por ID
+- `PUT /shelters/:id` - Atualizar abrigo
+- `DELETE /shelters/:id` - Deletar abrigo
+
+### Features
+- ✅ Gestão de endereços
+- ✅ Media items (fotos)
+- ✅ Relacionamentos com leaders e teachers
+- ✅ Filtros por localização
+
+---
+
+## 👨‍💼 4. Leader Profiles
+
+**Perfis de Líderes**
+
+### Arquivos
+- [`modules/leader-profiles/README.md`](./modules/leader-profiles/README.md) ⭐ **ATUALIZADO**
+- [`modules/leader-profiles/Leader_Profiles_API_Collection.postman_collection.json`](./modules/leader-profiles/Leader_Profiles_API_Collection.postman_collection.json) ⭐ **v6.0.0**
+- [`modules/leader-profiles/Leader_Profiles_API_Documentation.md`](./modules/leader-profiles/Leader_Profiles_API_Documentation.md)
+- [`modules/leader-profiles/LEADER_PROFILES_COLLECTION_UPDATE_LOG.md`](./modules/leader-profiles/LEADER_PROFILES_COLLECTION_UPDATE_LOG.md) ⭐ **NOVO**
+
+### Endpoints Principais
+- `POST /leader-profiles/create-for-user/:userId` - Criar profile
+- `GET /leader-profiles` - Listar com paginação (retorna TODOS por padrão)
+- `GET /leader-profiles/simple` - Listagem simplificada
+- `GET /leader-profiles/:id` - Buscar por ID
+- `GET /leader-profiles/by-shelter/:shelterId` - Buscar por shelter
+- `PATCH /leader-profiles/:id/assign-shelter` - Atribuir shelter
+- `PATCH /leader-profiles/:id/unassign-shelter` - Desatribuir shelter
+- `PATCH /leader-profiles/:id/move-shelter` - Mover shelter
+
+### Relacionamentos
+- **ManyToOne** com Shelters (um leader → um ou nenhum shelter)
+- **OneToOne** com User
+
+### Filtros
+- `leaderSearchString` - Busca por nome, email, telefone
+- `shelterSearchString` - Busca por dados do shelter
+- `hasShelter` - true/false/undefined (todos)
+
+---
+
+## 👩‍🏫 5. Teacher Profiles
+
+**Perfis de Professores**
+
+### Arquivos
+- [`modules/teacher-profiles/README.md`](./modules/teacher-profiles/README.md)
+- [`modules/teacher-profiles/Teacher_Profiles_API_Collection.postman_collection.json`](./modules/teacher-profiles/Teacher_Profiles_API_Collection.postman_collection.json)
+- [`modules/teacher-profiles/TEACHER_PROFILES_COMPLETE_GUIDE.md`](./modules/teacher-profiles/TEACHER_PROFILES_COMPLETE_GUIDE.md)
+- [`modules/teacher-profiles/TEACHER_PROFILES_INDEX.md`](./modules/teacher-profiles/TEACHER_PROFILES_INDEX.md)
+
+### Endpoints Principais
+- `POST /teacher-profiles` - Criar profile
+- `GET /teacher-profiles` - Listar com paginação
+- `GET /teacher-profiles/simple` - Listagem simplificada
+- `GET /teacher-profiles/:id` - Buscar por ID
+- `PUT /teacher-profiles/:id` - Atualizar profile
+
+### Features
+- ✅ Especializações
+- ✅ Vinculação a shelters
+- ✅ Filtros consolidados
+
+---
+
+## 👶 6. Sheltered
+
+**Gestão de Abrigados**
+
+### Arquivos
+- [`modules/sheltered/README.md`](./modules/sheltered/README.md)
+- [`modules/sheltered/Sheltered_API_Collection.postman_collection.json`](./modules/sheltered/Sheltered_API_Collection.postman_collection.json)
+- [`modules/sheltered/SHELTERED_COMPLETE_GUIDE.md`](./modules/sheltered/SHELTERED_COMPLETE_GUIDE.md)
+- [`modules/sheltered/SHELTERED_INDEX.md`](./modules/sheltered/SHELTERED_INDEX.md)
+
+### Endpoints Principais
+- `POST /sheltered` - Criar abrigado
+- `GET /sheltered` - Listar com paginação
+- `GET /sheltered/simple` - Listagem simplificada
+- `GET /sheltered/:id` - Buscar por ID
+- `PUT /sheltered/:id` - Atualizar abrigado
+- `DELETE /sheltered/:id` - Deletar abrigado
+
+### Features
+- ✅ Dados pessoais e responsáveis
+- ✅ Validação de gender (M/F)
+- ✅ Filtros por idade, gênero, shelter
+- ✅ Campos opcionais (guardianName, guardianPhone)
+
+---
+
+## 📝 7. Pagelas
+
+**Sistema de Pagelas (Relatórios)**
+
+### Arquivos
+- [`modules/pagelas/README.md`](./modules/pagelas/README.md)
+- [`modules/pagelas/Pagelas_API_Collection.postman_collection.json`](./modules/pagelas/Pagelas_API_Collection.postman_collection.json)
+- [`modules/pagelas/Pagelas_API_Documentation.md`](./modules/pagelas/Pagelas_API_Documentation.md)
+- [`modules/pagelas/REFATORACAO_PAGELAS_COMPLETA.md`](./modules/pagelas/REFATORACAO_PAGELAS_COMPLETA.md)
+- [`modules/pagelas/ANALISE_TECNICA_PAGELAS.md`](./modules/pagelas/ANALISE_TECNICA_PAGELAS.md)
+
+### Endpoints Principais
+- `POST /pagelas` - Criar pagela
+- `GET /pagelas` - Listar com paginação
+- `GET /pagelas/simple` - Listagem simplificada
+- `GET /pagelas/:id` - Buscar por ID
+- `PUT /pagelas/:id` - Atualizar pagela
+- `DELETE /pagelas/:id` - Deletar pagela
+
+### Features
+- ✅ Vinculação a sheltered e teachers
+- ✅ Filtros por ano, visita, presença
+- ✅ Busca avançada
+- ✅ Estatísticas
+
+---
+
+## 📖 8. Guias Gerais
+
+Documentação transversal e guias de automação.
+
+### Arquivos
+- [`guides/COLLECTIONS_README.md`](./guides/COLLECTIONS_README.md)
+- [`guides/DOCUMENTATION_README.md`](./guides/DOCUMENTATION_README.md)
+- [`guides/RESUMO_ATUALIZACAO_COLLECTIONS.md`](./guides/RESUMO_ATUALIZACAO_COLLECTIONS.md)
+- [`guides/REFATORACAO_SHELTER_COMPLETA.md`](./guides/REFATORACAO_SHELTER_COMPLETA.md)
+- [`guides/RESUMO_AUTOMACAO_SHELTERS.md`](./guides/RESUMO_AUTOMACAO_SHELTERS.md)
+- [`guides/RESUMO_AUTOMACAO_USUARIOS.md`](./guides/RESUMO_AUTOMACAO_USUARIOS.md)
+- [`guides/RESUMO_LEADERS_CRIADOS.md`](./guides/RESUMO_LEADERS_CRIADOS.md)
+- [`guides/perfect-examples.json`](./guides/perfect-examples.json)
+
+---
+
+## 🚀 Quick Start
+
+### 1. Setup Postman
+
+1. Importe o environment global:
+   ```
+   docs/Orfanatonib_API_Environment.postman_environment.json
+   ```
+
+2. Importe as collections desejadas:
+   ```
+   docs/modules/[módulo]/[Módulo]_API_Collection.postman_collection.json
+   ```
+
+### 2. Autenticar
+
+```http
+POST /auth/login
 {
   "email": "joao@example.com",
   "password": "password123"
@@ -63,198 +240,66 @@ npm run start:dev
 ```
 
 ### 3. Executar Automações
+
 ```bash
-# Criar perfis de líderes
-node automations/leader-profiles/create-leader-profiles-smart.js
+# Leader Profiles
+node tests/automations/leader-profiles/leader-profiles-complete-automation.js
 
-# Criar perfis de professores
-node automations/teacher-profiles/create-teacher-profiles-automation.js
+# Users
+node tests/automations/users/users-complete-automation.js
+
+# Shelters
+node tests/automations/shelters/shelters-complete-automation.js
+
+# E assim por diante...
 ```
-
-### 4. Executar Testes
-```bash
-# Testar vinculação de líderes
-node tests/leader-profiles/test-shelter-linking.js
-
-# Testar vinculação de professores
-node tests/teacher-profiles/test-teacher-shelter-linking.js
-```
-
-## 📖 Documentação por Módulo
-
-### 🔐 [Auth Module](docs/auth/README.md)
-- Autenticação JWT
-- Registro e login
-- Refresh tokens
-- Controle de acesso
-
-### 👥 [Users Module](docs/users/README.md)
-- Gerenciamento de usuários
-- Roles e permissões
-- Ativação/desativação
-- Filtros e paginação
-
-### 🏠 [Shelters Module](docs/shelters/README.md)
-- CRUD de abrigos
-- Vinculação com endereços
-- Relacionamento com líderes
-- Filtros por localização
-
-### 👶 [Sheltered Module](docs/sheltered/README.md)
-- Crianças abrigadas
-- Dados pessoais e responsáveis
-- Vinculação com abrigos
-- Filtros por idade
-
-### 👨‍💼 [Leader Profiles Module](docs/leader-profiles/README.md)
-- Perfis de líderes
-- Vinculação com abrigos
-- Gerenciamento de professores
-- Movimentação de abrigos
-
-### 👨‍🏫 [Teacher Profiles Module](docs/teacher-profiles/README.md)
-- Perfis de professores
-- Vinculação com abrigos
-- Atribuição de responsabilidades
-- Filtros por abrigo
-
-## 🧪 Testes Disponíveis
-
-### Leader Profiles
-- ✅ **Vinculação Shelter-Leader** - Testa assign/unassign
-- ✅ **Movimentação de Abrigos** - Testa transferência
-- ✅ **Validação de Permissões** - Testa controle de acesso
-
-### Teacher Profiles
-- ✅ **Vinculação Shelter-Teacher** - Testa assign/unassign
-- ✅ **Validação de Permissões** - Testa controle de acesso
-- ✅ **Filtros por Abrigo** - Testa busca por abrigo
-
-## 🤖 Automações Disponíveis
-
-### Leader Profiles
-- ✅ **Criação Inteligente** - Cria perfis para usuários existentes
-- ✅ **Validação de Dados** - Verifica dados necessários
-- ✅ **Logs Detalhados** - Relatórios de execução
-
-### Teacher Profiles
-- ✅ **Criação em Massa** - Cria perfis para usuários existentes
-- ✅ **Validação de Dados** - Verifica dados necessários
-- ✅ **Logs Detalhados** - Relatórios de execução
-
-## 📊 Postman Collections
-
-Todas as collections estão disponíveis na pasta `docs/`:
-
-- `Auth_API_Collection.postman_collection.json`
-- `User_API_Collection.postman_collection.json`
-- `Shelters_API_Collection.postman_collection.json`
-- `Sheltered_API_Collection.postman_collection.json`
-- `Leader_Profiles_API_Collection.postman_collection.json`
-- `Teacher_Profiles_API_Collection.postman_collection.json`
-
-### Ambiente Postman
-Use o arquivo `General_API_Environment.postman_environment.json` para configurar as variáveis de ambiente.
-
-## 🔐 Autenticação e Autorização
-
-### Roles do Sistema
-- **admin** - Acesso total ao sistema
-- **coordinator** (leader) - Gerencia abrigos e professores
-- **teacher** - Acesso limitado aos próprios dados
-
-### Fluxo de Autenticação
-1. **Registro** - `POST /auth/register`
-2. **Login** - `POST /auth/login`
-3. **Uso da API** - Incluir token no header
-4. **Renovação** - `POST /auth/refresh` (quando necessário)
-
-## 📋 Convenções da API
-
-### Paginação Padrão
-- `page=1` - Primeira página
-- `limit=12` - 12 itens por página (máximo: 100)
-
-### Filtros Comuns
-- `searchString` - Busca textual
-- `active` - Status ativo (`true`/`false`)
-- `sort` - Campo de ordenação
-- `order` - Direção (`asc`/`desc`)
-
-### Status Codes
-- `200` - Sucesso
-- `201` - Criado com sucesso
-- `400` - Erro de validação
-- `401` - Não autorizado
-- `403` - Acesso negado
-- `404` - Não encontrado
-- `409` - Conflito (duplicação)
-- `500` - Erro interno do servidor
-
-## 🔧 Configuração
-
-### Variáveis de Ambiente
-```env
-# Database
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=password
-DATABASE_NAME=orfanato_db
-
-# JWT
-JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=7d
-REFRESH_TOKEN_SECRET=your-refresh-secret
-REFRESH_TOKEN_EXPIRES_IN=30d
-
-# Server
-PORT=3000
-NODE_ENV=development
-```
-
-## 🎯 Funcionalidades Principais
-
-### ✅ Implementadas
-- Autenticação JWT completa
-- CRUD de todos os módulos
-- Paginação e filtros
-- Vinculação entre entidades
-- Controle de acesso por roles
-- Validação de dados
-- Testes automatizados
-- Scripts de automação
-- Documentação completa
-- Collections do Postman
-
-### 🔄 Em Desenvolvimento
-- Relatórios avançados
-- Notificações
-- Upload de arquivos
-- Integração com SMS
-- Dashboard administrativo
-
-## 🤝 Contribuição
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📞 Suporte
-
-Para dúvidas ou suporte:
-- Consulte a documentação específica de cada módulo
-- Execute os testes para verificar funcionalidades
-- Abra uma issue no GitHub
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
 ---
 
-**Sistema de Orfanato - Documentação Completa** 🏠
+## 📊 Status Geral
 
-**Desenvolvido com ❤️ para o sistema de orfanato**
+| Módulo | Docs | Collection | Automação | Última Atualização |
+|--------|------|------------|-----------|-------------------|
+| Auth | ✅ | ✅ | ✅ | 2025-09-27 |
+| Users | ✅ | ✅ | ✅ | 2025-09-27 |
+| Shelters | ✅ | ✅ | ✅ | 2025-09-30 |
+| Leader Profiles | ✅ | ✅ v6.0.0 | ✅ | **2025-10-23** ⭐ |
+| Teacher Profiles | ✅ | ✅ | ✅ | 2025-09-30 |
+| Sheltered | ✅ | ✅ | ✅ | 2025-09-27 |
+| Pagelas | ✅ | ✅ | ✅ | 2025-09-28 |
+
+---
+
+## 🔄 Últimas Atualizações
+
+### 2025-10-23 - Reorganização Completa
+- ✅ Documentação reorganizada por módulos
+- ✅ Leader Profiles 100% sincronizado com DTOs
+- ✅ Correção: Paginação retorna TODOS os leaders
+- ✅ Collection v6.0.0 com 8 exemplos detalhados
+
+### 2025-09-30
+- ✅ Shelters com media items
+- ✅ Teacher Profiles refatorado
+- ✅ Sheltered com campos opcionais
+
+### 2025-09-27
+- ✅ Implementação inicial de todos os módulos
+- ✅ Automações completas
+- ✅ Collections Postman
+
+---
+
+## 📞 Suporte
+
+Para cada módulo, consulte seu README específico:
+- [`modules/[módulo]/README.md`](./modules/)
+
+Para questões gerais:
+- [Guias](./guides/)
+- [README Principal](./README.md)
+
+---
+
+**Última atualização do índice**: 23 de Outubro de 2025  
+**Versão da documentação**: 2.0.0
