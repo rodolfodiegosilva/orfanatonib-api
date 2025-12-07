@@ -1,12 +1,12 @@
 export class Paginated<T> {
-  data: T[];
+  items: T[];
   total: number;
   page: number;
   limit: number;
   pageCount: number;
 
-  constructor(data: T[], total: number, page: number, limit: number) {
-    this.data = data;
+  constructor(items: T[], total: number, page: number, limit: number) {
+    this.items = items;
     this.total = total;
     this.page = page;
     this.limit = limit;

@@ -3,11 +3,10 @@ import { Type } from 'class-transformer';
 
 export class CreatePagelaDto {
   @IsUUID()
-  childId: string;
+  shelteredId: string;
 
-  @IsOptional()
   @IsUUID()
-  teacherProfileId?: string;
+  teacherProfileId: string;
 
   @IsDateString()
   referenceDate: string;
@@ -15,8 +14,7 @@ export class CreatePagelaDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(53)
-  week: number;
+  visit: number;
 
   @IsOptional()
   @Type(() => Number)
@@ -27,12 +25,6 @@ export class CreatePagelaDto {
 
   @IsBoolean()
   present: boolean;
-
-  @IsBoolean()
-  didMeditation: boolean;
-
-  @IsBoolean()
-  recitedVerse: boolean;
 
   @IsOptional()
   @IsString()

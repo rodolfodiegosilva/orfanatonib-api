@@ -1,39 +1,12 @@
-import { IsBooleanString, IsInt, IsOptional, IsUUID, Max, Min, IsString, MaxLength } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsUUID, IsString } from 'class-validator';
 
 export class PagelaFiltersDto {
   @IsOptional()
   @IsUUID()
-  childId?: string;
+  shelteredId?: string;
 
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(2000)
-  @Max(9999)
-  year?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(53)
-  week?: number;
-
-  @IsOptional()
-  @IsBooleanString()
-  present?: 'true' | 'false';
-
-  @IsOptional()
-  @IsBooleanString()
-  didMeditation?: 'true' | 'false';
-
-  @IsOptional()
-  @IsBooleanString()
-  recitedVerse?: 'true' | 'false';
-
+  // 🔍 Busca unificada: número da visita, ano, observação ou nome do professor que lançou a pagela
   @IsOptional()
   @IsString()
-  @MaxLength(200)
   searchString?: string;
 }

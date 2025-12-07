@@ -175,26 +175,22 @@ export class AuthService {
         ? {
           id: user.teacherProfile.id,
           active: user.teacherProfile.active,
-          club: user.teacherProfile.club
+          shelter: user.teacherProfile.team?.shelter
             ? {
-              id: user.teacherProfile.club.id,
-              number: user.teacherProfile.club.number,
-              weekday: user.teacherProfile.club.weekday,
+              id: user.teacherProfile.team.shelter.id,
+              name: user.teacherProfile.team.shelter.name,
             }
             : null,
         }
         : null,
-      coordinatorProfile: user.coordinatorProfile
+      leaderProfile: user.leaderProfile
         ? {
-          id: user.coordinatorProfile.id,
-          active: user.coordinatorProfile.active,
-          clubs: Array.isArray(user.coordinatorProfile.clubs)
-            ? user.coordinatorProfile.clubs.map((c) => ({
-              id: c.id,
-              number: c.number,
-              weekday: c.weekday,
-            }))
-            : [],
+          id: user.leaderProfile.id,
+          active: user.leaderProfile.active,
+          shelter: user.leaderProfile.team?.shelter ? {
+            id: user.leaderProfile.team.shelter.id,
+            name: user.leaderProfile.team.shelter.name,
+          } : null,
         }
         : null,
     };

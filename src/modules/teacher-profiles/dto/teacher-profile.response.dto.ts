@@ -1,5 +1,4 @@
 import { Exclude, Expose, Type, Transform, plainToInstance } from 'class-transformer';
-import { Weekday } from 'src/modules/clubs/enums/weekday.enum/weekday.enum';
 import { TeacherProfileEntity } from '../entities/teacher-profile.entity/teacher-profile.entity';
 
 @Exclude()
@@ -34,15 +33,25 @@ export class CoordinatorMiniDto {
 }
 
 @Exclude()
-export class ClubMiniWithCoordinatorDto {
+class TeamMiniDto {
   @Expose() id!: string;
-  @Expose() number!: number;
-  @Expose() weekday!: Weekday;
+  @Expose() numberTeam!: number;
+  @Expose() description?: string;
+}
+
+@Exclude()
+export class ShelterMiniWithCoordinatorDto {
+  @Expose() id!: string;
+  @Expose() name!: string;
+
+  @Expose()
+  @Type(() => TeamMiniDto)
+  team!: TeamMiniDto | null;
 
   @Expose()
   @Type(() => CoordinatorMiniDto)
   @Transform(({ value }) => value ?? null)
-  coordinator!: CoordinatorMiniDto | null;
+  leader!: CoordinatorMiniDto | null;
 }
 
 @Exclude()
@@ -55,9 +64,32 @@ export class TeacherResponseDto {
   user!: UserMiniDto;
 
   @Expose()
-  @Type(() => ClubMiniWithCoordinatorDto)
-  @Transform(({ value }) => value ?? null)
-  club!: ClubMiniWithCoordinatorDto | null;
+  @Type(() => ShelterMiniWithCoordinatorDto)
+  @Transform(({ obj }) => {
+    // Se o professor não tem equipe, não tem abrigo
+    if (!obj.team || !obj.team.shelter) {
+      return null;
+    }
+
+    // Montar o shelter com a equipe dentro
+    return {
+      id: obj.team.shelter.id,
+      name: obj.team.shelter.name,
+      team: {
+        id: obj.team.id,
+        numberTeam: obj.team.numberTeam,
+        description: obj.team.description,
+      },
+      leader: obj.team.leaders && obj.team.leaders.length > 0
+        ? {
+            id: obj.team.leaders[0].id,
+            active: obj.team.leaders[0].active,
+            user: obj.team.leaders[0].user,
+          }
+        : null,
+    };
+  })
+  shelter!: ShelterMiniWithCoordinatorDto | null;
 
   @Expose() createdAt!: Date;
   @Expose() updatedAt!: Date;

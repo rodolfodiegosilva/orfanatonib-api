@@ -4,26 +4,24 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
-  Patch,
   Query,
   Req,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { TeacherProfilesService } from './services/teacher-profiles.service';
-import {
-  AssignTeacherToClubDto,
-  UnassignTeacherFromClubDto,
-} from './dto/teacher-profile.request.dto';
 import { TeacherResponseDto } from './dto/teacher-profile.response.dto';
 import { TeacherSimpleListDto } from './dto/teacher-simple-list.dto';
 import { PageDto, TeacherProfilesQueryDto } from './dto/teacher-profiles.query.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { ManageTeacherTeamDto } from './dto/assign-team.dto';
 
 @Controller('teacher-profiles')
 @UseGuards(JwtAuthGuard)
 export class TeacherProfilesController {
-  constructor(private readonly service: TeacherProfilesService) {}
+  constructor(private readonly service: TeacherProfilesService) { }
+
 
   @Get()
   findPage(
@@ -46,31 +44,12 @@ export class TeacherProfilesController {
     return this.service.findOne(id, req);
   }
 
-  @Get('by-club/:clubId')
-  findByClubId(
-    @Param('clubId', new ParseUUIDPipe()) clubId: string,
-    @Req() req: Request,
-  ): Promise<TeacherResponseDto[]> {
-    return this.service.findByClubId(clubId, req);
-  }
-
-  @Patch(':teacherId/assign-club')
-  async assignClub(
+  @Put(':teacherId')
+  async update(
     @Param('teacherId', new ParseUUIDPipe()) teacherId: string,
-    @Body() dto: AssignTeacherToClubDto,
+    @Body() dto: ManageTeacherTeamDto,
     @Req() req: Request,
-  ): Promise<{ message: string }> {
-    await this.service.assignClub(teacherId, dto.clubId, req);
-    return { message: 'Teacher atribuído ao club com sucesso' };
-  }
-
-  @Patch(':teacherId/unassign-club')
-  async unassignClub(
-    @Param('teacherId', new ParseUUIDPipe()) teacherId: string,
-    @Body() dto: UnassignTeacherFromClubDto,
-    @Req() req: Request,
-  ): Promise<{ message: string }> {
-    await this.service.unassignClub(teacherId, dto.clubId, req);
-    return { message: 'Teacher removido do club com sucesso' };
+  ): Promise<TeacherResponseDto> {
+    return this.service.manageTeam(teacherId, dto, req);
   }
 }

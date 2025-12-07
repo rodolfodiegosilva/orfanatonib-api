@@ -19,16 +19,33 @@ import { ImageSectionModule } from './pages/image-section/image-section.module';
 import { IdeasSectionModule } from './pages/ideas-section/ideas-section.module';
 import { SiteFeedbackModule } from './feedback/site-feedback.module';
 import { AddressesModule } from './modules/addresses/addresses.module';
-import { CoordinatorProfilesModule } from './modules/coordinator-profiles/coordinator-profiles.module';
+import { LeaderProfilesModule } from './modules/leader-profiles/leader-profiles.module';
 import { TeacherProfilesModule } from './modules/teacher-profiles/teacher-profiles.module';
-import { ClubsModule } from './modules/clubs/clubs.module';
-import { ChildrenModule } from './modules/children/children.module';
+import { SheltersModule } from './modules/shelters/shelters.module';
+import { ShelteredModule } from './modules/sheltered/sheltered.module';
 import { PagelasModule } from './modules/pagelas/pagelas.module';
 import { AcceptedChristsModule } from './modules/accepted-christs/accepted-christs.module';
+import { TeamsModule } from './modules/teams/teams.module';
+import * as path from 'path';
+
+// Determina qual arquivo de ambiente usar
+function getEnvFilePath(): string {
+  const env = process.env.ENVIRONMENT || process.env.NODE_ENV || 'local';
+  const envFileMap: Record<string, string> = {
+    local: 'env/local.env',
+    staging: 'env/staging.env',
+    production: 'env/prod.env',
+    prod: 'env/prod.env',
+  };
+  return path.resolve(process.cwd(), envFileMap[env] || envFileMap.local);
+}
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: getEnvFilePath(),
+    }),
     DatabaseModule,
     AwsModule,
     ImageModule,
@@ -48,12 +65,13 @@ import { AcceptedChristsModule } from './modules/accepted-christs/accepted-chris
     IdeasSectionModule,
     SiteFeedbackModule,
     AddressesModule,
-    CoordinatorProfilesModule,
-    TeacherProfilesModule,
-    ClubsModule,
-    ChildrenModule,
+           LeaderProfilesModule,
+           TeacherProfilesModule,
+           SheltersModule,
+           ShelteredModule,
     PagelasModule,
-    AcceptedChristsModule
+    AcceptedChristsModule,
+    TeamsModule
   ],
 })
 export class AppModule { }

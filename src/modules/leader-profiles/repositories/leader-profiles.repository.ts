@@ -1,0 +1,306 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  DataSource,
+  Repository,
+  SelectQueryBuilder,
+  EntityManager,
+} from 'typeorm';
+
+import { LeaderProfileEntity } from '../entities/leader-profile.entity/leader-profile.entity';
+import { TeamEntity } from 'src/modules/teams/entities/team.entity';
+import { ShelterEntity } from 'src/modules/shelters/entities/shelter.entity/shelter.entity';
+import { UserEntity } from 'src/user/user.entity';
+import {
+  LeaderSimpleListDto,
+  toLeaderSimple,
+} from '../dto/leader-simple-list.dto';
+import { LeaderProfilesQueryDto } from '../dto/leader-profiles.query.dto';
+
+type SortDir = 'ASC' | 'DESC';
+
+@Injectable()
+export class LeaderProfilesRepository {
+  constructor(
+    private readonly dataSource: DataSource,
+    @InjectRepository(LeaderProfileEntity)
+    private readonly leaderRepo: Repository<LeaderProfileEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
+    @InjectRepository(ShelterEntity)
+    private readonly shelterRepo: Repository<ShelterEntity>,
+  ) {}
+
+  private buildLeaderBaseQB(
+    manager?: EntityManager,
+  ): SelectQueryBuilder<LeaderProfileEntity> {
+    const repo = manager
+      ? manager.getRepository(LeaderProfileEntity)
+      : this.leaderRepo;
+
+    return repo
+      .createQueryBuilder('leader')
+      .leftJoinAndSelect('leader.team', 'team')
+      .leftJoinAndSelect('team.shelter', 'shelter')
+      .leftJoinAndSelect('team.teachers', 'teachers')
+      .leftJoin('leader.user', 'leader_user')
+      .addSelect([
+        'leader_user.id',
+        'leader_user.name',
+        'leader_user.email',
+        'leader_user.phone',
+        'leader_user.active',
+        'leader_user.completed',
+        'leader_user.commonUser',
+      ])
+      .leftJoin('teachers.user', 'teacher_user')
+      .addSelect([
+        'teacher_user.id',
+        'teacher_user.name',
+        'teacher_user.email',
+        'teacher_user.phone',
+        'teacher_user.active',
+        'teacher_user.completed',
+        'teacher_user.commonUser',
+      ])
+      .where('leader_user.active = true')
+      .distinct(true);
+  }
+
+  private baseIdsQuery(): SelectQueryBuilder<LeaderProfileEntity> {
+    return this.leaderRepo
+      .createQueryBuilder('leader')
+      .leftJoin('leader.user', 'leader_user')
+      .where('leader_user.active = true');
+  }
+
+  private resolveSort(sort?: string) {
+    const map: Record<string, string> = {
+      createdAt: 'leader.createdAt',
+      updatedAt: 'leader.updatedAt',
+      name: 'leader_user.name',
+    };
+    return map[sort ?? 'updatedAt'] ?? 'leader.updatedAt';
+  }
+
+  private coerceShelterId(input: unknown): string | undefined {
+    if (input === undefined || input === null || input === '') return undefined;
+    const s = String(input).trim();
+    return s ? s : undefined;
+  }
+
+  private applyFilters(
+    qb: SelectQueryBuilder<LeaderProfileEntity>,
+    params: LeaderProfilesQueryDto,
+  ) {
+    const { leaderSearchString, shelterSearchString, hasShelter, teamId, teamName, hasTeam } = params;
+
+    // 🔍 FILTROS CONSOLIDADOS
+
+    // Busca pelos dados do líder: nome, email, telefone
+    if (leaderSearchString?.trim()) {
+      const like = `%${leaderSearchString.trim().toLowerCase()}%`;
+      const likeRaw = `%${leaderSearchString.trim()}%`;
+      qb.andWhere(
+        `(
+          LOWER(leader_user.name) LIKE :leaderSearchString OR
+          LOWER(leader_user.email) LIKE :leaderSearchString OR
+          leader_user.phone LIKE :leaderSearchStringRaw
+        )`,
+        { 
+          leaderSearchString: like, 
+          leaderSearchStringRaw: likeRaw 
+        }
+      );
+    }
+
+    // Busca por todos os campos do shelter
+    if (shelterSearchString?.trim()) {
+      const like = `%${shelterSearchString.trim().toLowerCase()}%`;
+      const likeRaw = `%${shelterSearchString.trim()}%`;
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1
+          FROM teams t
+          JOIN shelters s ON s.id = t.shelter_id
+          LEFT JOIN addresses shelter_addr ON shelter_addr.id = s.address_id
+          WHERE t.id = leader.team_id
+            AND (
+              LOWER(s.name) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.street) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.number) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.district) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.city) LIKE :shelterSearchString OR
+              LOWER(shelter_addr.state) LIKE :shelterSearchString OR
+              shelter_addr.postalCode LIKE :shelterSearchStringRaw OR
+              LOWER(shelter_addr.complement) LIKE :shelterSearchString
+            )
+        )`,
+        { 
+          shelterSearchString: like, 
+          shelterSearchStringRaw: likeRaw 
+        }
+      );
+    }
+
+    // Se está vinculado a algum team (e consequentemente a um shelter) ou não
+    // ⚠️ Só aplica o filtro se hasShelter for explicitamente true ou false
+    if (hasShelter === true) {
+      qb.andWhere('leader.team_id IS NOT NULL');
+    } else if (hasShelter === false) {
+      qb.andWhere('leader.team_id IS NULL');
+    }
+    // Se hasShelter for undefined, não aplica filtro (retorna todos)
+
+    // 🎯 FILTRO: teamId - filtrar por ID da equipe
+    if (teamId?.trim()) {
+      qb.andWhere('leader.team_id = :teamId', { teamId: teamId.trim() });
+    }
+
+    // 🎯 FILTRO: teamName - filtrar por número da equipe
+    if (teamName?.trim()) {
+      const teamNumber = parseInt(teamName.trim(), 10);
+      if (!isNaN(teamNumber)) {
+        qb.andWhere(
+          `EXISTS (
+            SELECT 1 FROM teams t
+            WHERE t.id = leader.team_id
+              AND t.numberTeam = :teamNumber
+          )`,
+          { teamNumber }
+        );
+      }
+    }
+
+    // 🎯 FILTRO: hasTeam - se está vinculado a alguma equipe
+    if (hasTeam === true) {
+      qb.andWhere('leader.team_id IS NOT NULL');
+    } else if (hasTeam === false) {
+      qb.andWhere('leader.team_id IS NULL');
+    }
+
+    return qb;
+  }
+
+  async findPageWithFilters(query: LeaderProfilesQueryDto): Promise<{
+    items: LeaderProfileEntity[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const {
+      page = 1,
+      limit = 12,
+      sort = 'updatedAt',
+      order = 'desc',
+    } = query;
+
+    const sortColumn = this.resolveSort(sort);
+    const sortDir: SortDir =
+      (order || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+    const offset = (page - 1) * limit;
+
+    const total = await this.applyFilters(this.baseIdsQuery(), query)
+      .select('leader.id')
+      .distinct(true)
+      .getCount();
+
+    const pageIdsRaw = await this.applyFilters(this.baseIdsQuery(), query)
+      .select('leader.id', 'id')
+      .addSelect(sortColumn, 'ord')
+      .distinct(true)
+      .orderBy(sortColumn, sortDir)
+      .offset(offset)
+      .limit(limit)
+      .getRawMany<{ id: string }>();
+
+    const ids = pageIdsRaw.map((r) => r.id);
+    if (!ids.length) {
+      return { items: [], total, page, limit };
+    }
+
+    const items = await this.buildLeaderBaseQB()
+      .andWhere('leader.id IN (:...ids)', { ids })
+      .orderBy(sortColumn, sortDir)
+      .addOrderBy('shelter.name', 'ASC')
+      .addOrderBy('teachers.createdAt', 'ASC')
+      .getMany();
+
+    return { items, total, page, limit };
+  }
+
+  async findOneWithSheltersAndTeachersOrFail(
+    id: string,
+  ): Promise<LeaderProfileEntity> {
+    const leader = await this.buildLeaderBaseQB()
+      .andWhere('leader.id = :id', { id })
+      .orderBy('shelter.name', 'ASC')
+      .addOrderBy('teachers.createdAt', 'ASC')
+      .getOne();
+
+    if (!leader) throw new NotFoundException('LeaderProfile não encontrado');
+    return leader;
+  }
+
+  // ❌ REMOVIDO: assignShelterToLeader - Agora feito através de Teams
+  // ❌ REMOVIDO: unassignShelterFromLeader - Agora feito através de Teams
+  // ❌ REMOVIDO: moveShelterBetweenLeaders - Agora feito através de Teams
+  // ❌ REMOVIDO: findAllWithSheltersAndTeachers - Não utilizado
+  // ❌ REMOVIDO: findByShelterIdWithTeachersOrFail - Não utilizado
+
+  async createForUser(userId: string): Promise<LeaderProfileEntity> {
+    return this.dataSource.transaction(async (manager) => {
+      const txLeader = manager.withRepository(this.leaderRepo);
+      const txUser = manager.withRepository(this.userRepo);
+
+      const user = await txUser.findOne({ where: { id: userId } });
+      if (!user) throw new NotFoundException('User não encontrado');
+
+      const existing = await txLeader.findOne({ where: { user: { id: userId } } });
+      if (existing) return existing;
+
+      const entity = txLeader.create({ user: user as any, active: true });
+      return txLeader.save(entity);
+    });
+  }
+
+  async removeByUserId(userId: string): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      const txLeader = manager.withRepository(this.leaderRepo);
+      const txShelter = manager.withRepository(this.shelterRepo);
+
+      const leader = await txLeader.findOne({
+        where: { user: { id: userId } },
+        relations: { team: true },
+      });
+      if (!leader) return;
+
+      if (leader.team) {
+        // Remover a vinculação do líder ao team
+        leader.team = null;
+        await txLeader.save(leader);
+      }
+
+      await txLeader.delete(leader.id);
+    });
+  }
+
+  async list(): Promise<LeaderSimpleListDto[]> {
+    const items = await this.leaderRepo
+      .createQueryBuilder('leader')
+      .leftJoin('leader.user', 'user')
+      .addSelect(['user.id', 'user.name'])
+      .leftJoin('leader.team', 'team')
+      .leftJoin('team.shelter', 'shelter')
+      .addSelect(['shelter.id'])
+      .where('user.active = true')
+      .orderBy('leader.createdAt', 'ASC')
+      .getMany();
+
+    return items.map(toLeaderSimple);
+  }
+}

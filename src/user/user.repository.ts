@@ -32,8 +32,8 @@ export class UserRepository {
     return this.repo.findOne({
       where: { id },
       relations: {
-        teacherProfile: { club: true },
-        coordinatorProfile: { clubs: true },
+        teacherProfile: { team: { shelter: true } },
+        leaderProfile: { team: { shelter: true } },
       },
     });
   }

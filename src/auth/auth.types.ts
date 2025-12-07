@@ -1,7 +1,7 @@
 export enum UserRole {
   ADMIN = 'admin',
   TEACHER = 'teacher',
-  COORDINATOR = 'coordinator',
+  COORDINATOR = 'leader',
 }
 
 export type JwtPayload = {
