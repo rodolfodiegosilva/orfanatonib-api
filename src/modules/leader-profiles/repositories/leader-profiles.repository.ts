@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 
 import { LeaderProfileEntity } from '../entities/leader-profile.entity/leader-profile.entity';
+import { TeamEntity } from 'src/modules/teams/entities/team.entity';
 import { ShelterEntity } from 'src/modules/shelters/entities/shelter.entity/shelter.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
@@ -43,8 +44,9 @@ export class LeaderProfilesRepository {
 
     return repo
       .createQueryBuilder('leader')
-      .leftJoinAndSelect('leader.shelter', 'shelter')
-      .leftJoinAndSelect('shelter.teachers', 'teachers')
+      .leftJoinAndSelect('leader.team', 'team')
+      .leftJoinAndSelect('team.shelter', 'shelter')
+      .leftJoinAndSelect('team.teachers', 'teachers')
       .leftJoin('leader.user', 'leader_user')
       .addSelect([
         'leader_user.id',
@@ -95,7 +97,7 @@ export class LeaderProfilesRepository {
     qb: SelectQueryBuilder<LeaderProfileEntity>,
     params: LeaderProfilesQueryDto,
   ) {
-    const { leaderSearchString, shelterSearchString, hasShelter } = params;
+    const { leaderSearchString, shelterSearchString, hasShelter, teamId, teamName, hasTeam } = params;
 
     // 🔍 FILTROS CONSOLIDADOS
 
@@ -123,9 +125,10 @@ export class LeaderProfilesRepository {
       qb.andWhere(
         `EXISTS (
           SELECT 1
-          FROM shelters s
+          FROM teams t
+          JOIN shelters s ON s.id = t.shelter_id
           LEFT JOIN addresses shelter_addr ON shelter_addr.id = s.address_id
-          WHERE s.id = leader.shelter_id
+          WHERE t.id = leader.team_id
             AND (
               LOWER(s.name) LIKE :shelterSearchString OR
               LOWER(shelter_addr.street) LIKE :shelterSearchString OR
@@ -144,14 +147,41 @@ export class LeaderProfilesRepository {
       );
     }
 
-    // Se está vinculado a algum shelter ou não
+    // Se está vinculado a algum team (e consequentemente a um shelter) ou não
     // ⚠️ Só aplica o filtro se hasShelter for explicitamente true ou false
     if (hasShelter === true) {
-      qb.andWhere('leader.shelter_id IS NOT NULL');
+      qb.andWhere('leader.team_id IS NOT NULL');
     } else if (hasShelter === false) {
-      qb.andWhere('leader.shelter_id IS NULL');
+      qb.andWhere('leader.team_id IS NULL');
     }
     // Se hasShelter for undefined, não aplica filtro (retorna todos)
+
+    // 🎯 FILTRO: teamId - filtrar por ID da equipe
+    if (teamId?.trim()) {
+      qb.andWhere('leader.team_id = :teamId', { teamId: teamId.trim() });
+    }
+
+    // 🎯 FILTRO: teamName - filtrar por número da equipe
+    if (teamName?.trim()) {
+      const teamNumber = parseInt(teamName.trim(), 10);
+      if (!isNaN(teamNumber)) {
+        qb.andWhere(
+          `EXISTS (
+            SELECT 1 FROM teams t
+            WHERE t.id = leader.team_id
+              AND t.numberTeam = :teamNumber
+          )`,
+          { teamNumber }
+        );
+      }
+    }
+
+    // 🎯 FILTRO: hasTeam - se está vinculado a alguma equipe
+    if (hasTeam === true) {
+      qb.andWhere('leader.team_id IS NOT NULL');
+    } else if (hasTeam === false) {
+      qb.andWhere('leader.team_id IS NULL');
+    }
 
     return qb;
   }
@@ -203,14 +233,6 @@ export class LeaderProfilesRepository {
     return { items, total, page, limit };
   }
 
-  async findAllWithSheltersAndTeachers(): Promise<LeaderProfileEntity[]> {
-    return this.buildLeaderBaseQB()
-      .orderBy('leader.createdAt', 'ASC')
-      .addOrderBy('shelter.name', 'ASC')
-      .addOrderBy('teachers.createdAt', 'ASC')
-      .getMany();
-  }
-
   async findOneWithSheltersAndTeachersOrFail(
     id: string,
   ): Promise<LeaderProfileEntity> {
@@ -224,137 +246,11 @@ export class LeaderProfilesRepository {
     return leader;
   }
 
-  async findByShelterIdWithTeachersOrFail(
-    shelterId: string,
-  ): Promise<LeaderProfileEntity> {
-    const shelter = await this.shelterRepo.findOne({
-      where: { id: shelterId },
-      relations: { leaders: true },
-    });
-    if (!shelter) throw new NotFoundException('Shelter não encontrado');
-    if (!shelter.leaders || shelter.leaders.length === 0) {
-      throw new NotFoundException('Este Shelter não possui líderes vinculados');
-    }
-    // Retorna o primeiro líder (pode ser ajustado conforme regra de negócio)
-    return this.findOneWithSheltersAndTeachersOrFail(shelter.leaders[0].id);
-  }
-
-  async assignShelterToLeader(
-    leaderId: string,
-    shelterId: string,
-  ): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
-      const leaderRepo = manager.withRepository(this.leaderRepo);
-      const shelterRepo = manager.withRepository(this.shelterRepo);
-
-      const leader = await leaderRepo.findOne({ 
-        where: { id: leaderId },
-        relations: { shelter: true },
-      });
-      if (!leader)
-        throw new NotFoundException('LeaderProfile não encontrado');
-
-      const shelter = await shelterRepo.findOne({
-        where: { id: shelterId },
-      });
-      if (!shelter) throw new NotFoundException('Shelter não encontrado');
-
-      // Verificar se o líder já está vinculado a este shelter
-      if (leader.shelter && leader.shelter.id === shelterId) return;
-
-      // Verificar se o líder já está vinculado a outro shelter
-      if (leader.shelter && leader.shelter.id !== shelterId) {
-        throw new BadRequestException('Leader já está vinculado a outro Shelter');
-      }
-
-      leader.shelter = shelter;
-      await leaderRepo.save(leader);
-    });
-  }
-
-  async unassignShelterFromLeader(
-    leaderId: string,
-    shelterId: string,
-  ): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
-      const leaderRepo = manager.withRepository(this.leaderRepo);
-
-      const leader = await leaderRepo.findOne({
-        where: { id: leaderId },
-        relations: { shelter: true },
-      });
-      if (!leader) throw new NotFoundException('LeaderProfile não encontrado');
-
-      // Verificar se o líder está vinculado ao shelter correto
-      if (!leader.shelter || leader.shelter.id !== shelterId) {
-        throw new BadRequestException(
-          'Este Leader não está vinculado a este Shelter',
-        );
-      }
-
-      // Remover a vinculação
-      leader.shelter = null;
-      await leaderRepo.save(leader);
-    });
-  }
-
-  async moveShelterBetweenLeaders(
-    fromLeaderId: string,
-    shelterId: string,
-    toLeaderId: string,
-  ): Promise<void> {
-    if (fromLeaderId === toLeaderId) {
-      throw new BadRequestException('Líderes de origem e destino são iguais');
-    }
-
-    await this.dataSource.transaction(async (manager) => {
-      const leaderRepo = manager.withRepository(this.leaderRepo);
-      const shelterRepo = manager.withRepository(this.shelterRepo);
-
-      const [from, to] = await Promise.all([
-        leaderRepo.findOne({ 
-          where: { id: fromLeaderId },
-          relations: { shelter: true },
-        }),
-        leaderRepo.findOne({ 
-          where: { id: toLeaderId },
-          relations: { shelter: true },
-        }),
-      ]);
-      if (!from)
-        throw new NotFoundException('LeaderProfile de origem não encontrado');
-      if (!to)
-        throw new NotFoundException('LeaderProfile de destino não encontrado');
-
-      const shelter = await shelterRepo.findOne({
-        where: { id: shelterId },
-      });
-      if (!shelter) throw new NotFoundException('Shelter não encontrado');
-
-      // Verificar se o líder de origem está vinculado ao shelter correto
-      if (!from.shelter || from.shelter.id !== shelterId) {
-        throw new BadRequestException(
-          'O Shelter não está vinculado ao líder de origem',
-        );
-      }
-
-      // Verificar se o líder de destino já está vinculado a outro shelter
-      if (to.shelter && to.shelter.id !== shelterId) {
-        throw new BadRequestException(
-          'O líder de destino já está vinculado a outro Shelter',
-        );
-      }
-
-      // Transferir o shelter do líder de origem para o de destino
-      from.shelter = null;
-      to.shelter = shelter;
-      
-      await Promise.all([
-        leaderRepo.save(from),
-        leaderRepo.save(to),
-      ]);
-    });
-  }
+  // ❌ REMOVIDO: assignShelterToLeader - Agora feito através de Teams
+  // ❌ REMOVIDO: unassignShelterFromLeader - Agora feito através de Teams
+  // ❌ REMOVIDO: moveShelterBetweenLeaders - Agora feito através de Teams
+  // ❌ REMOVIDO: findAllWithSheltersAndTeachers - Não utilizado
+  // ❌ REMOVIDO: findByShelterIdWithTeachersOrFail - Não utilizado
 
   async createForUser(userId: string): Promise<LeaderProfileEntity> {
     return this.dataSource.transaction(async (manager) => {
@@ -379,13 +275,13 @@ export class LeaderProfilesRepository {
 
       const leader = await txLeader.findOne({
         where: { user: { id: userId } },
-        relations: { shelter: true },
+        relations: { team: true },
       });
       if (!leader) return;
 
-      if (leader.shelter) {
-        // Remover a vinculação do líder ao shelter
-        leader.shelter = null;
+      if (leader.team) {
+        // Remover a vinculação do líder ao team
+        leader.team = null;
         await txLeader.save(leader);
       }
 
@@ -398,7 +294,8 @@ export class LeaderProfilesRepository {
       .createQueryBuilder('leader')
       .leftJoin('leader.user', 'user')
       .addSelect(['user.id', 'user.name'])
-      .leftJoin('leader.shelter', 'shelter')
+      .leftJoin('leader.team', 'team')
+      .leftJoin('team.shelter', 'shelter')
       .addSelect(['shelter.id'])
       .where('user.active = true')
       .orderBy('leader.createdAt', 'ASC')

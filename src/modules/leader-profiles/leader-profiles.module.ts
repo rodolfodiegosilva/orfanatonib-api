@@ -9,6 +9,8 @@ import { LeaderProfilesController } from './leader-profiles.controller';
 import { TeacherProfilesModule } from '../teacher-profiles/teacher-profiles.module';
 import { SheltersModule } from '../shelters/shelters.module';
 import { UserModule } from 'src/user/user.module';
+import { AuthModule } from 'src/auth/auth.module';
+import { TeamsModule } from '../teams/teams.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { UserModule } from 'src/user/user.module';
     forwardRef(() => TeacherProfilesModule),
     forwardRef(() => SheltersModule),
     forwardRef(() => UserModule),
+    forwardRef(() => AuthModule),
+    forwardRef(() => TeamsModule),
   ],
   controllers: [LeaderProfilesController],
   providers: [LeaderProfilesRepository, LeaderProfilesService],

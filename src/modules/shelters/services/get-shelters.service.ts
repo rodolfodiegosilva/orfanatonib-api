@@ -13,6 +13,7 @@ import { ShelterSelectOptionDto } from '../dto/shelter-select-option.dto';
 import { AuthContextService } from 'src/auth/services/auth-context.service';
 import { MediaItemProcessor } from 'src/share/media/media-item-processor';
 import { ShelterEntity } from '../entities/shelter.entity/shelter.entity';
+import { ShelterTeamsQuantityResponseDto } from '../dto/shelter-teams-quantity-response.dto';
 
 type Ctx = { role?: string; userId?: string | null };
 
@@ -91,5 +92,16 @@ export class GetSheltersService {
   async list(req: Request): Promise<ShelterSelectOptionDto[]> {
     const ctx = await this.getCtx(req);
     return await this.sheltersRepository.list(ctx);
+  }
+
+  async getTeamsQuantity(id: string, req: Request): Promise<ShelterTeamsQuantityResponseDto> {
+    const ctx = await this.getCtx(req);
+    const shelter = await this.sheltersRepository.findOneOrFailForResponse(id, ctx);
+    if (!shelter) throw new NotFoundException('Shelter não encontrado');
+    
+    return {
+      id: shelter.id,
+      teamsQuantity: shelter.teamsQuantity ?? 0,
+    };
   }
 }

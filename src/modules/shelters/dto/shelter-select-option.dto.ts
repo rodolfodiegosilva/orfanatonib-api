@@ -15,9 +15,11 @@ export class ShelterSelectOptionDto {
 
 export function toShelterSelectOption(entity: ShelterEntity): ShelterSelectOptionDto {
   const bairro = entity.address?.district?.trim();
+  // Verificar se há líderes através das teams
+  const hasLeaders = entity.teams?.some(team => team.leaders && team.leaders.length > 0) || false;
   return {
     id: entity.id,
     detalhe: `${entity.name} : ${bairro || '—'}`,
-    leader: !!(entity.leaders && entity.leaders.length > 0),
+    leader: hasLeaders,
   };
 }

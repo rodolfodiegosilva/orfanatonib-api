@@ -2,6 +2,24 @@
 
 Índice completo de toda a documentação da API Orfanatonib, organizada por módulos.
 
+## 🎯 Documentação Principal dos Módulos
+
+### 📚 Módulos Principais
+
+Documentação completa e consolidada dos 3 módulos principais:
+
+- 📚 **[Módulo Professor](./MODULO_PROFESSOR.md)** - Gestão completa de professores, equipes e abrigos
+- 👥 **[Módulo Líder](./MODULO_LIDER.md)** - Gestão completa de líderes, equipes e abrigos  
+- 🏠 **[Módulo Abrigo](./MODULO_ABRIGO.md)** - Gestão completa de abrigos, equipes, líderes e professores
+
+**Estrutura de Relacionamentos:**
+```
+Professor → Equipe → Abrigo
+Líder → Equipe → Abrigo
+```
+
+---
+
 ## 📚 Estrutura Geral
 
 ```

@@ -65,10 +65,16 @@ export class ShelterSimpleResponseDto {
   @Expose() id!: string;
   @Expose() name!: string;
   @Expose() description?: string;
+  @Expose() teamsQuantity?: number;
 
   @Expose()
   @Type(() => AddressResponseDto)
   address!: AddressResponseDto;
+
+  @Expose()
+  @Type(() => TeamWithMembersDto)
+  @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  teams!: TeamWithMembersDto[];
 
   @Expose()
   @Type(() => MediaItemResponseDto)
@@ -80,14 +86,10 @@ export class ShelterSimpleResponseDto {
 }
 
 @Exclude()
-export class ShelterResponseDto {
+class TeamWithMembersDto {
   @Expose() id!: string;
-  @Expose() name!: string;
+  @Expose() numberTeam!: number;
   @Expose() description?: string;
-
-  @Expose()
-  @Type(() => AddressResponseDto)
-  address!: AddressResponseDto;
 
   @Expose()
   @Type(() => CoordinatorWithUserDto)
@@ -97,6 +99,54 @@ export class ShelterResponseDto {
   @Expose()
   @Type(() => TeacherWithUserDto)
   @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  teachers!: TeacherWithUserDto[];
+}
+
+@Exclude()
+export class ShelterResponseDto {
+  @Expose() id!: string;
+  @Expose() name!: string;
+  @Expose() description?: string;
+  @Expose() teamsQuantity?: number;
+
+  @Expose()
+  @Type(() => AddressResponseDto)
+  address!: AddressResponseDto;
+
+  @Expose()
+  @Type(() => TeamWithMembersDto)
+  @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  teams!: TeamWithMembersDto[];
+
+  // Propriedades calculadas para compatibilidade (agrega todos os leaders e teachers de todas as teams)
+  @Expose()
+  @Type(() => CoordinatorWithUserDto)
+  @Transform(({ obj }) => {
+    const allLeaders: CoordinatorWithUserDto[] = [];
+    if (obj.teams && Array.isArray(obj.teams)) {
+      obj.teams.forEach((team: any) => {
+        if (team.leaders && Array.isArray(team.leaders)) {
+          allLeaders.push(...team.leaders);
+        }
+      });
+    }
+    return allLeaders;
+  })
+  leaders!: CoordinatorWithUserDto[];
+
+  @Expose()
+  @Type(() => TeacherWithUserDto)
+  @Transform(({ obj }) => {
+    const allTeachers: TeacherWithUserDto[] = [];
+    if (obj.teams && Array.isArray(obj.teams)) {
+      obj.teams.forEach((team: any) => {
+        if (team.teachers && Array.isArray(team.teachers)) {
+          allTeachers.push(...team.teachers);
+        }
+      });
+    }
+    return allTeachers;
+  })
   teachers!: TeacherWithUserDto[];
 
   @Expose()

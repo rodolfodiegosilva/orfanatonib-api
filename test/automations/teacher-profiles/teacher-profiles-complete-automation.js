@@ -4,8 +4,8 @@ const BASE_URL = 'http://localhost:3000';
 
 // Credenciais de admin
 const ADMIN_CREDENTIALS = {
-  email: 'joao@example.com',
-  password: 'password123'
+  email: 'superuser@orfanatonib.com',
+  password: 'Abc@123'
 };
 
 let authToken = '';
@@ -451,6 +451,89 @@ async function testTeacherProfilesSpecializations() {
   }
 }
 
+// ==================== CRIAÇÃO EM MASSA ====================
+
+async function createTeacherProfilesInBulk(count = 30) {
+  console.log(`\n🚀 Criando ${count} teacher profiles em massa...`);
+  
+  const firstNames = ['João', 'Maria', 'Pedro', 'Ana', 'Carlos', 'Juliana', 'Fernando', 'Patricia', 'Ricardo', 'Camila'];
+  const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Pereira', 'Costa', 'Rodrigues', 'Almeida', 'Nascimento', 'Lima'];
+  const specializations = ['Matemática', 'Português', 'Ciências', 'História', 'Geografia', 'Inglês', 'Artes', 'Educação Física'];
+  const cities = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Curitiba', 'Porto Alegre'];
+  const states = ['SP', 'RJ', 'MG', 'PR', 'RS'];
+  
+  const createdProfiles = [];
+  let successCount = 0;
+  let errorCount = 0;
+  
+  for (let i = 0; i < count; i++) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const timestamp = Date.now() + i;
+    
+    // 1. Criar user com role teacher
+    const userData = {
+      name: `${firstName} ${lastName}`,
+      email: `teacher.${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@orfanatonib.com`,
+      password: 'Abc@123',
+      phone: `+55${11 + Math.floor(Math.random() * 90)}${Math.floor(100000000 + Math.random() * 900000000)}`,
+      role: 'teacher'
+    };
+    
+    const userResponse = await makeRequest('POST', '/users', userData);
+    if (userResponse && userResponse.status === 201) {
+      const user = userResponse.data;
+      
+      // 2. Criar teacher profile
+      const city = cities[Math.floor(Math.random() * cities.length)];
+      const stateIndex = cities.indexOf(city);
+      const state = states[stateIndex] || 'SP';
+      
+      const profileData = {
+        userId: user.id,
+        shelterId: testData.shelters.length > 0 && Math.random() > 0.3 ? testData.shelters[Math.floor(Math.random() * testData.shelters.length)].id : null,
+        name: `${firstName} ${lastName}`,
+        phone: `+55${11 + Math.floor(Math.random() * 90)}${Math.floor(100000000 + Math.random() * 900000000)}`,
+        email: `teacher.${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@orfanatonib.com`,
+        specialization: specializations[Math.floor(Math.random() * specializations.length)],
+        experience: `${Math.floor(Math.random() * 20) + 1} anos`,
+        address: {
+          street: `Rua dos Professores`,
+          number: String(Math.floor(Math.random() * 9999) + 1),
+          district: `Bairro ${city}`,
+          city: city,
+          state: state,
+          postalCode: `${String(Math.floor(Math.random() * 90000) + 10000)}-${String(Math.floor(Math.random() * 900) + 100)}`
+        }
+      };
+      
+      const profileResponse = await makeRequest('POST', '/teacher-profiles', profileData);
+      if (profileResponse && profileResponse.status === 201) {
+        createdProfiles.push(profileResponse.data);
+        successCount++;
+        if ((i + 1) % 10 === 0) {
+          console.log(`  ✅ ${i + 1}/${count} teacher profiles criados...`);
+        }
+      } else {
+        errorCount++;
+        await makeRequest('DELETE', `/users/${user.id}`);
+      }
+    } else {
+      errorCount++;
+    }
+    
+    // Pequeno delay para não sobrecarregar o servidor
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  console.log(`\n✅ Criação em massa concluída!`);
+  console.log(`   📊 Sucessos: ${successCount}/${count}`);
+  console.log(`   ❌ Erros: ${errorCount}/${count}`);
+  console.log(`   💾 Total de teacher profiles criados: ${createdProfiles.length}`);
+  
+  return createdProfiles;
+}
+
 // ==================== FUNÇÃO PRINCIPAL ====================
 
 async function runTeacherProfilesAutomation() {
@@ -482,6 +565,9 @@ async function runTeacherProfilesAutomation() {
     return;
   }
 
+  // Criar dados em massa
+  await createTeacherProfilesInBulk(30);
+  
   // Executar testes
   await testTeacherProfilesCRUD();
   await testTeacherProfilesFilters();

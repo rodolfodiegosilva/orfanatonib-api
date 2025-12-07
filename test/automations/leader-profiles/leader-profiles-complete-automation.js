@@ -4,8 +4,8 @@ const BASE_URL = 'http://localhost:3000';
 
 // Credenciais de admin
 const ADMIN_CREDENTIALS = {
-  email: 'joao@example.com',
-  password: 'password123'
+  email: 'superuser@orfanatonib.com',
+  password: 'Abc@123'
 };
 
 let authToken = '';
@@ -395,6 +395,75 @@ async function testLeaderProfilesRelationships() {
   console.log('    ✅ Profiles e users de teste deletados');
 }
 
+// ==================== CRIAÇÃO EM MASSA ====================
+
+async function createLeaderProfilesInBulk(count = 30) {
+  console.log(`\n🚀 Criando ${count} leader profiles em massa...`);
+  
+  const firstNames = ['João', 'Maria', 'Pedro', 'Ana', 'Carlos', 'Juliana', 'Fernando', 'Patricia', 'Ricardo', 'Camila'];
+  const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Pereira', 'Costa', 'Rodrigues', 'Almeida', 'Nascimento', 'Lima'];
+  
+  const createdProfiles = [];
+  let successCount = 0;
+  let errorCount = 0;
+  
+  for (let i = 0; i < count; i++) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const timestamp = Date.now() + i;
+    
+    // 1. Criar user com role leader
+    const userData = {
+      name: `${firstName} ${lastName}`,
+      email: `leader.${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@orfanatonib.com`,
+      password: 'Abc@123',
+      phone: `+55${11 + Math.floor(Math.random() * 90)}${Math.floor(100000000 + Math.random() * 900000000)}`,
+      role: 'leader',
+      active: true,
+      completed: false,
+      commonUser: true
+    };
+    
+    const userResponse = await makeRequest('POST', '/users', userData);
+    if (userResponse && userResponse.status === 201) {
+      const user = userResponse.data;
+      
+      // 2. Criar leader profile para o user
+      const profileResponse = await makeRequest('POST', `/leader-profiles/create-for-user/${user.id}`);
+      if (profileResponse && profileResponse.status === 201) {
+        createdProfiles.push(profileResponse.data);
+        successCount++;
+        
+        // Opcionalmente atribuir shelter
+        if (testData.shelters.length > 0 && Math.random() > 0.5) {
+          const shelter = testData.shelters[Math.floor(Math.random() * testData.shelters.length)];
+          await makeRequest('PATCH', `/leader-profiles/${profileResponse.data.id}/assign-shelter`, { shelterId: shelter.id });
+        }
+        
+        if ((i + 1) % 10 === 0) {
+          console.log(`  ✅ ${i + 1}/${count} leader profiles criados...`);
+        }
+      } else {
+        errorCount++;
+        // Deletar user se profile não foi criado
+        await makeRequest('DELETE', `/users/${user.id}`);
+      }
+    } else {
+      errorCount++;
+    }
+    
+    // Pequeno delay para não sobrecarregar o servidor
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  console.log(`\n✅ Criação em massa concluída!`);
+  console.log(`   📊 Sucessos: ${successCount}/${count}`);
+  console.log(`   ❌ Erros: ${errorCount}/${count}`);
+  console.log(`   💾 Total de leader profiles criados: ${createdProfiles.length}`);
+  
+  return createdProfiles;
+}
+
 // ==================== FUNÇÃO PRINCIPAL ====================
 
 async function runLeaderProfilesAutomation() {
@@ -426,6 +495,9 @@ async function runLeaderProfilesAutomation() {
     return;
   }
 
+  // Criar dados em massa
+  await createLeaderProfilesInBulk(30);
+  
   // Executar testes
   await testLeaderProfilesCRUD();
   await testLeaderProfilesFilters();

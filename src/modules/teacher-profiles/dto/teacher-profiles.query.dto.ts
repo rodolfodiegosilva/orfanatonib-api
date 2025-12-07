@@ -53,6 +53,21 @@ export class TeacherProfilesQueryDto {
   @BooleanQuery()
   hasShelter?: boolean;
 
+  // Filtros de equipe
+  @IsOptional()
+  @Transform(({ value }) => trimOrUndef(value))
+  @IsString()
+  teamId?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => trimOrUndef(value))
+  @IsString()
+  teamName?: string;
+
+  @IsOptional()
+  @BooleanQuery()
+  hasTeam?: boolean;
+
   @IsOptional()
   @Transform(({ value }) => toInt(value))
   @Type(() => Number)

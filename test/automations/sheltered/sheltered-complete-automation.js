@@ -4,8 +4,8 @@ const BASE_URL = 'http://localhost:3000';
 
 // Credenciais de admin
 const ADMIN_CREDENTIALS = {
-  email: 'joao@example.com',
-  password: 'password123'
+  email: 'superuser@orfanatonib.com',
+  password: 'Abc@123'
 };
 
 let authToken = '';
@@ -448,6 +448,90 @@ async function testShelteredRelationships() {
   }
 }
 
+// ==================== CRIAÇÃO EM MASSA ====================
+
+async function createShelteredInBulk(count = 100) {
+  console.log(`\n🚀 Criando ${count} sheltered em massa...`);
+  
+  if (testData.shelters.length === 0) {
+    console.log('  ⚠️ Nenhum shelter encontrado. Criando sheltered sem shelter vinculado.');
+  }
+  
+  const firstNames = ['João', 'Maria', 'Pedro', 'Ana', 'Carlos', 'Juliana', 'Fernando', 'Patricia', 'Ricardo', 'Camila', 'Lucas', 'Beatriz', 'Rafael', 'Mariana', 'Gabriel', 'Isabela', 'Thiago', 'Larissa', 'Bruno', 'Amanda', 'Felipe', 'Carolina', 'Gustavo', 'Leticia', 'Rodrigo', 'Vanessa', 'André', 'Renata', 'Marcelo', 'Tatiana'];
+  const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Pereira', 'Costa', 'Rodrigues', 'Almeida', 'Nascimento', 'Lima', 'Araújo', 'Fernandes', 'Carvalho', 'Gomes', 'Martins', 'Rocha', 'Ribeiro', 'Alves', 'Monteiro', 'Mendes'];
+  const guardianNames = ['José Silva', 'Maria Santos', 'João Oliveira', 'Ana Costa', 'Pedro Souza', 'Juliana Pereira', 'Carlos Rodrigues', 'Patricia Almeida', 'Fernando Lima', 'Camila Araújo'];
+  const genders = ['M', 'F'];
+  const cities = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Curitiba', 'Porto Alegre', 'Salvador', 'Recife', 'Fortaleza', 'Brasília', 'Manaus'];
+  const states = ['SP', 'RJ', 'MG', 'PR', 'RS', 'BA', 'PE', 'CE', 'DF', 'AM'];
+  const streets = ['Rua das Flores', 'Avenida Central', 'Rua Principal', 'Avenida dos Abrigos', 'Rua da Esperança'];
+  
+  const createdSheltered = [];
+  let successCount = 0;
+  let errorCount = 0;
+  
+  for (let i = 0; i < count; i++) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const gender = genders[Math.floor(Math.random() * genders.length)];
+    const city = cities[Math.floor(Math.random() * cities.length)];
+    const stateIndex = cities.indexOf(city);
+    const state = states[stateIndex] || 'SP';
+    const street = streets[Math.floor(Math.random() * streets.length)];
+    
+    // Gerar data de nascimento entre 2010 e 2018
+    const birthYear = 2010 + Math.floor(Math.random() * 9);
+    const birthMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+    const birthDay = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+    const birthDate = `${birthYear}-${birthMonth}-${birthDay}`;
+    
+    // Gerar data de entrada no abrigo entre 2020 e 2024
+    const joinedYear = 2020 + Math.floor(Math.random() * 5);
+    const joinedMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+    const joinedDay = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+    const joinedAt = `${joinedYear}-${joinedMonth}-${joinedDay}`;
+    
+    const shelteredData = {
+      name: `${firstName} ${lastName}`,
+      birthDate: birthDate,
+      gender: gender,
+      guardianName: Math.random() > 0.3 ? guardianNames[Math.floor(Math.random() * guardianNames.length)] : null,
+      guardianPhone: Math.random() > 0.3 ? `+55${11 + Math.floor(Math.random() * 90)}${Math.floor(100000000 + Math.random() * 900000000)}` : null,
+      joinedAt: joinedAt,
+      shelterId: testData.shelters.length > 0 && Math.random() > 0.2 ? testData.shelters[Math.floor(Math.random() * testData.shelters.length)].id : null,
+      address: {
+        street: street,
+        number: String(Math.floor(Math.random() * 9999) + 1),
+        district: `Bairro ${city}`,
+        city: city,
+        state: state,
+        postalCode: `${String(Math.floor(Math.random() * 90000) + 10000)}-${String(Math.floor(Math.random() * 900) + 100)}`,
+        complement: Math.random() > 0.5 ? `Apto ${Math.floor(Math.random() * 200) + 1}` : null
+      }
+    };
+    
+    const response = await makeRequest('POST', '/sheltered', shelteredData);
+    if (response && response.status === 201) {
+      createdSheltered.push(response.data);
+      successCount++;
+      if ((i + 1) % 20 === 0) {
+        console.log(`  ✅ ${i + 1}/${count} sheltered criados...`);
+      }
+    } else {
+      errorCount++;
+    }
+    
+    // Pequeno delay para não sobrecarregar o servidor
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  
+  console.log(`\n✅ Criação em massa concluída!`);
+  console.log(`   📊 Sucessos: ${successCount}/${count}`);
+  console.log(`   ❌ Erros: ${errorCount}/${count}`);
+  console.log(`   💾 Total de sheltered criados: ${createdSheltered.length}`);
+  
+  return createdSheltered;
+}
+
 // ==================== FUNÇÃO PRINCIPAL ====================
 
 async function runShelteredAutomation() {
@@ -476,6 +560,9 @@ async function runShelteredAutomation() {
     return;
   }
 
+  // Criar dados em massa
+  await createShelteredInBulk(100);
+  
   // Executar testes
   await testShelteredCRUD();
   await testShelteredFilters();

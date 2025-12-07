@@ -1,4 +1,4 @@
-import { ShelterEntity } from 'src/modules/shelters/entities/shelter.entity/shelter.entity';
+import { TeamEntity } from 'src/modules/teams/entities/team.entity';
 import { BaseEntity } from 'src/share/share-entity/base.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
@@ -23,10 +23,10 @@ export class LeaderProfileEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @ManyToOne(() => ShelterEntity, (shelter) => shelter.leaders, {
+  @ManyToOne(() => TeamEntity, (team) => team.leaders, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'shelter_id' })
-  shelter: ShelterEntity | null;
+  @JoinColumn({ name: 'team_id' })
+  team: TeamEntity | null;
 }

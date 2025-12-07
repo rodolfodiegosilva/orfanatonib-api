@@ -10,6 +10,7 @@ import { LeaderProfilesModule } from '../leader-profiles/leader-profiles.module'
 import { SheltersModule } from '../shelters/shelters.module';
 import { UserModule } from 'src/user/user.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { TeamsModule } from '../teams/teams.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from 'src/auth/auth.module';
     forwardRef(() => SheltersModule),
     forwardRef(() => UserModule),
     forwardRef(() => AuthModule),
+    forwardRef(() => TeamsModule),
   ],
   controllers: [TeacherProfilesController],
   providers: [TeacherProfilesRepository, TeacherProfilesService],

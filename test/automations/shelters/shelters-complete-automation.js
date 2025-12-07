@@ -4,8 +4,8 @@ const BASE_URL = 'http://localhost:3000';
 
 // Credenciais de admin
 const ADMIN_CREDENTIALS = {
-  email: 'joao@example.com',
-  password: 'password123'
+  email: 'superuser@orfanatonib.com',
+  password: 'Abc@123'
 };
 
 let authToken = '';
@@ -428,6 +428,67 @@ async function testSheltersStatistics() {
   }
 }
 
+// ==================== CRIAÇÃO EM MASSA ====================
+
+async function createSheltersInBulk(count = 30) {
+  console.log(`\n🚀 Criando ${count} shelters em massa...`);
+  
+  const shelterNames = ['Abrigo', 'Lar', 'Casa', 'Centro', 'Instituto', 'Fundação', 'Associação', 'Projeto', 'Núcleo', 'Comunidade'];
+  const cities = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Curitiba', 'Porto Alegre', 'Salvador', 'Recife', 'Fortaleza', 'Brasília', 'Manaus'];
+  const states = ['SP', 'RJ', 'MG', 'PR', 'RS', 'BA', 'PE', 'CE', 'DF', 'AM'];
+  const streets = ['Rua das Flores', 'Avenida Central', 'Rua Principal', 'Avenida dos Abrigos', 'Rua da Esperança', 'Avenida da Paz', 'Rua do Amor', 'Avenida da Caridade', 'Rua da Solidariedade', 'Avenida da Fraternidade'];
+  const districts = ['Centro', 'Jardim', 'Vila', 'Bairro', 'Parque', 'Alto', 'Nova', 'São', 'Santa', 'Nossa Senhora'];
+  
+  const createdShelters = [];
+  let successCount = 0;
+  let errorCount = 0;
+  
+  for (let i = 0; i < count; i++) {
+    const namePrefix = shelterNames[Math.floor(Math.random() * shelterNames.length)];
+    const city = cities[Math.floor(Math.random() * cities.length)];
+    const stateIndex = cities.indexOf(city);
+    const state = states[stateIndex] || 'SP';
+    const street = streets[Math.floor(Math.random() * streets.length)];
+    const district = districts[Math.floor(Math.random() * districts.length)];
+    const timestamp = Date.now() + i;
+    
+    const shelterData = {
+      name: `${namePrefix} ${city} ${timestamp}`,
+      description: getRandomElement(SHELTER_DESCRIPTIONS),
+      address: {
+        street: street,
+        number: String(Math.floor(Math.random() * 9999) + 1),
+        district: `${district} ${city}`,
+        city: city,
+        state: state,
+        postalCode: `${String(Math.floor(Math.random() * 90000) + 10000)}-${String(Math.floor(Math.random() * 900) + 100)}`,
+        complement: `Bloco ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`
+      }
+    };
+    
+    const response = await makeRequest('POST', '/shelters', shelterData);
+    if (response && response.status === 201) {
+      createdShelters.push(response.data);
+      successCount++;
+      if ((i + 1) % 10 === 0) {
+        console.log(`  ✅ ${i + 1}/${count} shelters criados...`);
+      }
+    } else {
+      errorCount++;
+    }
+    
+    // Pequeno delay para não sobrecarregar o servidor
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  console.log(`\n✅ Criação em massa concluída!`);
+  console.log(`   📊 Sucessos: ${successCount}/${count}`);
+  console.log(`   ❌ Erros: ${errorCount}/${count}`);
+  console.log(`   💾 Total de shelters criados: ${createdShelters.length}`);
+  
+  return createdShelters;
+}
+
 // ==================== FUNÇÃO PRINCIPAL ====================
 
 async function runSheltersAutomation() {
@@ -456,6 +517,9 @@ async function runSheltersAutomation() {
     return;
   }
 
+  // Criar dados em massa
+  await createSheltersInBulk(30);
+  
   // Executar testes
   await testSheltersCRUD();
   await testSheltersFilters();

@@ -4,26 +4,24 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
-  Patch,
   Query,
   Req,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { TeacherProfilesService } from './services/teacher-profiles.service';
-import {
-  AssignTeacherToShelterDto,
-  UnassignTeacherFromShelterDto,
-} from './dto/teacher-profile.request.dto';
 import { TeacherResponseDto } from './dto/teacher-profile.response.dto';
 import { TeacherSimpleListDto } from './dto/teacher-simple-list.dto';
 import { PageDto, TeacherProfilesQueryDto } from './dto/teacher-profiles.query.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { ManageTeacherTeamDto } from './dto/assign-team.dto';
 
 @Controller('teacher-profiles')
 @UseGuards(JwtAuthGuard)
 export class TeacherProfilesController {
-  constructor(private readonly service: TeacherProfilesService) {}
+  constructor(private readonly service: TeacherProfilesService) { }
+
 
   @Get()
   findPage(
@@ -46,31 +44,12 @@ export class TeacherProfilesController {
     return this.service.findOne(id, req);
   }
 
-  @Get('by-shelter/:shelterId')
-  findByShelterId(
-    @Param('shelterId', new ParseUUIDPipe()) shelterId: string,
-    @Req() req: Request,
-  ): Promise<TeacherResponseDto[]> {
-    return this.service.findByShelterId(shelterId, req);
-  }
-
-  @Patch(':teacherId/assign-shelter')
-  async assignShelter(
+  @Put(':teacherId')
+  async update(
     @Param('teacherId', new ParseUUIDPipe()) teacherId: string,
-    @Body() dto: AssignTeacherToShelterDto,
+    @Body() dto: ManageTeacherTeamDto,
     @Req() req: Request,
-  ): Promise<{ message: string }> {
-    await this.service.assignShelter(teacherId, dto.shelterId, req);
-    return { message: 'Teacher atribuído ao shelter com sucesso' };
-  }
-
-  @Patch(':teacherId/unassign-shelter')
-  async unassignShelter(
-    @Param('teacherId', new ParseUUIDPipe()) teacherId: string,
-    @Body() dto: UnassignTeacherFromShelterDto,
-    @Req() req: Request,
-  ): Promise<{ message: string }> {
-    await this.service.unassignShelter(teacherId, dto.shelterId, req);
-    return { message: 'Teacher removido do shelter com sucesso' };
+  ): Promise<TeacherResponseDto> {
+    return this.service.manageTeam(teacherId, dto, req);
   }
 }

@@ -46,20 +46,16 @@ export class UpdateShelterDto {
   @IsOptional() @IsString()
   description?: string;
 
-  @IsOptional()
-  @IsArray()
-  @IsUUID('4', { each: true })
-  leaderProfileIds?: string[];
+  @IsNumber() @IsNumber({}, { message: 'teamsQuantity deve ser um número' })
+  teamsQuantity!: number;
+
+  // ❌ REMOVIDO: leaderProfileIds - Agora feito através de Teams
+  // ❌ REMOVIDO: teacherProfileIds - Agora feito através de Teams
 
   @IsOptional()
   @ValidateNested()
   @Type(() => AddressPatchDto)
   address?: AddressPatchDto;
-
-  @IsOptional()
-  @IsArray()
-  @IsUUID('4', { each: true })
-  teacherProfileIds?: string[];
 
   @IsOptional()
   @ValidateNested()

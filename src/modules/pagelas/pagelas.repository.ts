@@ -24,7 +24,9 @@ export class PagelasRepository {
       .leftJoin('p.sheltered', 'sheltered')
       .addSelect(['sheltered.id', 'sheltered.name'])
       .leftJoin('p.teacher', 'teacher')
-      .addSelect(['teacher.id']);
+      .addSelect(['teacher.id'])
+      .leftJoin('teacher.user', 'teacherUser')
+      .addSelect(['teacherUser.id', 'teacherUser.name']);
   }
 
   private applyFilters(
@@ -37,20 +39,18 @@ export class PagelasRepository {
       qb.andWhere('sheltered.id = :shelteredId', { shelteredId: f.shelteredId });
     }
 
-    if (f.year != null) {
-      qb.andWhere('p.year = :year', { year: f.year });
-    }
-
-    if (f.visit != null) {
-      console.log('f.visit', f.visit);
-
-      qb.andWhere('p.visit = :visit', { visit: f.visit });
-    }
-
-    if (f.present) {
-      qb.andWhere('p.present = :present', {
-        present: f.present === 'true',
-      });
+    // 🔍 Busca unificada: número da visita, ano, observação ou nome do professor que lançou a pagela
+    if (f.searchString?.trim()) {
+      const like = `%${f.searchString.trim()}%`;
+      qb.andWhere(
+        `(
+          CAST(p.visit AS CHAR) LIKE :searchStringRaw OR
+          CAST(p.year AS CHAR) LIKE :searchStringRaw OR
+          LOWER(COALESCE(p.notes, '')) LIKE LOWER(:searchString) OR
+          LOWER(COALESCE(teacherUser.name, '')) LIKE LOWER(:searchString)
+        )`,
+        { searchString: like, searchStringRaw: `%${f.searchString.trim()}%` }
+      );
     }
 
     return qb;

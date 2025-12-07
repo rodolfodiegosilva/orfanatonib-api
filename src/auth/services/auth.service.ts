@@ -175,10 +175,10 @@ export class AuthService {
         ? {
           id: user.teacherProfile.id,
           active: user.teacherProfile.active,
-          shelter: user.teacherProfile.shelter
+          shelter: user.teacherProfile.team?.shelter
             ? {
-              id: user.teacherProfile.shelter.id,
-              name: user.teacherProfile.shelter.name,
+              id: user.teacherProfile.team.shelter.id,
+              name: user.teacherProfile.team.shelter.name,
             }
             : null,
         }
@@ -187,9 +187,9 @@ export class AuthService {
         ? {
           id: user.leaderProfile.id,
           active: user.leaderProfile.active,
-          shelter: user.leaderProfile.shelter ? {
-            id: user.leaderProfile.shelter.id,
-            name: user.leaderProfile.shelter.name,
+          shelter: user.leaderProfile.team?.shelter ? {
+            id: user.leaderProfile.team.shelter.id,
+            name: user.leaderProfile.team.shelter.name,
           } : null,
         }
         : null,

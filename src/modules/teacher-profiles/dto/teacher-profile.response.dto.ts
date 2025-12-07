@@ -33,9 +33,20 @@ export class CoordinatorMiniDto {
 }
 
 @Exclude()
+class TeamMiniDto {
+  @Expose() id!: string;
+  @Expose() numberTeam!: number;
+  @Expose() description?: string;
+}
+
+@Exclude()
 export class ShelterMiniWithCoordinatorDto {
   @Expose() id!: string;
   @Expose() name!: string;
+
+  @Expose()
+  @Type(() => TeamMiniDto)
+  team!: TeamMiniDto | null;
 
   @Expose()
   @Type(() => CoordinatorMiniDto)
@@ -54,7 +65,30 @@ export class TeacherResponseDto {
 
   @Expose()
   @Type(() => ShelterMiniWithCoordinatorDto)
-  @Transform(({ value }) => value ?? null)
+  @Transform(({ obj }) => {
+    // Se o professor não tem equipe, não tem abrigo
+    if (!obj.team || !obj.team.shelter) {
+      return null;
+    }
+
+    // Montar o shelter com a equipe dentro
+    return {
+      id: obj.team.shelter.id,
+      name: obj.team.shelter.name,
+      team: {
+        id: obj.team.id,
+        numberTeam: obj.team.numberTeam,
+        description: obj.team.description,
+      },
+      leader: obj.team.leaders && obj.team.leaders.length > 0
+        ? {
+            id: obj.team.leaders[0].id,
+            active: obj.team.leaders[0].active,
+            user: obj.team.leaders[0].user,
+          }
+        : null,
+    };
+  })
   shelter!: ShelterMiniWithCoordinatorDto | null;
 
   @Expose() createdAt!: Date;

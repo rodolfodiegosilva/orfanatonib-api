@@ -25,10 +25,27 @@ import { SheltersModule } from './modules/shelters/shelters.module';
 import { ShelteredModule } from './modules/sheltered/sheltered.module';
 import { PagelasModule } from './modules/pagelas/pagelas.module';
 import { AcceptedChristsModule } from './modules/accepted-christs/accepted-christs.module';
+import { TeamsModule } from './modules/teams/teams.module';
+import * as path from 'path';
+
+// Determina qual arquivo de ambiente usar
+function getEnvFilePath(): string {
+  const env = process.env.ENVIRONMENT || process.env.NODE_ENV || 'local';
+  const envFileMap: Record<string, string> = {
+    local: 'env/local.env',
+    staging: 'env/staging.env',
+    production: 'env/prod.env',
+    prod: 'env/prod.env',
+  };
+  return path.resolve(process.cwd(), envFileMap[env] || envFileMap.local);
+}
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: getEnvFilePath(),
+    }),
     DatabaseModule,
     AwsModule,
     ImageModule,
@@ -53,7 +70,8 @@ import { AcceptedChristsModule } from './modules/accepted-christs/accepted-chris
            SheltersModule,
            ShelteredModule,
     PagelasModule,
-    AcceptedChristsModule
+    AcceptedChristsModule,
+    TeamsModule
   ],
 })
 export class AppModule { }

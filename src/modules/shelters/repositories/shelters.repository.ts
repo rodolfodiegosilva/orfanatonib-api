@@ -21,6 +21,7 @@ import { ShelterEntity } from '../entities/shelter.entity/shelter.entity';
 import { AddressEntity } from 'src/modules/addresses/entities/address.entity/address.entity';
 import { LeaderProfileEntity } from 'src/modules/leader-profiles/entities/leader-profile.entity/leader-profile.entity';
 import { TeacherProfileEntity } from 'src/modules/teacher-profiles/entities/teacher-profile.entity/teacher-profile.entity';
+import { TeamEntity } from 'src/modules/teams/entities/team.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { ShelterSelectOptionDto, toShelterSelectOption } from '../dto/shelter-select-option.dto';
 
@@ -49,8 +50,9 @@ export class SheltersRepository {
     return repo
       .createQueryBuilder('shelter')
       .leftJoinAndSelect('shelter.address', 'address')
-      .leftJoinAndSelect('shelter.leaders', 'leaders')
-      .leftJoinAndSelect('shelter.teachers', 'teachers')
+      .leftJoinAndSelect('shelter.teams', 'teams')
+      .leftJoinAndSelect('teams.leaders', 'leaders')
+      .leftJoinAndSelect('teams.teachers', 'teachers')
       .leftJoinAndSelect('leaders.user', 'leaderUser')
       .leftJoinAndSelect('teachers.user', 'teacherUser');
   }
@@ -78,126 +80,36 @@ export class SheltersRepository {
       limit = 10,
       sort = 'name',
       order = 'ASC',
-      shelterName,
-      staffFilters,
-      addressFilter,
-      shelterId, // Filtro legado
-      searchString, // Compatibilidade frontend
-      nameSearchString, // Compatibilidade frontend
-      leaderId, // Filtro específico por líder
+      searchString,
     } = q;
 
     const qb = this.buildShelterBaseQB().distinct(true);
     this.applyRoleFilter(qb, ctx);
 
-    // 🏠 Filtro de nome do abrigo - busca em todos os campos relacionados ao nome
-    if (shelterName?.trim()) {
-      const like = `%${shelterName.trim()}%`;
-      qb.andWhere(
-        `(
-          LOWER(shelter.name) LIKE LOWER(:shelterName)
-        )`,
-        { shelterName: like }
-      );
-    }
-
-    // 👥 Filtros de staff - busca em todos os campos relacionados a líderes e professores
-    if (staffFilters?.trim()) {
-      const like = `%${staffFilters.trim()}%`;
-      qb.andWhere(
-        `EXISTS (
-          SELECT 1 FROM leader_profiles lp
-          JOIN users lu ON lu.id = lp.user_id
-          WHERE lp.shelter_id = shelter.id
-            AND (
-              LOWER(lu.name) LIKE LOWER(:staffFilters) OR
-              LOWER(lu.email) LIKE LOWER(:staffFilters) OR
-              lu.phone LIKE :staffFiltersRaw
-            )
-        ) OR EXISTS (
-          SELECT 1 FROM teacher_profiles tp
-          JOIN users tu ON tu.id = tp.user_id
-          WHERE tp.shelter_id = shelter.id
-            AND (
-              LOWER(tu.name) LIKE LOWER(:staffFilters) OR
-              LOWER(tu.email) LIKE LOWER(:staffFilters) OR
-              tu.phone LIKE :staffFiltersRaw
-            )
-        )`,
-        { staffFilters: like, staffFiltersRaw: `%${staffFilters.trim()}%` }
-      );
-    }
-
-    // 🏙️ Filtro de endereço - busca em todos os campos relacionados ao endereço
-    if (addressFilter?.trim()) {
-      const like = `%${addressFilter.trim()}%`;
-      qb.andWhere(
-        `(
-          LOWER(address.street) LIKE LOWER(:addressFilter) OR
-          LOWER(address.number) LIKE LOWER(:addressFilter) OR
-          LOWER(address.district) LIKE LOWER(:addressFilter) OR
-          LOWER(address.city) LIKE LOWER(:addressFilter) OR
-          LOWER(address.state) LIKE LOWER(:addressFilter) OR
-          address.postalCode LIKE :addressFilterRaw OR
-          LOWER(address.complement) LIKE LOWER(:addressFilter)
-        )`,
-        { addressFilter: like, addressFilterRaw: `%${addressFilter.trim()}%` }
-      );
-    }
-
-    // Filtro legado
-    if (shelterId) {
-      qb.andWhere('shelter.id = :shelterId', { shelterId });
-    }
-
-    // 🔍 Compatibilidade com frontend - mapear parâmetros antigos para novos
-    // Se nameSearchString foi enviado mas shelterName não, usar nameSearchString
-    if (nameSearchString?.trim() && !shelterName?.trim()) {
-      const like = `%${nameSearchString.trim()}%`;
-      qb.andWhere(
-        `(
-          LOWER(shelter.name) LIKE LOWER(:nameSearchString)
-        )`,
-        { nameSearchString: like }
-      );
-    }
-
-    // Se searchString foi enviado mas staffFilters não, usar searchString
-    if (searchString?.trim() && !staffFilters?.trim()) {
+    // 🔍 Busca unificada: nome do abrigo, cidade, UF, bairro, nome de professores ou líderes
+    if (searchString?.trim()) {
       const like = `%${searchString.trim()}%`;
       qb.andWhere(
-        `EXISTS (
-          SELECT 1 FROM leader_profiles lp
-          JOIN users lu ON lu.id = lp.user_id
-          WHERE lp.shelter_id = shelter.id
-            AND (
-              LOWER(lu.name) LIKE LOWER(:searchString) OR
-              LOWER(lu.email) LIKE LOWER(:searchString) OR
-              lu.phone LIKE :searchStringRaw
-            )
-        ) OR EXISTS (
-          SELECT 1 FROM teacher_profiles tp
-          JOIN users tu ON tu.id = tp.user_id
-          WHERE tp.shelter_id = shelter.id
-            AND (
-              LOWER(tu.name) LIKE LOWER(:searchString) OR
-              LOWER(tu.email) LIKE LOWER(:searchString) OR
-              tu.phone LIKE :searchStringRaw
-            )
+        `(
+          LOWER(shelter.name) LIKE LOWER(:searchString) OR
+          LOWER(address.city) LIKE LOWER(:searchString) OR
+          LOWER(address.state) LIKE LOWER(:searchString) OR
+          LOWER(address.district) LIKE LOWER(:searchString) OR
+          EXISTS (
+            SELECT 1 FROM teams t
+            JOIN leader_profiles lp ON lp.team_id = t.id
+            JOIN users lu ON lu.id = lp.user_id
+            WHERE t.shelter_id = shelter.id
+              AND LOWER(lu.name) LIKE LOWER(:searchString)
+          ) OR EXISTS (
+            SELECT 1 FROM teams t
+            JOIN teacher_profiles tp ON tp.team_id = t.id
+            JOIN users tu ON tu.id = tp.user_id
+            WHERE t.shelter_id = shelter.id
+              AND LOWER(tu.name) LIKE LOWER(:searchString)
+          )
         )`,
-        { searchString: like, searchStringRaw: `%${searchString.trim()}%` }
-      );
-    }
-
-    // Filtro específico por líder
-    if (leaderId?.trim()) {
-      qb.andWhere(
-        `EXISTS (
-          SELECT 1 FROM leader_profiles lp
-          WHERE lp.shelter_id = shelter.id
-            AND lp.user_id = :leaderId
-        )`,
-        { leaderId }
+        { searchString: like }
       );
     }
 
@@ -212,7 +124,8 @@ export class SheltersRepository {
     
     const orderBy = sortMap[sort] ?? 'shelter.name';
     const orderDir = (order || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-    qb.orderBy(orderBy, orderDir as 'ASC' | 'DESC');
+    qb.orderBy(orderBy, orderDir as 'ASC' | 'DESC')
+      .addOrderBy('teams.numberTeam', 'ASC');
 
     // Paginação
     qb.skip((page - 1) * limit).take(limit);
@@ -223,15 +136,8 @@ export class SheltersRepository {
 
   async findAllSimple(ctx?: RoleCtx): Promise<ShelterEntity[]> {
     const qb = this.buildShelterBaseQB()
-      .select([
-        'shelter.id',
-        'shelter.name',
-        'shelter.description',
-        'shelter.createdAt',
-        'shelter.updatedAt',
-        'address',
-      ])
-      .orderBy('shelter.name', 'ASC');
+      .orderBy('shelter.name', 'ASC')
+      .addOrderBy('teams.numberTeam', 'ASC');
 
     this.applyRoleFilter(qb, ctx);
 
@@ -242,6 +148,7 @@ export class SheltersRepository {
     const qb = this.buildShelterBaseQB()
       .where('shelter.id = :id', { id })
       .orderBy('shelter.name', 'ASC')
+      .addOrderBy('teams.numberTeam', 'ASC')
       .addOrderBy('teachers.createdAt', 'ASC');
     this.applyRoleFilter(qb, ctx);
 
@@ -254,7 +161,7 @@ export class SheltersRepository {
   ): Promise<ShelterEntity> {
     // Usar SQL raw para garantir que vemos os dados atualizados
     const shelterData = await manager.query(`
-      SELECT s.id, s.name, s.createdAt, s.updatedAt, s.address_id,
+      SELECT s.id, s.name, s.description, s.teamsQuantity, s.createdAt, s.updatedAt, s.address_id,
              a.id as address_id, a.street, a.number, a.district, a.city, a.state, a.postalCode, a.complement, a.createdAt as address_createdAt, a.updatedAt as address_updatedAt
       FROM shelters s
       LEFT JOIN addresses a ON a.id = s.address_id
@@ -267,28 +174,42 @@ export class SheltersRepository {
 
     const shelter = shelterData[0];
     
-    // Buscar líderes usando SQL raw
-    const leadersData = await manager.query(`
-      SELECT lp.id, lp.active, lp.createdAt, lp.updatedAt, lp.user_id, lp.shelter_id,
-             u.id as user_id, u.name, u.email, u.phone, u.active as user_active, u.completed, u.commonUser, u.role
-      FROM leader_profiles lp
-      JOIN users u ON u.id = lp.user_id
-      WHERE lp.shelter_id = ?
+    // Buscar teams do abrigo
+    const teamsData = await manager.query(`
+      SELECT t.id, t.numberTeam, t.description, t.createdAt, t.updatedAt
+      FROM teams t
+      WHERE t.shelter_id = ?
+      ORDER BY t.numberTeam ASC
     `, [id]);
 
-    // Buscar professores usando SQL raw
+    // Buscar líderes através de teams usando SQL raw
+    const leadersData = await manager.query(`
+      SELECT lp.id, lp.active, lp.createdAt, lp.updatedAt, lp.user_id, lp.team_id,
+             u.id as user_id, u.name, u.email, u.phone, u.active as user_active, u.completed, u.commonUser, u.role,
+             t.id as team_id, t.numberTeam as team_numberTeam
+      FROM leader_profiles lp
+      JOIN users u ON u.id = lp.user_id
+      JOIN teams t ON t.id = lp.team_id
+      WHERE t.shelter_id = ?
+    `, [id]);
+
+    // Buscar professores através de teams usando SQL raw
     const teachersData = await manager.query(`
-      SELECT tp.id, tp.active, tp.createdAt, tp.updatedAt, tp.user_id, tp.shelter_id,
-             u.id as user_id, u.name, u.email, u.phone, u.active as user_active, u.completed, u.commonUser, u.role
+      SELECT tp.id, tp.active, tp.createdAt, tp.updatedAt, tp.user_id, tp.team_id,
+             u.id as user_id, u.name, u.email, u.phone, u.active as user_active, u.completed, u.commonUser, u.role,
+             t.id as team_id, t.numberTeam as team_numberTeam
       FROM teacher_profiles tp
       JOIN users u ON u.id = tp.user_id
-      WHERE tp.shelter_id = ?
+      JOIN teams t ON t.id = tp.team_id
+      WHERE t.shelter_id = ?
     `, [id]);
 
     // Construir o objeto ShelterEntity manualmente
     const shelterEntity = new ShelterEntity();
     shelterEntity.id = shelter.id;
     shelterEntity.name = shelter.name;
+    shelterEntity.description = shelter.description;
+    shelterEntity.teamsQuantity = shelter.teamsQuantity;
     shelterEntity.createdAt = shelter.createdAt;
     shelterEntity.updatedAt = shelter.updatedAt;
 
@@ -308,48 +229,66 @@ export class SheltersRepository {
       shelterEntity.address = addressEntity;
     }
 
-    // Construir os líderes
-    shelterEntity.leaders = leadersData.map(leaderData => {
-      const leaderEntity = new LeaderProfileEntity();
-      leaderEntity.id = leaderData.id;
-      leaderEntity.active = leaderData.active;
-      leaderEntity.createdAt = leaderData.createdAt;
-      leaderEntity.updatedAt = leaderData.updatedAt;
+    // Construir as teams com seus líderes e professores
+    shelterEntity.teams = teamsData.map(teamData => {
+      const teamEntity = new TeamEntity();
+      teamEntity.id = teamData.id;
+      teamEntity.numberTeam = teamData.numberTeam;
+      teamEntity.description = teamData.description;
+      teamEntity.createdAt = teamData.createdAt;
+      teamEntity.updatedAt = teamData.updatedAt;
 
-      const userEntity = new UserEntity();
-      userEntity.id = leaderData.user_id;
-      userEntity.name = leaderData.name;
-      userEntity.email = leaderData.email;
-      userEntity.phone = leaderData.phone;
-      userEntity.active = leaderData.user_active;
-      userEntity.completed = leaderData.completed;
-      userEntity.commonUser = leaderData.commonUser;
-      userEntity.role = leaderData.role;
+      // Filtrar líderes desta team
+      const teamLeaders = leadersData
+        .filter((ld: any) => ld.team_id === teamData.id)
+        .map((leaderData: any) => {
+          const leaderEntity = new LeaderProfileEntity();
+          leaderEntity.id = leaderData.id;
+          leaderEntity.active = leaderData.active;
+          leaderEntity.createdAt = leaderData.createdAt;
+          leaderEntity.updatedAt = leaderData.updatedAt;
 
-      leaderEntity.user = userEntity;
-      return leaderEntity;
-    });
+          const userEntity = new UserEntity();
+          userEntity.id = leaderData.user_id;
+          userEntity.name = leaderData.name;
+          userEntity.email = leaderData.email;
+          userEntity.phone = leaderData.phone;
+          userEntity.active = leaderData.user_active;
+          userEntity.completed = leaderData.completed;
+          userEntity.commonUser = leaderData.commonUser;
+          userEntity.role = leaderData.role;
 
-    // Construir os professores
-    shelterEntity.teachers = teachersData.map(teacherData => {
-      const teacherEntity = new TeacherProfileEntity();
-      teacherEntity.id = teacherData.id;
-      teacherEntity.active = teacherData.active;
-      teacherEntity.createdAt = teacherData.createdAt;
-      teacherEntity.updatedAt = teacherData.updatedAt;
+          leaderEntity.user = userEntity;
+          return leaderEntity;
+        });
 
-      const userEntity = new UserEntity();
-      userEntity.id = teacherData.user_id;
-      userEntity.name = teacherData.name;
-      userEntity.email = teacherData.email;
-      userEntity.phone = teacherData.phone;
-      userEntity.active = teacherData.user_active;
-      userEntity.completed = teacherData.completed;
-      userEntity.commonUser = teacherData.commonUser;
-      userEntity.role = teacherData.role;
+      // Filtrar professores desta team
+      const teamTeachers = teachersData
+        .filter((td: any) => td.team_id === teamData.id)
+        .map((teacherData: any) => {
+          const teacherEntity = new TeacherProfileEntity();
+          teacherEntity.id = teacherData.id;
+          teacherEntity.active = teacherData.active;
+          teacherEntity.createdAt = teacherData.createdAt;
+          teacherEntity.updatedAt = teacherData.updatedAt;
 
-      teacherEntity.user = userEntity;
-      return teacherEntity;
+          const userEntity = new UserEntity();
+          userEntity.id = teacherData.user_id;
+          userEntity.name = teacherData.name;
+          userEntity.email = teacherData.email;
+          userEntity.phone = teacherData.phone;
+          userEntity.active = teacherData.user_active;
+          userEntity.completed = teacherData.completed;
+          userEntity.commonUser = teacherData.commonUser;
+          userEntity.role = teacherData.role;
+
+          teacherEntity.user = userEntity;
+          return teacherEntity;
+        });
+
+      teamEntity.leaders = teamLeaders;
+      teamEntity.teachers = teamTeachers;
+      return teamEntity;
     });
 
     return shelterEntity;
@@ -366,8 +305,6 @@ export class SheltersRepository {
     return this.dataSource.transaction(async (manager) => {
       const shelterRepo = manager.withRepository(this.shelterRepo);
       const addressRepo = manager.withRepository(this.addressRepo);
-      const leaderRepo = manager.withRepository(this.leaderRepo);
-      const teacherRepo = manager.withRepository(this.teacherProfileRepo);
       
       const address = addressRepo.create(dto.address);
       await addressRepo.save(address);
@@ -375,6 +312,7 @@ export class SheltersRepository {
       const shelter = shelterRepo.create({
         name: dto.name,
         description: dto.description,
+        teamsQuantity: dto.teamsQuantity,
         address,
       });
 
@@ -387,84 +325,27 @@ export class SheltersRepository {
         throw e;
       }
 
-      // Atualizar líderes para associar ao shelter
-      if (dto.leaderProfileIds?.length) {
-        const ids = Array.from(new Set(dto.leaderProfileIds));
-        const leaders = await leaderRepo.find({
-          where: { id: In(ids) },
-          relations: { shelter: true },
-        });
+      // ❌ REMOVIDO: Associação direta de líderes e professores
+      // Agora isso é feito através de Teams
 
-        if (leaders.length !== ids.length) {
-          const found = new Set(leaders.map((l) => l.id));
-          const missing = ids.filter((id) => !found.has(id));
-          throw new NotFoundException(
-            `LeaderProfile(s) não encontrado(s): ${missing.join(', ')}`,
-          );
-        }
-
-        const alreadyAssigned = leaders.filter((l) => !!l.shelter);
-        if (alreadyAssigned.length) {
-          throw new BadRequestException(
-            `Alguns LeaderProfiles já estão vinculados a outro Shelter: ${alreadyAssigned
-              .map((l) => l.id)
-              .join(', ')}`,
-          );
-        }
-
-        await leaderRepo.update({ id: In(ids) }, { shelter: { id: shelter.id } as any });
-      }
-
-      // Atualizar professores para associar ao shelter
-      if (dto.teacherProfileIds?.length) {
-        const ids = Array.from(new Set(dto.teacherProfileIds));
-        const teachers = await teacherRepo.find({
-          where: { id: In(ids) },
-          relations: { shelter: true },
-        });
-
-        if (teachers.length !== ids.length) {
-          const found = new Set(teachers.map((t) => t.id));
-          const missing = ids.filter((id) => !found.has(id));
-          throw new NotFoundException(
-            `TeacherProfile(s) não encontrado(s): ${missing.join(', ')}`,
-          );
-        }
-
-        const alreadyAssigned = teachers.filter((t) => !!t.shelter);
-        if (alreadyAssigned.length) {
-          throw new BadRequestException(
-            `Alguns TeacherProfiles já estão vinculados a outro Shelter: ${alreadyAssigned
-              .map((t) => t.id)
-              .join(', ')}`,
-          );
-        }
-
-        await teacherRepo.update({ id: In(ids) }, { shelter: { id: shelter.id } as any });
-      }
       return this.findOneOrFailForResponseTx(manager, shelter.id);
     });
   }
 
   async updateShelter(id: string, dto: UpdateShelterDto): Promise<ShelterEntity> {
-    // Primeiro, fazer o update dos líderes fora da transação para evitar problemas de cache
-    if (dto.leaderProfileIds !== undefined) {
-      await this.syncLeadersForShelterDirect(id, dto.leaderProfileIds);
-    }
-
     return this.dataSource.transaction(async (manager) => {
       const shelterRepo = manager.withRepository(this.shelterRepo);
       const addressRepo = manager.withRepository(this.addressRepo);
-      const teacherRepo = manager.withRepository(this.teacherProfileRepo);
 
       const shelter = await shelterRepo.findOne({
         where: { id },
-        relations: { address: true, leaders: true, teachers: true },
+        relations: { address: true },
       });
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
       if (dto.name !== undefined) shelter.name = dto.name as any;
       if (dto.description !== undefined) shelter.description = dto.description;
+      if (dto.teamsQuantity !== undefined) shelter.teamsQuantity = dto.teamsQuantity;
 
       if (dto.address) {
         if (shelter.address) {
@@ -479,180 +360,16 @@ export class SheltersRepository {
 
       await shelterRepo.save(shelter);
 
-      if (dto.teacherProfileIds !== undefined) {
-        await this.syncTeachersForShelterTx(teacherRepo, shelter.id, dto.teacherProfileIds);
-      }
+      // ❌ REMOVIDO: Associação direta de líderes e professores
+      // Agora isso é feito através de Teams
 
       return this.findOneOrFailForResponseTx(manager, shelter.id);
     });
   }
 
-  private async syncTeachersForShelterTx(
-    txTeacherRepo: Repository<TeacherProfileEntity>,
-    shelterId: string,
-    teacherProfileIds: string[],
-  ): Promise<void> {
-    const current = await txTeacherRepo.find({
-      where: { shelter: { id: shelterId } },
-      select: { id: true },
-    });
-    const currentIds = new Set(current.map((t) => t.id));
-    const targetIds = new Set(teacherProfileIds);
-
-    const toAttach = [...targetIds].filter((id) => !currentIds.has(id));
-    const toDetach = [...currentIds].filter((id) => !targetIds.has(id));
-
-    const attachProfiles = toAttach.length
-      ? await txTeacherRepo.find({
-        where: { id: In(toAttach) },
-        relations: { shelter: true },
-      })
-      : [];
-
-    if (attachProfiles.length !== toAttach.length) {
-      const found = new Set(attachProfiles.map((p) => p.id));
-      const missing = toAttach.filter((id) => !found.has(id));
-      throw new NotFoundException(
-        `TeacherProfile(s) não encontrado(s): ${missing.join(', ')}`,
-      );
-    }
-
-    const attachedElsewhere = attachProfiles.filter(
-      (p) => p.shelter && p.shelter.id !== shelterId,
-    );
-    if (attachedElsewhere.length) {
-      throw new BadRequestException(
-        `Alguns TeacherProfiles já estão vinculados a outro Shelter: ${attachedElsewhere
-          .map((t) => t.id)
-          .join(', ')}`,
-      );
-    }
-
-    if (attachProfiles.length) {
-      await txTeacherRepo.update(
-        { id: In(attachProfiles.map((p) => p.id)) },
-        { shelter: { id: shelterId } as any },
-      );
-    }
-
-    if (toDetach.length) {
-      await txTeacherRepo.update({ id: In(toDetach) }, { shelter: null as any });
-    }
-  }
-
-  private async syncLeadersForShelterDirect(
-    shelterId: string,
-    leaderProfileIds: string[],
-  ): Promise<void> {
-    // Usar SQL raw direto para evitar problemas de transação e cache
-    const current = await this.leaderRepo.find({
-      where: { shelter: { id: shelterId } },
-      select: { id: true },
-    });
-    
-    const currentIds = new Set(current.map((l) => l.id));
-    const targetIds = new Set(leaderProfileIds);
-
-    const toAttach = [...targetIds].filter((id) => !currentIds.has(id));
-    const toDetach = [...currentIds].filter((id) => !targetIds.has(id));
-
-    // Verificar se os líderes existem
-    if (toAttach.length > 0) {
-      const existingLeaders = await this.leaderRepo.find({
-        where: { id: In(toAttach) },
-        relations: { shelter: true },
-      });
-
-      if (existingLeaders.length !== toAttach.length) {
-        const found = new Set(existingLeaders.map((p) => p.id));
-        const missing = toAttach.filter((id) => !found.has(id));
-        throw new NotFoundException(
-          `LeaderProfile(s) não encontrado(s): ${missing.join(', ')}`,
-        );
-      }
-
-      const attachedElsewhere = existingLeaders.filter(
-        (p) => p.shelter && p.shelter.id !== shelterId,
-      );
-      
-      if (attachedElsewhere.length) {
-        throw new BadRequestException(
-          `Alguns LeaderProfiles já estão vinculados a outro Shelter: ${attachedElsewhere
-            .map((l) => l.id)
-            .join(', ')}`,
-        );
-      }
-
-      // Usar SQL raw para garantir que o update funcione
-      const placeholders = toAttach.map(() => '?').join(',');
-      const updateSql = `UPDATE leader_profiles SET shelter_id = ? WHERE id IN (${placeholders})`;
-      const updateParams = [shelterId, ...toAttach];
-      
-      await this.leaderRepo.query(updateSql, updateParams);
-    }
-
-    if (toDetach.length) {
-      await this.leaderRepo.update({ id: In(toDetach) }, { shelter: null as any });
-    }
-  }
-
-  private async syncLeadersForShelterTx(
-    txLeaderRepo: Repository<LeaderProfileEntity>,
-    shelterId: string,
-    leaderProfileIds: string[],
-  ): Promise<void> {
-    const current = await txLeaderRepo.find({
-      where: { shelter: { id: shelterId } },
-      select: { id: true },
-    });
-    
-    const currentIds = new Set(current.map((l) => l.id));
-    const targetIds = new Set(leaderProfileIds);
-
-    const toAttach = [...targetIds].filter((id) => !currentIds.has(id));
-    const toDetach = [...currentIds].filter((id) => !targetIds.has(id));
-
-    const attachProfiles = toAttach.length
-      ? await txLeaderRepo.find({
-        where: { id: In(toAttach) },
-        relations: { shelter: true },
-      })
-      : [];
-
-    if (attachProfiles.length !== toAttach.length) {
-      const found = new Set(attachProfiles.map((p) => p.id));
-      const missing = toAttach.filter((id) => !found.has(id));
-      throw new NotFoundException(
-        `LeaderProfile(s) não encontrado(s): ${missing.join(', ')}`,
-      );
-    }
-
-    const attachedElsewhere = attachProfiles.filter(
-      (p) => p.shelter && p.shelter.id !== shelterId,
-    );
-    
-    if (attachedElsewhere.length) {
-      throw new BadRequestException(
-        `Alguns LeaderProfiles já estão vinculados a outro Shelter: ${attachedElsewhere
-          .map((l) => l.id)
-          .join(', ')}`,
-      );
-    }
-
-    if (attachProfiles.length) {
-      // Usar SQL raw para garantir que o update funcione
-      const leaderIds = attachProfiles.map(p => p.id);
-      const placeholders = leaderIds.map(() => '?').join(',');
-      const updateSql = `UPDATE leader_profiles SET shelter_id = ? WHERE id IN (${placeholders})`;
-      const updateParams = [shelterId, ...leaderIds];
-      
-      await txLeaderRepo.query(updateSql, updateParams);
-    }
-
-    if (toDetach.length) {
-      await txLeaderRepo.update({ id: In(toDetach) }, { shelter: null as any });
-    }
-  }
+  // ❌ REMOVIDO: syncTeachersForShelterTx - Agora feito através de Teams
+  // ❌ REMOVIDO: syncLeadersForShelterDirect - Agora feito através de Teams
+  // ❌ REMOVIDO: syncLeadersForShelterTx - Agora feito através de Teams
 
   async deleteById(id: string): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
@@ -663,23 +380,12 @@ export class SheltersRepository {
 
       const shelter = await txShelter.findOne({
         where: { id },
-        relations: { teachers: true, leaders: true, address: true },
+        relations: { address: true },
       });
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
-      if (shelter.teachers?.length) {
-        await txTeacher.update(
-          { id: In(shelter.teachers.map((t) => t.id)) },
-          { shelter: null as any },
-        );
-      }
-
-      if (shelter.leaders?.length) {
-        await txLeader.update(
-          { id: In(shelter.leaders.map((l) => l.id)) },
-          { shelter: null as any },
-        );
-      }
+      // ❌ REMOVIDO: Desvinculação direta de teachers e leaders
+      // Agora isso é feito através de Teams (CASCADE)
 
       const addressId = shelter.address?.id;
 
@@ -691,102 +397,9 @@ export class SheltersRepository {
     });
   }
 
-  async assignTeachers(shelterId: string, teacherIds: string[]): Promise<ShelterEntity> {
-    return this.dataSource.transaction(async (manager) => {
-      const shelterRepo = manager.withRepository(this.shelterRepo);
-      const teacherRepo = manager.withRepository(this.teacherProfileRepo);
-
-      const shelter = await shelterRepo.findOne({
-        where: { id: shelterId },
-        relations: { teachers: true },
-      });
-      if (!shelter) throw new NotFoundException('Shelter não encontrado');
-
-      const teachers = await teacherRepo.find({
-        where: { id: In(teacherIds) },
-        relations: { shelter: true },
-      });
-
-      const foundIds = new Set(teachers.map((t) => t.id));
-      const missing = teacherIds.filter((id) => !foundIds.has(id));
-      if (missing.length) {
-        throw new NotFoundException(`Teachers não encontrados: ${missing.join(', ')}`);
-      }
-
-      const alreadyAssigned = teachers.filter((t) => !!t.shelter);
-      if (alreadyAssigned.length) {
-        throw new BadRequestException(
-          `Alguns teachers já estão atribuídos a um shelter: ${alreadyAssigned
-            .map((t) => t.user?.name)
-            .join(', ')}`,
-        );
-      }
-
-      await teacherRepo.update({ id: In(teacherIds) }, { shelter: { id: shelter.id } as any });
-      
-      return this.findOneOrFailForResponseTx(manager, shelterId);
-    });
-  }
-
-  async unassignTeachers(
-    shelterId: string,
-    teacherIds: string[],
-    manager?: EntityManager,
-  ): Promise<void> {
-    const shelterRepo = manager ? manager.withRepository(this.shelterRepo) : this.shelterRepo;
-    const teacherRepo = manager
-      ? manager.withRepository(this.teacherProfileRepo)
-      : this.teacherProfileRepo;
-
-    const shelter = await shelterRepo.findOne({ where: { id: shelterId } });
-    if (!shelter) throw new NotFoundException('Shelter não encontrado');
-
-    const teachers = await teacherRepo.find({
-      where: { id: In(teacherIds), shelter: { id: shelterId } },
-      relations: { shelter: true },
-    });
-
-    const foundIds = new Set(teachers.map((t) => t.id));
-    const missing = teacherIds.filter((id) => !foundIds.has(id));
-    if (missing.length) {
-      throw new NotFoundException(`Teachers não encontrados no shelter: ${missing.join(', ')}`);
-    }
-
-    await teacherRepo.update({ id: In(teacherIds) }, { shelter: null as any });
-  }
-
-  async moveTeachers(
-    fromShelterId: string,
-    toShelterId: string,
-    teacherIds: string[],
-    manager?: EntityManager,
-  ): Promise<void> {
-    const shelterRepo = manager ? manager.withRepository(this.shelterRepo) : this.shelterRepo;
-    const teacherRepo = manager
-      ? manager.withRepository(this.teacherProfileRepo)
-      : this.teacherProfileRepo;
-
-    const [fromShelter, toShelter] = await Promise.all([
-      shelterRepo.findOne({ where: { id: fromShelterId } }),
-      shelterRepo.findOne({ where: { id: toShelterId } }),
-    ]);
-
-    if (!fromShelter) throw new NotFoundException('Shelter de origem não encontrado');
-    if (!toShelter) throw new NotFoundException('Shelter de destino não encontrado');
-
-    const teachers = await teacherRepo.find({
-      where: { id: In(teacherIds), shelter: { id: fromShelterId } },
-      relations: { shelter: true },
-    });
-
-    const foundIds = new Set(teachers.map((t) => t.id));
-    const missing = teacherIds.filter((id) => !foundIds.has(id));
-    if (missing.length) {
-      throw new NotFoundException(`Teachers não encontrados no shelter de origem: ${missing.join(', ')}`);
-    }
-
-    await teacherRepo.update({ id: In(teacherIds) }, { shelter: { id: toShelter.id } as any });
-  }
+  // ❌ REMOVIDO: assignTeachers - Agora feito através de Teams
+  // ❌ REMOVIDO: unassignTeachers - Agora feito através de Teams
+  // ❌ REMOVIDO: moveTeachers - Agora feito através de Teams
 
   async userHasAccessToShelter(shelterId: string, ctx?: RoleCtx): Promise<boolean> {
     const role = ctx?.role?.toLowerCase();
@@ -798,7 +411,8 @@ export class SheltersRepository {
 
     const qb = this.shelterRepo
       .createQueryBuilder('shelter')
-      .leftJoin('shelter.leaders', 'leaders')
+      .leftJoin('shelter.teams', 'teams')
+      .leftJoin('teams.leaders', 'leaders')
       .leftJoin('leaders.user', 'leaderUser')
       .where('shelter.id = :shelterId', { shelterId })
       .andWhere('leaderUser.id = :uid', { uid: userId });
@@ -815,72 +429,7 @@ export class SheltersRepository {
     return leader?.id ?? null;
   }
 
-  async assignLeaders(shelterId: string, leaderIds: string[]): Promise<ShelterEntity> {
-    return this.dataSource.transaction(async (manager) => {
-      const leaderRepo = manager.withRepository(this.leaderRepo);
-
-      const leaders = await leaderRepo.find({
-        where: { id: In(leaderIds) },
-        relations: { shelter: true },
-      });
-
-      if (leaders.length !== leaderIds.length) {
-        const found = new Set(leaders.map((l) => l.id));
-        const missing = leaderIds.filter((id) => !found.has(id));
-        throw new NotFoundException(
-          `LeaderProfile(s) não encontrado(s): ${missing.join(', ')}`,
-        );
-      }
-
-      const alreadyAssigned = leaders.filter((l) => !!l.shelter);
-      if (alreadyAssigned.length) {
-        throw new BadRequestException(
-          `Alguns LeaderProfiles já estão vinculados a outro Shelter: ${alreadyAssigned
-            .map((l) => l.id)
-            .join(', ')}`,
-        );
-      }
-
-      await leaderRepo.update(
-        { id: In(leaderIds) },
-        { shelter: { id: shelterId } as any },
-      );
-
-      return this.findOneOrFailForResponseTx(manager, shelterId);
-    });
-  }
-
-  async removeLeaders(shelterId: string, leaderIds: string[]): Promise<ShelterEntity> {
-    return this.dataSource.transaction(async (manager) => {
-      const leaderRepo = manager.withRepository(this.leaderRepo);
-
-      await leaderRepo.update(
-        { id: In(leaderIds), shelter: { id: shelterId } as any },
-        { shelter: null as any },
-      );
-
-      return this.findOneOrFailForResponseTx(manager, shelterId);
-    });
-  }
-
-  async removeTeachers(shelterId: string, teacherIds: string[]): Promise<ShelterEntity> {
-    return this.dataSource.transaction(async (manager) => {
-      const shelterRepo = manager.withRepository(this.shelterRepo);
-      const teacherRepo = manager.withRepository(this.teacherProfileRepo);
-
-      const shelter = await shelterRepo.findOne({
-        where: { id: shelterId },
-        relations: { teachers: true },
-      });
-      if (!shelter) throw new NotFoundException('Shelter não encontrado');
-
-      // Remover professores específicos
-      await teacherRepo.update(
-        { id: In(teacherIds), shelter: { id: shelterId } as any },
-        { shelter: null as any }
-      );
-
-      return this.findOneOrFailForResponseTx(manager, shelterId);
-    });
-  }
+  // ❌ REMOVIDO: assignLeaders - Agora feito através de Teams
+  // ❌ REMOVIDO: removeLeaders - Agora feito através de Teams
+  // ❌ REMOVIDO: removeTeachers - Agora feito através de Teams
 }

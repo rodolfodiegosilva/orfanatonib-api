@@ -4,8 +4,8 @@ const BASE_URL = 'http://localhost:3000';
 
 // Credenciais de admin
 const ADMIN_CREDENTIALS = {
-  email: 'joao@example.com',
-  password: 'password123'
+  email: 'superuser@orfanatonib.com',
+  password: 'Abc@123'
 };
 
 let authToken = '';
@@ -411,6 +411,56 @@ async function testUsersStatistics() {
   }
 }
 
+// ==================== CRIAÇÃO EM MASSA ====================
+
+async function createUsersInBulk(count = 50) {
+  console.log(`\n🚀 Criando ${count} usuários em massa...`);
+  
+  const firstNames = ['João', 'Maria', 'Pedro', 'Ana', 'Carlos', 'Juliana', 'Fernando', 'Patricia', 'Ricardo', 'Camila', 'Lucas', 'Beatriz', 'Rafael', 'Mariana', 'Gabriel', 'Isabela', 'Thiago', 'Larissa', 'Bruno', 'Amanda'];
+  const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Pereira', 'Costa', 'Rodrigues', 'Almeida', 'Nascimento', 'Lima', 'Araújo', 'Fernandes', 'Carvalho', 'Gomes', 'Martins', 'Rocha', 'Ribeiro', 'Alves', 'Monteiro', 'Mendes'];
+  const roles = ['admin', 'leader', 'teacher'];
+  
+  const createdUsers = [];
+  let successCount = 0;
+  let errorCount = 0;
+  
+  for (let i = 0; i < count; i++) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const role = roles[Math.floor(Math.random() * roles.length)];
+    const timestamp = Date.now() + i;
+    
+    const userData = {
+      name: `${firstName} ${lastName}`,
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@orfanatonib.com`,
+      password: 'Abc@123',
+      phone: `+55${11 + Math.floor(Math.random() * 90)}${Math.floor(100000000 + Math.random() * 900000000)}`,
+      role: role
+    };
+    
+    const response = await makeRequest('POST', '/users', userData);
+    if (response && response.status === 201) {
+      createdUsers.push(response.data);
+      successCount++;
+      if ((i + 1) % 10 === 0) {
+        console.log(`  ✅ ${i + 1}/${count} usuários criados...`);
+      }
+    } else {
+      errorCount++;
+    }
+    
+    // Pequeno delay para não sobrecarregar o servidor
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  
+  console.log(`\n✅ Criação em massa concluída!`);
+  console.log(`   📊 Sucessos: ${successCount}/${count}`);
+  console.log(`   ❌ Erros: ${errorCount}/${count}`);
+  console.log(`   💾 Total de usuários criados: ${createdUsers.length}`);
+  
+  return createdUsers;
+}
+
 // ==================== FUNÇÃO PRINCIPAL ====================
 
 async function runUsersAutomation() {
@@ -440,6 +490,9 @@ async function runUsersAutomation() {
     return;
   }
 
+  // Criar dados em massa
+  await createUsersInBulk(50);
+  
   // Executar testes
   await testUsersCRUD();
   await testUsersFilters();

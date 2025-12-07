@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Min, IsString, IsIn, IsArray, IsUUID, IsBoolean } from 'class-validator';
+import { IsInt, IsOptional, Min, IsString, IsIn } from 'class-validator';
 
 /**
- * 📋 DTO para query de shelters com filtros agrupados logicamente
+ * 📋 DTO para query de shelters com filtros simplificados
  */
 export class QuerySheltersDto {
   // Paginação
@@ -19,29 +19,7 @@ export class QuerySheltersDto {
   @IsOptional() @IsIn(['ASC', 'DESC', 'asc', 'desc'])
   order?: 'ASC' | 'DESC' | 'asc' | 'desc' = 'ASC';
 
-  // 🏠 Filtro de nome do abrigo
-  @IsOptional() @IsString()
-  shelterName?: string;
-
-  // 👥 Filtros de staff (líderes e professores)
-  @IsOptional() @IsString()
-  staffFilters?: string;
-
-  // 🏙️ Filtro de endereço
-  @IsOptional() @IsString()
-  addressFilter?: string;
-
-  // Filtros legados (para compatibilidade)
-  @IsOptional() @IsString() @IsUUID()
-  shelterId?: string;
-
-  // 🔍 Filtros de busca do frontend (compatibilidade)
+  // 🔍 Busca unificada: nome do abrigo, cidade, UF, bairro, nome de professores ou líderes
   @IsOptional() @IsString()
   searchString?: string;
-
-  @IsOptional() @IsString()
-  nameSearchString?: string;
-
-  @IsOptional() @IsString() @IsUUID()
-  leaderId?: string;
 }

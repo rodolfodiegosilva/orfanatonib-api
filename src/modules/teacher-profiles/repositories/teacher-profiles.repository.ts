@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { TeacherProfileEntity } from '../entities/teacher-profile.entity/teacher-profile.entity';
+import { TeamEntity } from 'src/modules/teams/entities/team.entity';
 import { ShelterEntity } from 'src/modules/shelters/entities/shelter.entity/shelter.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { TeacherSimpleListDto, toTeacherSimple } from '../dto/teacher-simple-list.dto';
@@ -33,9 +34,10 @@ export class TeacherProfilesRepository {
   private baseQB(): SelectQueryBuilder<TeacherProfileEntity> {
     return this.teacherRepo
       .createQueryBuilder('teacher')
-      .leftJoinAndSelect('teacher.shelter', 'shelter')
+      .leftJoinAndSelect('teacher.team', 'team')
+      .leftJoinAndSelect('team.shelter', 'shelter')
       .leftJoinAndSelect('shelter.address', 'shelter_address')
-      .leftJoinAndSelect('shelter.leaders', 'leaders')
+      .leftJoinAndSelect('team.leaders', 'leaders')
       .leftJoin('teacher.user', 'teacher_user')
       .addSelect([
         'teacher_user.id',
@@ -63,9 +65,10 @@ export class TeacherProfilesRepository {
     return this.teacherRepo
       .createQueryBuilder('teacher')
       .leftJoin('teacher.user', 'teacher_user')
-      .leftJoin('teacher.shelter', 'shelter')
+      .leftJoin('teacher.team', 'team')
+      .leftJoin('team.shelter', 'shelter')
       .leftJoin('shelter.address', 'shelter_address')
-      .leftJoin('shelter.leaders', 'leaders')
+      .leftJoin('team.leaders', 'leaders')
       .leftJoin('leaders.user', 'leader_user')
       .where('teacher_user.active = true');
   }
@@ -101,7 +104,7 @@ export class TeacherProfilesRepository {
     qb: SelectQueryBuilder<TeacherProfileEntity>,
     params: TeacherProfilesQueryDto,
   ) {
-    const { teacherSearchString, shelterSearchString, hasShelter } = params;
+    const { teacherSearchString, shelterSearchString, hasShelter, teamId, teamName, hasTeam } = params;
 
     // 🔍 FILTRO: teacherSearchString - busca por dados do teacher
     if (teacherSearchString?.trim()) {
@@ -120,7 +123,7 @@ export class TeacherProfilesRepository {
       console.log('✅ Filtro aplicado: teacherSearchString');
     }
 
-    // 🔍 FILTRO: shelterSearchString - busca por dados do shelter
+    // 🔍 FILTRO: shelterSearchString - busca por dados do shelter (através de team)
     if (shelterSearchString?.trim()) {
       const text = shelterSearchString.trim();
       const like = `%${text.toLowerCase()}%`;
@@ -143,27 +146,44 @@ export class TeacherProfilesRepository {
       console.log('✅ Filtro aplicado: shelterSearchString');
     }
 
-    // 🔍 FILTRO: hasShelter - se está vinculado a algum shelter
+    // 🔍 FILTRO: hasShelter - se está vinculado a algum team (e consequentemente a um shelter)
     if (hasShelter !== undefined) {
       if (hasShelter === true) {
-        qb.andWhere('teacher.shelter_id IS NOT NULL');
-        console.log('✅ Filtro aplicado: shelter_id IS NOT NULL');
+        qb.andWhere('teacher.team_id IS NOT NULL');
+        console.log('✅ Filtro aplicado: team_id IS NOT NULL');
       } else {
-        qb.andWhere('teacher.shelter_id IS NULL');
-        console.log('✅ Filtro aplicado: shelter_id IS NULL');
+        qb.andWhere('teacher.team_id IS NULL');
+        console.log('✅ Filtro aplicado: team_id IS NULL');
+      }
+    }
+
+    // 🎯 FILTRO: teamId - filtrar por ID da equipe
+    if (teamId?.trim()) {
+      qb.andWhere('teacher.team_id = :teamId', { teamId: teamId.trim() });
+      console.log('✅ Filtro aplicado: teamId');
+    }
+
+    // 🎯 FILTRO: teamName - filtrar por número da equipe
+    if (teamName?.trim()) {
+      const teamNumber = parseInt(teamName.trim(), 10);
+      if (!isNaN(teamNumber)) {
+        qb.andWhere('team.numberTeam = :teamNumber', { teamNumber });
+        console.log('✅ Filtro aplicado: teamName');
+      }
+    }
+
+    // 🎯 FILTRO: hasTeam - se está vinculado a alguma equipe
+    if (hasTeam !== undefined) {
+      if (hasTeam === true) {
+        qb.andWhere('teacher.team_id IS NOT NULL');
+        console.log('✅ Filtro aplicado: hasTeam = true');
+      } else {
+        qb.andWhere('teacher.team_id IS NULL');
+        console.log('✅ Filtro aplicado: hasTeam = false');
       }
     }
 
     return qb;
-  }
-
-  async findAllWithShelterAndLeader(ctx?: RoleCtx): Promise<TeacherProfileEntity[]> {
-    const qb = this.baseQB()
-      .orderBy('teacher.createdAt', 'ASC')
-      .addOrderBy('shelter.name', 'ASC');
-
-    this.applyRoleFilter(qb, ctx);
-    return qb.getMany();
   }
 
   async findOneWithShelterAndLeaderOrFail(id: string, ctx?: RoleCtx): Promise<TeacherProfileEntity> {
@@ -173,21 +193,6 @@ export class TeacherProfilesRepository {
     const teacher = await qb.getOne();
     if (!teacher) throw new NotFoundException('TeacherProfile não encontrado');
     return teacher;
-  }
-
-  async findByShelterIdWithLeader(shelterId: string, ctx?: RoleCtx): Promise<TeacherProfileEntity[]> {
-    const shelter = await this.shelterRepo.findOne({ where: { id: shelterId } });
-    if (!shelter) throw new NotFoundException('Shelter não encontrado');
-
-    if (ctx?.role && ctx.role !== 'admin') {
-      const allowed = await this.userHasAccessToShelter(shelterId, ctx);
-      if (!allowed) throw new NotFoundException('Shelter não encontrado');
-    }
-
-    const qb = this.baseQB().andWhere('shelter.id = :shelterId', { shelterId });
-    this.applyRoleFilter(qb, ctx);
-
-    return qb.orderBy('teacher.createdAt', 'ASC').getMany();
   }
 
   async findPageWithFilters(
@@ -248,7 +253,7 @@ export class TeacherProfilesRepository {
       .leftJoin('teacher.user', 'user')
       .addSelect(['user.id', 'user.name', 'user.email', 'user.active'])
       .where('user.active = true')
-      .andWhere('teacher.shelter_id IS NULL')
+      .andWhere('teacher.team_id IS NULL')
       .orderBy('teacher.createdAt', 'ASC');
 
     if (ctx?.role === 'teacher') {
@@ -260,50 +265,8 @@ export class TeacherProfilesRepository {
   }
 
 
-  async assignTeacherToShelter(teacherId: string, shelterId: string): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
-      const txTeacherRepo = manager.withRepository(this.teacherRepo);
-      const txShelterRepo = manager.withRepository(this.shelterRepo);
-
-      const [teacher, shelter] = await Promise.all([
-        txTeacherRepo.findOne({ where: { id: teacherId }, relations: { shelter: true } }),
-        txShelterRepo.findOne({ where: { id: shelterId } }),
-      ]);
-
-      if (!teacher) throw new NotFoundException('TeacherProfile não encontrado');
-      if (!shelter) throw new NotFoundException('Shelter não encontrado');
-
-      if (teacher.shelter && teacher.shelter.id === shelterId) return;
-
-      if (teacher.shelter && teacher.shelter.id !== shelterId) {
-        throw new BadRequestException('Teacher já está vinculado a outro Shelter');
-      }
-
-      teacher.shelter = shelter;
-      await txTeacherRepo.save(teacher);
-    });
-  }
-
-  async unassignTeacherFromShelter(teacherId: string, expectedShelterId?: string): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
-      const txTeacherRepo = manager.withRepository(this.teacherRepo);
-
-      const teacher = await txTeacherRepo.findOne({
-        where: { id: teacherId },
-        relations: { shelter: true },
-      });
-      if (!teacher) throw new NotFoundException('TeacherProfile não encontrado');
-
-      if (!teacher.shelter) return;
-
-      if (expectedShelterId && teacher.shelter.id !== expectedShelterId) {
-        throw new BadRequestException('Teacher não pertence ao shelter informado');
-      }
-
-      teacher.shelter = null as any;
-      await txTeacherRepo.save(teacher);
-    });
-  }
+  // ❌ REMOVIDO: assignTeacherToShelter - Agora feito através de Teams
+  // ❌ REMOVIDO: unassignTeacherFromShelter - Agora feito através de Teams
 
   async createForUser(userId: string): Promise<TeacherProfileEntity> {
     return this.dataSource.transaction(async (manager) => {
@@ -316,7 +279,7 @@ export class TeacherProfilesRepository {
       const existing = await txTeacher.findOne({ where: { user: { id: userId } } });
       if (existing) return existing;
 
-      const entity = txTeacher.create({ user: user as any, active: true, shelter: null as any });
+      const entity = txTeacher.create({ user: user as any, active: true, team: null as any });
       return txTeacher.save(entity);
     });
   }
@@ -336,12 +299,20 @@ export class TeacherProfilesRepository {
     if (!role || role === 'admin') return true;
     if (!userId) return false;
 
-    const qb = this.shelterRepo.createQueryBuilder('shelter').where('shelter.id = :clubId', { clubId });
+    const qb = this.shelterRepo
+      .createQueryBuilder('shelter')
+      .where('shelter.id = :clubId', { clubId });
 
     if (role === 'leader') {
-      qb.leftJoin('shelter.leaders', 'leaders')
+      qb.leftJoin('shelter.teams', 'teams')
+        .leftJoin('teams.leaders', 'leaders')
         .leftJoin('leaders.user', 'leader_user')
         .andWhere('leader_user.id = :uid', { uid: userId });
+    } else if (role === 'teacher') {
+      qb.leftJoin('shelter.teams', 'teams')
+        .leftJoin('teams.teachers', 'teachers')
+        .leftJoin('teachers.user', 'teacher_user')
+        .andWhere('teacher_user.id = :uid', { uid: userId });
     } else {
       return false;
     }

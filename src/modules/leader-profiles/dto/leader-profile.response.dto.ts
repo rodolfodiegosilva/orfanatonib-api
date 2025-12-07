@@ -1,5 +1,4 @@
 import { Exclude, Expose, Type, Transform, plainToInstance } from 'class-transformer';
-import { Weekday } from 'src/modules/shelters/enums/weekday.enum/weekday.enum';
 import { LeaderProfileEntity } from '../entities/leader-profile.entity/leader-profile.entity';
 
 @Exclude()
@@ -32,11 +31,20 @@ export class TeacherMiniDto {
 }
 
 @Exclude()
-export class ShelterWithTeachersDto {
+class TeamMiniDto {
+  @Expose() id!: string;
+  @Expose() numberTeam!: number;
+  @Expose() description?: string;
+}
+
+@Exclude()
+export class ShelterMiniWithCoordinatorDto {
   @Expose() id!: string;
   @Expose() name!: string;
-  @Expose() number!: number;
-  @Expose() weekday!: Weekday;
+
+  @Expose()
+  @Type(() => TeamMiniDto)
+  team!: TeamMiniDto | null;
 
   @Expose()
   @Type(() => TeacherMiniDto)
@@ -67,8 +75,32 @@ export class LeaderResponseDto {
   user!: UserMiniDto;
 
   @Expose()
-  @Type(() => ShelterWithTeachersDto)
-  shelter!: ShelterWithTeachersDto | null;
+  @Type(() => ShelterMiniWithCoordinatorDto)
+  @Transform(({ obj }) => {
+    // Se o líder não tem equipe, não tem abrigo
+    if (!obj.team || !obj.team.shelter) {
+      return null;
+    }
+
+    // Montar o shelter com a equipe dentro
+    return {
+      id: obj.team.shelter.id,
+      name: obj.team.shelter.name,
+      team: {
+        id: obj.team.id,
+        numberTeam: obj.team.numberTeam,
+        description: obj.team.description,
+      },
+      teachers: obj.team.teachers && Array.isArray(obj.team.teachers)
+        ? obj.team.teachers.map((t: any) => ({
+            id: t.id,
+            active: t.active,
+            user: t.user,
+          }))
+        : [],
+    };
+  })
+  shelter!: ShelterMiniWithCoordinatorDto | null;
 
   @Expose()
   createdAt!: Date;

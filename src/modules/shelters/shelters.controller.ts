@@ -32,6 +32,7 @@ import { QuerySheltersDto } from './dto/query-shelters.dto';
 import { Paginated } from 'src/share/dto/paginated.dto';
 import { ShelterResponseDto, ShelterSimpleResponseDto, toShelterDto } from './dto/shelter.response.dto';
 import { ShelterSelectOptionDto } from './dto/shelter-select-option.dto';
+import { ShelterTeamsQuantityResponseDto } from './dto/shelter-teams-quantity-response.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UploadType } from 'src/share/media/media-item/media-item.entity';
 
@@ -80,6 +81,14 @@ export class SheltersController {
     @Req() req: Request,
   ): Promise<ShelterResponseDto> {
     return this.getService.findOne(id, req);
+  }
+
+  @Get(':id/teams-quantity')
+  async getTeamsQuantity(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() req: Request,
+  ): Promise<ShelterTeamsQuantityResponseDto> {
+    return this.getService.getTeamsQuantity(id, req);
   }
 
   @Post()
@@ -203,11 +212,18 @@ export class SheltersController {
 
       const filesDict = this.mapFiles(files);
 
+      // Buscar o abrigo atual para obter os campos obrigatórios no DTO
+      const currentShelter = await this.getService.findOne(id, req);
+      if (!currentShelter) {
+        throw new BadRequestException('Abrigo não encontrado');
+      }
+
       // Determinar se é upload ou link
       const hasFile = files.length > 0;
       const uploadTypeValue = mediaDto.uploadType || (hasFile ? UploadType.UPLOAD : UploadType.LINK);
 
       const updateDto: UpdateShelterDto = {
+        teamsQuantity: currentShelter.teamsQuantity || 0, // Usar o valor atual do abrigo
         mediaItem: {
           title: mediaDto.title || 'Foto do Abrigo',
           description: mediaDto.description || 'Imagem principal do abrigo',
@@ -235,43 +251,8 @@ export class SheltersController {
     return this.deleteService.remove(id, req);
   }
 
-  @Patch(':id/leaders')
-  async assignLeaders(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() body: { leaderProfileIds: string[] },
-    @Req() req: Request,
-  ): Promise<ShelterResponseDto> {
-    const entity = await this.updateService.assignLeaders(id, body.leaderProfileIds, req);
-    return toShelterDto(entity);
-  }
-
-  @Delete(':id/leaders')
-  async removeLeaders(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() body: { leaderProfileIds: string[] },
-    @Req() req: Request,
-  ): Promise<ShelterResponseDto> {
-    const entity = await this.updateService.removeLeaders(id, body.leaderProfileIds, req);
-    return toShelterDto(entity);
-  }
-
-  @Patch(':id/teachers')
-  async assignTeachers(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() body: { teacherProfileIds: string[] },
-    @Req() req: Request,
-  ): Promise<ShelterResponseDto> {
-    const entity = await this.updateService.assignTeachers(id, body.teacherProfileIds, req);
-    return toShelterDto(entity);
-  }
-
-  @Delete(':id/teachers')
-  async removeTeachers(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() body: { teacherProfileIds: string[] },
-    @Req() req: Request,
-  ): Promise<ShelterResponseDto> {
-    const entity = await this.updateService.removeTeachers(id, body.teacherProfileIds, req);
-    return toShelterDto(entity);
-  }
+  // ❌ REMOVIDO: PATCH :id/leaders - Agora feito através de Teams
+  // ❌ REMOVIDO: DELETE :id/leaders - Agora feito através de Teams
+  // ❌ REMOVIDO: PATCH :id/teachers - Agora feito através de Teams
+  // ❌ REMOVIDO: DELETE :id/teachers - Agora feito através de Teams
 }

@@ -21,37 +21,13 @@ export class QueryShelteredDto {
   @IsOptional() @IsIn(['ASC', 'DESC', 'asc', 'desc'])
   order?: 'ASC' | 'DESC' | 'asc' | 'desc' = 'ASC';
 
-  // 🔍 FILTROS CONSOLIDADOS
-  
-  // Busca geral: nome do abrigado, responsável ou telefone
+  // 🔍 Busca unificada: nome do abrigado, nome do responsável ou número do responsável
   @IsOptional() @IsString()
-  shelteredSearchingString?: string;
+  searchString?: string;
 
-  // Busca por dados do abrigo: nome, endereço, cidade, estado
-  @IsOptional() @IsString()
-  shelterSearchingString?: string;
-
-  // Filtro de endereço: todos os campos de endereço
-  @IsOptional() @IsString()
-  addressFilter?: string;
-
-  // Filtro por gênero
-  @IsOptional() @IsIn(['M', 'F'])
-  gender?: string;
-
-  // Range de data de nascimento
-  @IsOptional() @IsString()
-  birthDateFrom?: string;
-
-  @IsOptional() @IsString()
-  birthDateTo?: string;
-
-  // Range de data "no abrigo desde"
-  @IsOptional() @IsString()
-  joinedFrom?: string;
-
-  @IsOptional() @IsString()
-  joinedTo?: string;
+  // Filtro por ID do abrigo
+  @IsOptional() @IsUUID()
+  shelterId?: string;
 }
 
 export class QueryShelteredSimpleDto {

@@ -4,8 +4,8 @@ const BASE_URL = 'http://localhost:3000';
 
 // Credenciais de admin
 const ADMIN_CREDENTIALS = {
-  email: 'joao@example.com',
-  password: 'password123'
+  email: 'superuser@orfanatonib.com',
+  password: 'Abc@123'
 };
 
 let authToken = '';
@@ -13,6 +13,7 @@ let testData = {
   users: [],
   shelters: [],
   sheltered: [],
+  teacherProfiles: [],
   pagelas: []
 };
 
@@ -73,6 +74,13 @@ async function getTestData() {
     if (shelteredResponse) {
       testData.sheltered = shelteredResponse.data || [];
       console.log(`  👥 ${testData.sheltered.length} sheltered encontrados`);
+    }
+
+    // Obter teacher profiles
+    const teachersResponse = await makeRequest('GET', '/teacher-profiles/simple');
+    if (teachersResponse) {
+      testData.teacherProfiles = teachersResponse.data || [];
+      console.log(`  👩‍🏫 ${testData.teacherProfiles.length} teacher profiles encontrados`);
     }
 
     // Obter pagelas existentes
@@ -388,6 +396,77 @@ async function testPagelasStatistics() {
   }
 }
 
+// ==================== CRIAÇÃO EM MASSA ====================
+
+async function createPagelasInBulk(count = 200) {
+  console.log(`\n🚀 Criando ${count} pagelas em massa...`);
+  
+  if (testData.sheltered.length === 0) {
+    console.log('  ⚠️ Nenhum sheltered encontrado. Não é possível criar pagelas.');
+    return [];
+  }
+  
+  if (testData.teacherProfiles.length === 0) {
+    console.log('  ⚠️ Nenhum teacher profile encontrado. Não é possível criar pagelas.');
+    return [];
+  }
+  
+  const createdPagelas = [];
+  let successCount = 0;
+  let errorCount = 0;
+  
+  const currentYear = new Date().getFullYear();
+  const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+  const days = Array.from({ length: 28 }, (_, i) => String(i + 1).padStart(2, '0'));
+  
+  for (let i = 0; i < count; i++) {
+    const sheltered = testData.sheltered[Math.floor(Math.random() * testData.sheltered.length)];
+    const teacher = testData.teacherProfiles[Math.floor(Math.random() * testData.teacherProfiles.length)];
+    
+    // Gerar data de referência aleatória no ano atual
+    const month = months[Math.floor(Math.random() * months.length)];
+    const day = days[Math.floor(Math.random() * days.length)];
+    const referenceDate = `${currentYear}-${month}-${day}`;
+    
+    // Gerar visita entre 1 e 12 (mensal)
+    const visit = Math.floor(Math.random() * 12) + 1;
+    
+    // Gerar ano (pode ser atual ou anterior)
+    const year = currentYear - Math.floor(Math.random() * 3);
+    
+    const pagelaData = {
+      shelteredId: sheltered.id,
+      teacherProfileId: teacher.id,
+      referenceDate: referenceDate,
+      visit: visit,
+      year: year,
+      present: Math.random() > 0.2, // 80% de presença
+      notes: Math.random() > 0.5 ? `Notas da visita ${visit} - ${referenceDate}` : undefined
+    };
+    
+    const response = await makeRequest('POST', '/pagelas', pagelaData);
+    if (response && response.status === 201) {
+      createdPagelas.push(response.data);
+      successCount++;
+      if ((i + 1) % 50 === 0) {
+        console.log(`  ✅ ${i + 1}/${count} pagelas criadas...`);
+      }
+    } else {
+      errorCount++;
+    }
+    
+    // Pequeno delay para não sobrecarregar o servidor
+    await new Promise(resolve => setTimeout(resolve, 30));
+  }
+  
+  console.log(`\n✅ Criação em massa concluída!`);
+  console.log(`   📊 Sucessos: ${successCount}/${count}`);
+  console.log(`   ❌ Erros: ${errorCount}/${count}`);
+  console.log(`   💾 Total de pagelas criadas: ${createdPagelas.length}`);
+  
+  return createdPagelas;
+}
+
 // ==================== FUNÇÃO PRINCIPAL ====================
 
 async function runPagelasAutomation() {
@@ -417,6 +496,9 @@ async function runPagelasAutomation() {
     return;
   }
 
+  // Criar dados em massa
+  await createPagelasInBulk(200);
+  
   // Executar testes
   await testPagelasCRUD();
   await testPagelasFilters();

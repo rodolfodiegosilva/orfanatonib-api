@@ -35,20 +35,7 @@ export class CreateSheltersService {
       throw new ForbiddenException('Acesso negado');
     }
 
-    if (ctx.role === 'leader') {
-      const myLeaderId = await this.sheltersRepository.getLeaderProfileIdByUserId(ctx.userId!);
-      if (!myLeaderId) throw new ForbiddenException('Acesso negado');
-
-      if (dto.leaderProfileIds && dto.leaderProfileIds.length > 0) {
-        // Verificar se o líder atual está na lista
-        if (!dto.leaderProfileIds.includes(myLeaderId)) {
-          throw new ForbiddenException('Não é permitido atribuir outros líderes');
-        }
-      } else {
-        // Se não especificado, usar apenas o líder atual
-        dto.leaderProfileIds = [myLeaderId];
-      }
-    }
+    // ❌ REMOVIDO: Validação de leaderProfileIds - Agora feito através de Teams
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();

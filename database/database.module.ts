@@ -27,18 +27,19 @@ import { AddressEntity } from 'src/modules/addresses/entities/address.entity/add
 import { ShelteredEntity } from 'src/modules/sheltered/entities/sheltered.entity';
 import { PagelaEntity } from 'src/modules/pagelas/entities/pagela.entity';
 import { AcceptedChristEntity } from 'src/modules/accepted-christs/entities/accepted-christ.entity';
-;
+import { TeamEntity } from 'src/modules/teams/entities/team.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const logger = new Logger('DatabaseModule');
+        const environment = configService.get<string>('ENVIRONMENT', 'local');
+        // Habilita synchronize apenas em ambiente local para criar tabelas automaticamente
+        const synchronize = environment === 'local';
+        
         const dbConfig = {
           type: 'mysql' as const,
           host: configService.get<string>('DB_HOST', 'localhost'),
@@ -70,16 +71,18 @@ import { AcceptedChristEntity } from 'src/modules/accepted-christs/entities/acce
             AddressEntity,
             ShelteredEntity,
             PagelaEntity,
-            AcceptedChristEntity
+            AcceptedChristEntity,
+            TeamEntity
           ],
-          synchronize: false,
+          synchronize,
         };
 
         logger.debug(`Tentando conectar ao banco de dados MySQL:
            → Host: ${dbConfig.host}
            → Porta: ${dbConfig.port}
            → DB: ${dbConfig.database}
-           → Usuário: ${dbConfig.username}`);
+           → Usuário: ${dbConfig.username}
+           → Synchronize: ${synchronize} (ambiente: ${environment})`);
 
         return dbConfig;
       },

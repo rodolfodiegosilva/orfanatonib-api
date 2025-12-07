@@ -42,21 +42,15 @@ export class CreateShelterDto {
   @IsOptional() @IsString()
   description?: string;
 
+  @IsNumber() @IsNumber({}, { message: 'teamsQuantity deve ser um número' })
+  teamsQuantity!: number;
+
   @ValidateNested()
   @Type(() => AddressInputDto)
   address!: AddressInputDto;
 
-  @IsOptional()
-  @IsArray()
-  @ArrayUnique()
-  @IsUUID(undefined, { each: true })
-  leaderProfileIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @ArrayUnique()
-  @IsUUID(undefined, { each: true })
-  teacherProfileIds?: string[];
+  // ❌ REMOVIDO: leaderProfileIds - Agora feito através de Teams
+  // ❌ REMOVIDO: teacherProfileIds - Agora feito através de Teams
 
   @IsOptional()
   @ValidateNested()
