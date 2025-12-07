@@ -53,8 +53,26 @@ export class SheltersRepository {
       .leftJoinAndSelect('shelter.teams', 'teams')
       .leftJoinAndSelect('teams.leaders', 'leaders')
       .leftJoinAndSelect('teams.teachers', 'teachers')
-      .leftJoinAndSelect('leaders.user', 'leaderUser')
-      .leftJoinAndSelect('teachers.user', 'teacherUser');
+      .leftJoin('leaders.user', 'leaderUser')
+      .addSelect([
+        'leaderUser.id',
+        'leaderUser.name',
+        'leaderUser.email',
+        'leaderUser.phone',
+        'leaderUser.active',
+        'leaderUser.completed',
+        'leaderUser.commonUser',
+      ])
+      .leftJoin('teachers.user', 'teacherUser')
+      .addSelect([
+        'teacherUser.id',
+        'teacherUser.name',
+        'teacherUser.email',
+        'teacherUser.phone',
+        'teacherUser.active',
+        'teacherUser.completed',
+        'teacherUser.commonUser',
+      ]);
   }
 
   private applyRoleFilter(qb: SelectQueryBuilder<ShelterEntity>, ctx?: RoleCtx) {
@@ -81,13 +99,18 @@ export class SheltersRepository {
       sort = 'name',
       order = 'ASC',
       searchString,
+      shelterName,
     } = q;
 
     const qb = this.buildShelterBaseQB().distinct(true);
     this.applyRoleFilter(qb, ctx);
 
-    // 🔍 Busca unificada: nome do abrigo, cidade, UF, bairro, nome de professores ou líderes
-    if (searchString?.trim()) {
+    // 🔍 Filtro específico por nome do abrigo (tem prioridade sobre searchString)
+    if (shelterName?.trim()) {
+      const like = `%${shelterName.trim()}%`;
+      qb.andWhere('LOWER(shelter.name) LIKE LOWER(:shelterName)', { shelterName: like });
+    } else if (searchString?.trim()) {
+      // 🔍 Busca unificada: nome do abrigo, cidade, UF, bairro, nome de professores ou líderes
       const like = `%${searchString.trim()}%`;
       qb.andWhere(
         `(
@@ -98,13 +121,13 @@ export class SheltersRepository {
           EXISTS (
             SELECT 1 FROM teams t
             JOIN leader_profiles lp ON lp.team_id = t.id
-            JOIN users lu ON lu.id = lp.user_id
+          JOIN users lu ON lu.id = lp.user_id
             WHERE t.shelter_id = shelter.id
               AND LOWER(lu.name) LIKE LOWER(:searchString)
-          ) OR EXISTS (
+        ) OR EXISTS (
             SELECT 1 FROM teams t
             JOIN teacher_profiles tp ON tp.team_id = t.id
-            JOIN users tu ON tu.id = tp.user_id
+          JOIN users tu ON tu.id = tp.user_id
             WHERE t.shelter_id = shelter.id
               AND LOWER(tu.name) LIKE LOWER(:searchString)
           )
@@ -242,48 +265,48 @@ export class SheltersRepository {
       const teamLeaders = leadersData
         .filter((ld: any) => ld.team_id === teamData.id)
         .map((leaderData: any) => {
-          const leaderEntity = new LeaderProfileEntity();
-          leaderEntity.id = leaderData.id;
-          leaderEntity.active = leaderData.active;
-          leaderEntity.createdAt = leaderData.createdAt;
-          leaderEntity.updatedAt = leaderData.updatedAt;
+      const leaderEntity = new LeaderProfileEntity();
+      leaderEntity.id = leaderData.id;
+      leaderEntity.active = leaderData.active;
+      leaderEntity.createdAt = leaderData.createdAt;
+      leaderEntity.updatedAt = leaderData.updatedAt;
 
-          const userEntity = new UserEntity();
-          userEntity.id = leaderData.user_id;
-          userEntity.name = leaderData.name;
-          userEntity.email = leaderData.email;
-          userEntity.phone = leaderData.phone;
-          userEntity.active = leaderData.user_active;
-          userEntity.completed = leaderData.completed;
-          userEntity.commonUser = leaderData.commonUser;
-          userEntity.role = leaderData.role;
+      const userEntity = new UserEntity();
+      userEntity.id = leaderData.user_id;
+      userEntity.name = leaderData.name;
+      userEntity.email = leaderData.email;
+      userEntity.phone = leaderData.phone;
+      userEntity.active = leaderData.user_active;
+      userEntity.completed = leaderData.completed;
+      userEntity.commonUser = leaderData.commonUser;
+      userEntity.role = leaderData.role;
 
-          leaderEntity.user = userEntity;
-          return leaderEntity;
-        });
+      leaderEntity.user = userEntity;
+      return leaderEntity;
+    });
 
       // Filtrar professores desta team
       const teamTeachers = teachersData
         .filter((td: any) => td.team_id === teamData.id)
         .map((teacherData: any) => {
-          const teacherEntity = new TeacherProfileEntity();
-          teacherEntity.id = teacherData.id;
-          teacherEntity.active = teacherData.active;
-          teacherEntity.createdAt = teacherData.createdAt;
-          teacherEntity.updatedAt = teacherData.updatedAt;
+      const teacherEntity = new TeacherProfileEntity();
+      teacherEntity.id = teacherData.id;
+      teacherEntity.active = teacherData.active;
+      teacherEntity.createdAt = teacherData.createdAt;
+      teacherEntity.updatedAt = teacherData.updatedAt;
 
-          const userEntity = new UserEntity();
-          userEntity.id = teacherData.user_id;
-          userEntity.name = teacherData.name;
-          userEntity.email = teacherData.email;
-          userEntity.phone = teacherData.phone;
-          userEntity.active = teacherData.user_active;
-          userEntity.completed = teacherData.completed;
-          userEntity.commonUser = teacherData.commonUser;
-          userEntity.role = teacherData.role;
+      const userEntity = new UserEntity();
+      userEntity.id = teacherData.user_id;
+      userEntity.name = teacherData.name;
+      userEntity.email = teacherData.email;
+      userEntity.phone = teacherData.phone;
+      userEntity.active = teacherData.user_active;
+      userEntity.completed = teacherData.completed;
+      userEntity.commonUser = teacherData.commonUser;
+      userEntity.role = teacherData.role;
 
-          teacherEntity.user = userEntity;
-          return teacherEntity;
+      teacherEntity.user = userEntity;
+      return teacherEntity;
         });
 
       teamEntity.leaders = teamLeaders;

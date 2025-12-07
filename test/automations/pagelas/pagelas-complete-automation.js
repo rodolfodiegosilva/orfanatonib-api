@@ -110,11 +110,18 @@ async function testPagelasCRUD() {
 
   // 1. Criar Pagela
   console.log('  🔸 Teste 1: Criar Pagela');
+  
+  if (testData.teacherProfiles.length === 0) {
+    console.log('    ⚠️ Nenhum teacher profile encontrado. Pulando teste de criação.');
+    return;
+  }
+  
   const createData = {
-    shelteredId: testData.sheltered[0].id,
-    teacherProfileId: '00000000-0000-0000-0000-000000000000', // UUID válido temporário
+    shelteredId: testData.sheltered[0].id || testData.sheltered[0].shelteredId,
+    teacherProfileId: testData.teacherProfiles[0].teacherProfileId || testData.teacherProfiles[0].id,
     referenceDate: new Date().toISOString(),
     visit: 1,
+    year: new Date().getFullYear(),
     present: true,
     notes: 'Notas da pagela de teste'
   };
@@ -160,43 +167,50 @@ async function testPagelasFilters() {
   // 1. Filtro por sheltered
   console.log('  🔸 Teste 1: Filtro por sheltered');
   if (testData.sheltered.length > 0) {
-    const shelteredResponse = await makeRequest('GET', `/pagelas?shelteredId=${testData.sheltered[0].id}`);
+    const shelteredId = testData.sheltered[0].id || testData.sheltered[0].shelteredId;
+    const shelteredResponse = await makeRequest('GET', `/pagelas?shelteredId=${shelteredId}`);
     if (shelteredResponse && shelteredResponse.status === 200) {
       console.log(`    ✅ Status: ${shelteredResponse.status}`);
       console.log(`    📊 Encontradas: ${shelteredResponse.data?.length || 0}`);
     }
   }
 
-  // 2. Filtro por ano
-  console.log('  🔸 Teste 2: Filtro por ano (year=2024)');
-  const yearResponse = await makeRequest('GET', '/pagelas?year=2024');
-  if (yearResponse && yearResponse.status === 200) {
-    console.log(`    ✅ Status: ${yearResponse.status}`);
-    console.log(`    📊 Encontradas: ${yearResponse.data?.length || 0}`);
+  // 2. Busca por string (número da visita)
+  console.log('  🔸 Teste 2: Busca por número da visita (searchString=1)');
+  const visitSearchResponse = await makeRequest('GET', '/pagelas?searchString=1');
+  if (visitSearchResponse && visitSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${visitSearchResponse.status}`);
+    console.log(`    📊 Encontradas: ${visitSearchResponse.data?.length || 0}`);
   }
 
-  // 3. Filtro por visita
-  console.log('  🔸 Teste 3: Filtro por visita (visit=1)');
-  const visitResponse = await makeRequest('GET', '/pagelas?visit=1');
-  if (visitResponse && visitResponse.status === 200) {
-    console.log(`    ✅ Status: ${visitResponse.status}`);
-    console.log(`    📊 Encontradas: ${visitResponse.data?.length || 0}`);
+  // 3. Busca por string (ano)
+  const currentYear = new Date().getFullYear();
+  console.log(`  🔸 Teste 3: Busca por ano (searchString=${currentYear})`);
+  const yearSearchResponse = await makeRequest('GET', `/pagelas?searchString=${currentYear}`);
+  if (yearSearchResponse && yearSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${yearSearchResponse.status}`);
+    console.log(`    📊 Encontradas: ${yearSearchResponse.data?.length || 0}`);
   }
 
-  // 4. Filtro por presença
-  console.log('  🔸 Teste 4: Filtro por presença (present=true)');
-  const presentResponse = await makeRequest('GET', '/pagelas?present=true');
-  if (presentResponse && presentResponse.status === 200) {
-    console.log(`    ✅ Status: ${presentResponse.status}`);
-    console.log(`    📊 Encontradas: ${presentResponse.data?.length || 0}`);
+  // 4. Busca por string (observação)
+  console.log('  🔸 Teste 4: Busca por observação (searchString=visita)');
+  const notesSearchResponse = await makeRequest('GET', '/pagelas?searchString=visita');
+  if (notesSearchResponse && notesSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${notesSearchResponse.status}`);
+    console.log(`    📊 Encontradas: ${notesSearchResponse.data?.length || 0}`);
   }
 
-  // 5. Busca por string
-  console.log('  🔸 Teste 5: Busca por string (searchString=pagela)');
-  const searchResponse = await makeRequest('GET', '/pagelas?searchString=pagela');
-  if (searchResponse && searchResponse.status === 200) {
-    console.log(`    ✅ Status: ${searchResponse.status}`);
-    console.log(`    📊 Encontradas: ${searchResponse.data?.length || 0}`);
+  // 5. Busca por string (nome do professor)
+  if (testData.teacherProfiles.length > 0) {
+    const teacherName = testData.teacherProfiles[0].name || '';
+    if (teacherName && teacherName !== '—') {
+      console.log(`  🔸 Teste 5: Busca por nome do professor (searchString=${teacherName.substring(0, 5)})`);
+      const teacherSearchResponse = await makeRequest('GET', `/pagelas?searchString=${encodeURIComponent(teacherName.substring(0, 5))}`);
+      if (teacherSearchResponse && teacherSearchResponse.status === 200) {
+        console.log(`    ✅ Status: ${teacherSearchResponse.status}`);
+        console.log(`    📊 Encontradas: ${teacherSearchResponse.data?.length || 0}`);
+      }
+    }
   }
 }
 
@@ -218,8 +232,10 @@ async function testPagelasListings() {
   const paginatedResponse = await makeRequest('GET', '/pagelas/paginated?page=1&limit=10');
   if (paginatedResponse && paginatedResponse.status === 200) {
     console.log(`    ✅ Status: ${paginatedResponse.status}`);
-    console.log(`    📊 Total: ${paginatedResponse.data.meta?.totalItems || 0}`);
+    console.log(`    📊 Total: ${paginatedResponse.data.total || 0}`);
     console.log(`    📄 Itens: ${paginatedResponse.data.items?.length || 0}`);
+    console.log(`    📄 Página: ${paginatedResponse.data.page || 0}`);
+    console.log(`    📄 Limite: ${paginatedResponse.data.limit || 0}`);
   }
 }
 
@@ -300,11 +316,46 @@ async function testPagelasRelationships() {
 
   // 1. Criar pagela com sheltered
   console.log('  🔸 Teste 1: Criar pagela com sheltered');
+  
+  if (testData.teacherProfiles.length === 0) {
+    console.log('    ⚠️ Nenhum teacher profile encontrado. Pulando teste de relacionamento.');
+    return;
+  }
+  
+  // Verificar pagelas existentes para este abrigado
+  const shelteredId = testData.sheltered[0].id || testData.sheltered[0].shelteredId;
+  const existingResponse = await makeRequest('GET', `/pagelas?shelteredId=${shelteredId}`);
+  const existingPagelas = existingResponse && existingResponse.status === 200 ? existingResponse.data || [] : [];
+  
+  // Encontrar uma combinação visit/ano que não existe
+  const currentYear = new Date().getFullYear();
+  let visit = 1;
+  let year = currentYear;
+  const existingCombinations = new Set();
+  existingPagelas.forEach(p => {
+    if (p.visit && p.year) {
+      existingCombinations.add(`${p.year}-${p.visit}`);
+    }
+  });
+  
+  // Tentar encontrar uma combinação disponível
+  let foundAvailable = false;
+  for (let v = 1; v <= 12 && !foundAvailable; v++) {
+    for (let y = currentYear; y >= currentYear - 2 && !foundAvailable; y--) {
+      if (!existingCombinations.has(`${y}-${v}`)) {
+        visit = v;
+        year = y;
+        foundAvailable = true;
+      }
+    }
+  }
+  
   const createData = {
-    shelteredId: testData.sheltered[0].id,
-    teacherProfileId: '00000000-0000-0000-0000-000000000000',
+    shelteredId: shelteredId,
+    teacherProfileId: testData.teacherProfiles[0].teacherProfileId || testData.teacherProfiles[0].id,
     referenceDate: new Date().toISOString(),
-    visit: 1,
+    visit: visit,
+    year: year,
     present: true,
     notes: 'Notas da pagela com relacionamento'
   };
@@ -331,6 +382,8 @@ async function testPagelasRelationships() {
     if (deleteResponse && deleteResponse.status === 200) {
       console.log('    ✅ Pagela de teste deletada');
     }
+  } else {
+    console.log('    ⚠️ Não foi possível criar pagela de teste (pode já existir)');
   }
 }
 
@@ -339,28 +392,42 @@ async function testPagelasRelationships() {
 async function testPagelasSearch() {
   console.log('\n📋 Testando Busca de Pagelas...');
   
-  // 1. Busca por texto
-  console.log('  🔸 Teste 1: Busca por texto (searchString=pagela)');
-  const textSearchResponse = await makeRequest('GET', '/pagelas?searchString=pagela');
+  const currentYear = new Date().getFullYear();
+  
+  // 1. Busca por texto (observação)
+  console.log('  🔸 Teste 1: Busca por observação (searchString=visita)');
+  const textSearchResponse = await makeRequest('GET', '/pagelas?searchString=visita');
   if (textSearchResponse && textSearchResponse.status === 200) {
     console.log(`    ✅ Status: ${textSearchResponse.status}`);
     console.log(`    📊 Encontradas: ${textSearchResponse.data?.length || 0}`);
   }
 
-  // 2. Busca por ano
-  console.log('  🔸 Teste 2: Busca por ano (year=2024)');
-  const yearSearchResponse = await makeRequest('GET', '/pagelas?year=2024');
+  // 2. Busca por ano usando searchString
+  console.log(`  🔸 Teste 2: Busca por ano (searchString=${currentYear})`);
+  const yearSearchResponse = await makeRequest('GET', `/pagelas?searchString=${currentYear}`);
   if (yearSearchResponse && yearSearchResponse.status === 200) {
     console.log(`    ✅ Status: ${yearSearchResponse.status}`);
     console.log(`    📊 Encontradas: ${yearSearchResponse.data?.length || 0}`);
   }
 
-  // 3. Busca por múltiplos critérios
-  console.log('  🔸 Teste 3: Busca por múltiplos critérios');
-  const multiSearchResponse = await makeRequest('GET', '/pagelas?year=2024&present=true');
-  if (multiSearchResponse && multiSearchResponse.status === 200) {
-    console.log(`    ✅ Status: ${multiSearchResponse.status}`);
-    console.log(`    📊 Encontradas: ${multiSearchResponse.data?.length || 0}`);
+  // 3. Busca por número da visita usando searchString
+  console.log('  🔸 Teste 3: Busca por número da visita (searchString=1)');
+  const visitSearchResponse = await makeRequest('GET', '/pagelas?searchString=1');
+  if (visitSearchResponse && visitSearchResponse.status === 200) {
+    console.log(`    ✅ Status: ${visitSearchResponse.status}`);
+    console.log(`    📊 Encontradas: ${visitSearchResponse.data?.length || 0}`);
+  }
+
+  // 4. Busca combinada: shelteredId + searchString
+  if (testData.sheltered.length > 0) {
+    const shelteredId = testData.sheltered[0].id || testData.sheltered[0].shelteredId;
+    console.log(`  🔸 Teste 4: Busca combinada (shelteredId + searchString=${currentYear})`);
+    const combinedSearchResponse = await makeRequest('GET', `/pagelas/paginated?shelteredId=${shelteredId}&searchString=${currentYear}&page=1&limit=10`);
+    if (combinedSearchResponse && combinedSearchResponse.status === 200) {
+      console.log(`    ✅ Status: ${combinedSearchResponse.status}`);
+      console.log(`    📊 Total: ${combinedSearchResponse.data.total || 0}`);
+      console.log(`    📄 Itens: ${combinedSearchResponse.data.items?.length || 0}`);
+    }
   }
 }
 
@@ -372,19 +439,21 @@ async function testPagelasStatistics() {
   // 1. Contar pagelas por sheltered
   console.log('  🔸 Teste 1: Contar pagelas por sheltered');
   if (testData.sheltered.length > 0) {
-    const shelteredCountResponse = await makeRequest('GET', `/pagelas?shelteredId=${testData.sheltered[0].id}`);
+    const shelteredId = testData.sheltered[0].id || testData.sheltered[0].shelteredId;
+    const shelteredCountResponse = await makeRequest('GET', `/pagelas?shelteredId=${shelteredId}`);
     if (shelteredCountResponse && shelteredCountResponse.status === 200) {
       const shelteredCount = shelteredCountResponse.data?.length || 0;
       console.log(`    📊 Pagelas do sheltered: ${shelteredCount}`);
     }
   }
 
-  // 2. Contar pagelas por ano
-  console.log('  🔸 Teste 2: Contar pagelas por ano');
-  const yearCountResponse = await makeRequest('GET', '/pagelas?year=2024');
+  // 2. Contar pagelas por ano usando searchString
+  const currentYear = new Date().getFullYear();
+  console.log(`  🔸 Teste 2: Contar pagelas por ano (searchString=${currentYear})`);
+  const yearCountResponse = await makeRequest('GET', `/pagelas?searchString=${currentYear}`);
   if (yearCountResponse && yearCountResponse.status === 200) {
     const yearCount = yearCountResponse.data?.length || 0;
-    console.log(`    📊 Pagelas em 2024: ${yearCount}`);
+    console.log(`    📊 Pagelas em ${currentYear}: ${yearCount}`);
   }
 
   // 3. Total geral de pagelas
@@ -398,8 +467,162 @@ async function testPagelasStatistics() {
 
 // ==================== CRIAÇÃO EM MASSA ====================
 
+/**
+ * Cria pagelas para TODOS os abrigados garantindo que cada um tenha pelo menos uma pagela
+ */
+async function createPagelasForAllSheltered(visitsPerSheltered = 1) {
+  console.log(`\n🚀 Criando pagelas para TODOS os abrigados...`);
+  console.log(`   📋 Visitas por abrigado: ${visitsPerSheltered}`);
+  
+  if (testData.sheltered.length === 0) {
+    console.log('  ⚠️ Nenhum sheltered encontrado. Não é possível criar pagelas.');
+    return [];
+  }
+  
+  if (testData.teacherProfiles.length === 0) {
+    console.log('  ⚠️ Nenhum teacher profile encontrado. Não é possível criar pagelas.');
+    return [];
+  }
+  
+  const createdPagelas = [];
+  let successCount = 0;
+  let errorCount = 0;
+  let skippedCount = 0;
+  
+  const currentYear = new Date().getFullYear();
+  const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+  const days = Array.from({ length: 28 }, (_, i) => String(i + 1).padStart(2, '0'));
+  
+  // Iterar sobre TODOS os abrigados
+  for (let shelteredIndex = 0; shelteredIndex < testData.sheltered.length; shelteredIndex++) {
+    const sheltered = testData.sheltered[shelteredIndex];
+    const shelteredId = sheltered.id || sheltered.shelteredId;
+    const shelteredName = sheltered.name || 'Sem nome';
+    const teacher = testData.teacherProfiles[Math.floor(Math.random() * testData.teacherProfiles.length)];
+    const teacherId = teacher.teacherProfileId || teacher.id;
+    
+    // Verificar se já existem pagelas para este abrigado
+    const existingPagelasResponse = await makeRequest('GET', `/pagelas?shelteredId=${shelteredId}`);
+    const existingPagelas = existingPagelasResponse && existingPagelasResponse.status === 200 
+      ? existingPagelasResponse.data || [] 
+      : [];
+    
+    // Se já tem pagelas, verificar quantas visitas já existem para o ano atual
+    const existingVisits = new Set();
+    const existingYears = new Set();
+    existingPagelas.forEach(p => {
+      if (p.year) existingYears.add(p.year);
+      if (p.visit && p.year === currentYear) existingVisits.add(p.visit);
+    });
+    
+    // Criar múltiplas visitas para cada abrigado
+    for (let visitNum = 1; visitNum <= visitsPerSheltered; visitNum++) {
+      // Se já existe pagela para visita 1 no ano atual, tentar outras visitas/anos
+      let visit = visitNum;
+      let year = currentYear;
+      let attempts = 0;
+      let shouldSkip = false;
+      
+      // Tentar encontrar uma combinação visit/ano que não existe
+      while (existingVisits.has(visit) && existingYears.has(year) && attempts < 5) {
+        visit = Math.max(1, visit + 1);
+        if (visit > 12) {
+          visit = 1;
+          year = currentYear - Math.floor(Math.random() * 3);
+        }
+        attempts++;
+      }
+      
+      // Se já existe pagela para esta combinação, pular
+      if (existingVisits.has(visit) && existingYears.has(year)) {
+        skippedCount++;
+        shouldSkip = true;
+      }
+      
+      if (!shouldSkip) {
+        // Gerar data de referência aleatória no ano escolhido
+        const month = months[Math.floor(Math.random() * months.length)];
+        const day = days[Math.floor(Math.random() * days.length)];
+        const referenceDate = `${year}-${month}-${day}`;
+        
+        const pagelaData = {
+          shelteredId: shelteredId,
+          teacherProfileId: teacherId,
+          referenceDate: referenceDate,
+          visit: visit,
+          year: year,
+          present: Math.random() > 0.2, // 80% de presença
+          notes: `Notas da visita ${visit} - ${referenceDate}`
+        };
+        
+        const response = await makeRequest('POST', '/pagelas', pagelaData);
+        if (response && response.status === 201) {
+          createdPagelas.push(response.data);
+          successCount++;
+          existingVisits.add(visit);
+          existingYears.add(year);
+        } else {
+          // Se já existe pagela para este abrigado/ano/visita, contar como skipped
+          if (response && response.status === 400 && 
+              (response.data?.message?.includes('Já existe Pagela') || 
+               (Array.isArray(response.data?.message) && response.data.message.some((msg) => msg.includes('Já existe Pagela'))))) {
+            skippedCount++;
+            existingVisits.add(visit);
+            existingYears.add(year);
+          } else {
+            errorCount++;
+            if (response && response.data && errorCount <= 5) { // Limitar logs de erro
+              console.log(`    ⚠️ Erro ao criar pagela para ${shelteredName}:`, response.data.message || response.data);
+            }
+          }
+        }
+      }
+      
+      // Pequeno delay para não sobrecarregar o servidor
+      await new Promise(resolve => setTimeout(resolve, 30));
+    }
+    
+    // Log de progresso a cada 10 abrigados
+    if ((shelteredIndex + 1) % 10 === 0) {
+      console.log(`  ✅ Processados ${shelteredIndex + 1}/${testData.sheltered.length} abrigados...`);
+    }
+  }
+  
+  console.log(`\n✅ Criação de pagelas para todos os abrigados concluída!`);
+  console.log(`   👥 Total de abrigados processados: ${testData.sheltered.length}`);
+  console.log(`   📊 Pagelas criadas com sucesso: ${successCount}`);
+  console.log(`   ⏭️  Pagelas já existentes (puladas): ${skippedCount}`);
+  console.log(`   ❌ Erros: ${errorCount}`);
+  console.log(`   💾 Total de pagelas criadas: ${createdPagelas.length}`);
+  
+  // Verificar quantos abrigados têm pagelas
+  if (testData.sheltered.length > 0) {
+    console.log(`\n📋 Verificando abrigados com pagelas...`);
+    let shelteredWithPagelas = 0;
+    for (const sheltered of testData.sheltered) {
+      const shelteredId = sheltered.id || sheltered.shelteredId;
+      const checkResponse = await makeRequest('GET', `/pagelas?shelteredId=${shelteredId}`);
+      if (checkResponse && checkResponse.status === 200 && checkResponse.data?.length > 0) {
+        shelteredWithPagelas++;
+      }
+      await new Promise(resolve => setTimeout(resolve, 10)); // Pequeno delay
+    }
+    console.log(`   ✅ Abrigados com pagelas: ${shelteredWithPagelas}/${testData.sheltered.length}`);
+    if (shelteredWithPagelas === testData.sheltered.length) {
+      console.log(`   🎉 Todos os abrigados têm pelo menos uma pagela!`);
+    } else {
+      console.log(`   ⚠️  ${testData.sheltered.length - shelteredWithPagelas} abrigados ainda não têm pagelas`);
+    }
+  }
+  
+  return createdPagelas;
+}
+
+/**
+ * Cria pagelas aleatórias em massa (função original mantida para compatibilidade)
+ */
 async function createPagelasInBulk(count = 200) {
-  console.log(`\n🚀 Criando ${count} pagelas em massa...`);
+  console.log(`\n🚀 Criando ${count} pagelas em massa (aleatórias)...`);
   
   if (testData.sheltered.length === 0) {
     console.log('  ⚠️ Nenhum sheltered encontrado. Não é possível criar pagelas.');
@@ -435,8 +658,8 @@ async function createPagelasInBulk(count = 200) {
     const year = currentYear - Math.floor(Math.random() * 3);
     
     const pagelaData = {
-      shelteredId: sheltered.id,
-      teacherProfileId: teacher.id,
+      shelteredId: sheltered.id || sheltered.shelteredId,
+      teacherProfileId: teacher.teacherProfileId || teacher.id,
       referenceDate: referenceDate,
       visit: visit,
       year: year,
@@ -496,8 +719,12 @@ async function runPagelasAutomation() {
     return;
   }
 
-  // Criar dados em massa
-  await createPagelasInBulk(200);
+  // Criar pagelas para TODOS os abrigados (garantindo que cada um tenha pelo menos 1 pagela)
+  console.log('\n📋 Criando pagelas para todos os abrigados...');
+  await createPagelasForAllSheltered(1); // 1 visita por abrigado (mínimo)
+  
+  // Opcional: Criar mais pagelas aleatórias em massa
+  // await createPagelasInBulk(200);
   
   // Executar testes
   await testPagelasCRUD();

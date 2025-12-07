@@ -13,49 +13,31 @@ import {
   Patch,
   UseInterceptors,
   UploadedFiles,
-  BadRequestException,
-  Logger,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
 
 import { DeleteSheltersService } from './services/delete-shelters.service';
 import { UpdateSheltersService } from './services/update-shelters.service';
 import { GetSheltersService } from './services/get-shelters.service';
 import { CreateSheltersService } from './services/create-shelters.service';
 
-import { CreateShelterDto } from './dto/create-shelter.dto';
-import { UpdateShelterDto } from './dto/update-shelter.dto';
 import { QuerySheltersDto } from './dto/query-shelters.dto';
 import { Paginated } from 'src/share/dto/paginated.dto';
 import { ShelterResponseDto, ShelterSimpleResponseDto, toShelterDto } from './dto/shelter.response.dto';
 import { ShelterSelectOptionDto } from './dto/shelter-select-option.dto';
 import { ShelterTeamsQuantityResponseDto } from './dto/shelter-teams-quantity-response.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UploadType } from 'src/share/media/media-item/media-item.entity';
 
 @Controller('shelters')
 @UseGuards(JwtAuthGuard)
 export class SheltersController {
-  private readonly logger = new Logger(SheltersController.name);
-
   constructor(
     private readonly deleteService: DeleteSheltersService,
     private readonly updateService: UpdateSheltersService,
     private readonly getService: GetSheltersService,
     private readonly createService: CreateSheltersService,
   ) {}
-
-  private mapFiles(files: Express.Multer.File[]): Record<string, Express.Multer.File> {
-    const filesDict: Record<string, Express.Multer.File> = {};
-    files.forEach((file) => {
-      this.logger.debug(`📎 Arquivo recebido - fieldname: ${file.fieldname}`);
-      filesDict[file.fieldname] = file;
-    });
-    return filesDict;
-  }
 
   @Get()
   findAllPaginated(
@@ -95,46 +77,14 @@ export class SheltersController {
   @UseInterceptors(AnyFilesInterceptor())
   async create(
     @UploadedFiles() files: Express.Multer.File[] = [],
-    @Body() body: any,
     @Req() req: Request,
+    @Body('shelterData') shelterDataRaw?: string,
+    @Body() body?: any, // Para suportar JSON puro (quando não vem form-data)
   ): Promise<ShelterResponseDto> {
-    this.logger.debug('🚀 Criando novo shelter');
-    this.logger.debug(`📦 Body recebido: ${JSON.stringify(Object.keys(body))}`);
-
-    try {
-      let dto: CreateShelterDto;
-      
-      // Verificar se veio como form-data com shelterData
-      if (body.shelterData) {
-        this.logger.debug('📝 Parseando shelterData do form-data');
-        const parsed = typeof body.shelterData === 'string' 
-          ? JSON.parse(body.shelterData) 
-          : body.shelterData;
-        dto = plainToInstance(CreateShelterDto, parsed);
-      } else if (body.name) {
-        // Se veio como JSON puro ou form-data com campos separados
-        this.logger.debug('📝 Usando body direto como DTO');
-        dto = plainToInstance(CreateShelterDto, body);
-      } else {
-        throw new BadRequestException('Dados do shelter não fornecidos. Use "shelterData" no form-data ou envie JSON direto.');
-      }
-
-      // Validar DTO
-      const errors = await validate(dto);
-      if (errors.length > 0) {
-        this.logger.error('❌ Erros de validação:', errors);
-        throw new BadRequestException(errors);
-      }
-
-      const filesDict = this.mapFiles(files);
-      const entity = await this.createService.create(dto, req, filesDict);
-      
-      this.logger.log(`✅ Shelter criado: ID=${entity.id}`);
-      return toShelterDto(entity);
-    } catch (error) {
-      this.logger.error('❌ Erro ao criar shelter', error);
-      throw error;
-    }
+    // Se veio como form-data, usar shelterDataRaw; senão, usar body completo (JSON puro)
+    const bodyToProcess = shelterDataRaw ? { shelterData: shelterDataRaw } : (body || {});
+    const entity = await this.createService.createFromRaw(bodyToProcess, files, req);
+    return toShelterDto(entity);
   }
 
   @Put(':id')
@@ -142,44 +92,14 @@ export class SheltersController {
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFiles() files: Express.Multer.File[] = [],
-    @Body() body: any,
     @Req() req: Request,
+    @Body('shelterData') shelterDataRaw?: string,
+    @Body() body?: any, // Para suportar JSON puro (quando não vem form-data)
   ): Promise<ShelterResponseDto> {
-    this.logger.debug(`🚀 Atualizando shelter ID=${id}`);
-    this.logger.debug(`📦 Body recebido: ${JSON.stringify(Object.keys(body))}`);
-
-    try {
-      let dto: UpdateShelterDto;
-      
-      // Verificar se veio como form-data com shelterData
-      if (body.shelterData) {
-        this.logger.debug('📝 Parseando shelterData do form-data');
-        const parsed = typeof body.shelterData === 'string' 
-          ? JSON.parse(body.shelterData) 
-          : body.shelterData;
-        dto = plainToInstance(UpdateShelterDto, parsed);
-      } else {
-        // Se veio como JSON puro
-        this.logger.debug('📝 Usando body direto como DTO');
-        dto = plainToInstance(UpdateShelterDto, body);
-      }
-
-      // Validar DTO
-      const errors = await validate(dto);
-      if (errors.length > 0) {
-        this.logger.error('❌ Erros de validação:', errors);
-        throw new BadRequestException(errors);
-      }
-
-      const filesDict = this.mapFiles(files);
-      const entity = await this.updateService.update(id, dto, req, filesDict);
-      
-      this.logger.log(`✅ Shelter atualizado: ID=${id}`);
-      return toShelterDto(entity);
-    } catch (error) {
-      this.logger.error('❌ Erro ao atualizar shelter', error);
-      throw error;
-    }
+    // Se veio como form-data, usar shelterDataRaw; senão, usar body completo (JSON puro)
+    const bodyToProcess = shelterDataRaw ? { shelterData: shelterDataRaw } : (body || {});
+    const entity = await this.updateService.updateFromRaw(id, bodyToProcess, files, req);
+    return toShelterDto(entity);
   }
 
   @Patch(':id/media')
@@ -187,60 +107,14 @@ export class SheltersController {
   async updateMedia(
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFiles() files: Express.Multer.File[] = [],
-    @Body() body: any,
     @Req() req: Request,
+    @Body('mediaData') mediaDataRaw?: string,
+    @Body() body?: any, // Para suportar campos diretos (quando não vem form-data)
   ): Promise<ShelterResponseDto> {
-    this.logger.debug(`🚀 Atualizando media do shelter ID=${id}`);
-    this.logger.debug(`📦 Body recebido: ${JSON.stringify(Object.keys(body))}`);
-
-    try {
-      let mediaDto: any;
-      
-      // Se veio como form-data com mediaData
-      if (body.mediaData) {
-        this.logger.debug('📝 Parseando mediaData do form-data');
-        mediaDto = typeof body.mediaData === 'string' 
-          ? JSON.parse(body.mediaData) 
-          : body.mediaData;
-      } else if (body.title || body.url) {
-        // Se veio como JSON puro ou campos diretos
-        this.logger.debug('📝 Usando body direto');
-        mediaDto = body;
-      } else {
-        throw new BadRequestException('mediaData é obrigatório ou envie campos diretos (title, url)');
-      }
-
-      const filesDict = this.mapFiles(files);
-
-      // Buscar o abrigo atual para obter os campos obrigatórios no DTO
-      const currentShelter = await this.getService.findOne(id, req);
-      if (!currentShelter) {
-        throw new BadRequestException('Abrigo não encontrado');
-      }
-
-      // Determinar se é upload ou link
-      const hasFile = files.length > 0;
-      const uploadTypeValue = mediaDto.uploadType || (hasFile ? UploadType.UPLOAD : UploadType.LINK);
-
-      const updateDto: UpdateShelterDto = {
-        teamsQuantity: currentShelter.teamsQuantity || 0, // Usar o valor atual do abrigo
-        mediaItem: {
-          title: mediaDto.title || 'Foto do Abrigo',
-          description: mediaDto.description || 'Imagem principal do abrigo',
-          uploadType: uploadTypeValue,
-          url: mediaDto.url,
-          isLocalFile: hasFile,
-          fieldKey: hasFile ? files[0].fieldname : undefined,
-        },
-      };
-
-      const entity = await this.updateService.update(id, updateDto, req, filesDict);
-      this.logger.log(`✅ Media atualizado para shelter ID=${id}`);
-      return toShelterDto(entity);
-    } catch (error) {
-      this.logger.error('❌ Erro ao atualizar media', error);
-      throw error;
-    }
+    // Se veio como form-data, usar mediaDataRaw; senão, usar body completo
+    const bodyToProcess = mediaDataRaw ? { mediaData: mediaDataRaw } : (body || {});
+    const entity = await this.updateService.updateMediaFromRaw(id, bodyToProcess, files, req);
+    return toShelterDto(entity);
   }
 
   @Delete(':id')
@@ -251,8 +125,4 @@ export class SheltersController {
     return this.deleteService.remove(id, req);
   }
 
-  // ❌ REMOVIDO: PATCH :id/leaders - Agora feito através de Teams
-  // ❌ REMOVIDO: DELETE :id/leaders - Agora feito através de Teams
-  // ❌ REMOVIDO: PATCH :id/teachers - Agora feito através de Teams
-  // ❌ REMOVIDO: DELETE :id/teachers - Agora feito através de Teams
 }

@@ -22,4 +22,8 @@ export class QuerySheltersDto {
   // 🔍 Busca unificada: nome do abrigo, cidade, UF, bairro, nome de professores ou líderes
   @IsOptional() @IsString()
   searchString?: string;
+
+  // 🔍 Filtro específico por nome do abrigo (alternativa ao searchString)
+  @IsOptional() @IsString()
+  shelterName?: string;
 }

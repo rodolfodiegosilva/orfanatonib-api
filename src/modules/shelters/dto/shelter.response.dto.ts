@@ -124,9 +124,12 @@ export class ShelterResponseDto {
   @Transform(({ obj }) => {
     const allLeaders: CoordinatorWithUserDto[] = [];
     if (obj.teams && Array.isArray(obj.teams)) {
-      obj.teams.forEach((team: any) => {
+      obj.teams.forEach((team: { leaders?: CoordinatorWithUserDto[] }) => {
         if (team.leaders && Array.isArray(team.leaders)) {
-          allLeaders.push(...team.leaders);
+          // Transformar cada leader usando plainToInstance para garantir que apenas campos expostos sejam incluídos
+          team.leaders.forEach((leader: any) => {
+            allLeaders.push(plainToInstance(CoordinatorWithUserDto, leader, { excludeExtraneousValues: true }));
+          });
         }
       });
     }
@@ -139,9 +142,12 @@ export class ShelterResponseDto {
   @Transform(({ obj }) => {
     const allTeachers: TeacherWithUserDto[] = [];
     if (obj.teams && Array.isArray(obj.teams)) {
-      obj.teams.forEach((team: any) => {
+      obj.teams.forEach((team: { teachers?: TeacherWithUserDto[] }) => {
         if (team.teachers && Array.isArray(team.teachers)) {
-          allTeachers.push(...team.teachers);
+          // Transformar cada teacher usando plainToInstance para garantir que apenas campos expostos sejam incluídos
+          team.teachers.forEach((teacher: any) => {
+            allTeachers.push(plainToInstance(TeacherWithUserDto, teacher, { excludeExtraneousValues: true }));
+          });
         }
       });
     }

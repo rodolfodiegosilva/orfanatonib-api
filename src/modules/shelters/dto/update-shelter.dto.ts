@@ -5,12 +5,14 @@ import {
   ValidateIf,
   ValidateNested,
   IsArray,
+  ArrayUnique,
   Length,
   IsBoolean,
   IsEnum,
   IsNumber,
+  Min,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { UploadType, PlatformType } from 'src/share/media/media-item/media-item.entity';
 
 export class AddressPatchDto {
@@ -30,13 +32,44 @@ export class MediaItemDto {
   @IsOptional() @IsString() id?: string;
   @IsOptional() @IsString() title?: string;
   @IsOptional() @IsString() description?: string;
-  @IsOptional() @IsEnum(UploadType) uploadType?: UploadType;
+  @IsOptional()
+  @IsEnum(UploadType)
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      const normalized = value.toLowerCase();
+      return normalized === 'upload' ? UploadType.UPLOAD : normalized === 'link' ? UploadType.LINK : value;
+    }
+    return value;
+  })
+  uploadType?: UploadType;
   @IsOptional() @IsEnum(PlatformType) platformType?: PlatformType;
   @IsOptional() @IsString() url?: string;
   @IsOptional() @IsBoolean() isLocalFile?: boolean;
   @IsOptional() @IsString() originalName?: string;
   @IsOptional() @IsNumber() size?: number;
   @IsOptional() @IsString() fieldKey?: string;
+}
+
+export class TeamInputDto {
+  @IsNumber()
+  @Min(1)
+  numberTeam!: number;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID(undefined, { each: true })
+  leaderProfileIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID(undefined, { each: true })
+  teacherProfileIds?: string[];
 }
 
 export class UpdateShelterDto {
@@ -47,10 +80,14 @@ export class UpdateShelterDto {
   description?: string;
 
   @IsNumber() @IsNumber({}, { message: 'teamsQuantity deve ser um número' })
+  @Min(1)
   teamsQuantity!: number;
 
-  // ❌ REMOVIDO: leaderProfileIds - Agora feito através de Teams
-  // ❌ REMOVIDO: teacherProfileIds - Agora feito através de Teams
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TeamInputDto)
+  teams?: TeamInputDto[];
 
   @IsOptional()
   @ValidateNested()

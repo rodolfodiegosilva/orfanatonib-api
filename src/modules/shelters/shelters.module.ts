@@ -20,6 +20,7 @@ import { MediaModule } from 'src/share/media/media.module';
 import { AwsModule } from 'src/aws/aws.module';
 import { RouteModule } from 'src/route/route.module';
 import { RouteEntity } from 'src/route/route-page.entity';
+import { TeamsModule } from '../teams/teams.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { RouteEntity } from 'src/route/route-page.entity';
     forwardRef(() => LeaderProfilesModule),
     forwardRef(() => ShelteredModule),
     forwardRef(() => AuthModule),
+    forwardRef(() => TeamsModule),
     MediaModule,
     AwsModule,
     RouteModule,

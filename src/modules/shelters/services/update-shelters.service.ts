@@ -1,13 +1,22 @@
-import { ForbiddenException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { Request } from 'express';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { SheltersRepository } from '../repositories/shelters.repository';
 import { UpdateShelterDto } from '../dto/update-shelter.dto';
+import { UpdateShelterRequestDto } from '../dto/update-shelter-request.dto';
+import { UpdateShelterMediaRequestDto } from '../dto/update-shelter-media-request.dto';
 import { AuthContextService } from 'src/auth/services/auth-context.service';
 import { MediaItemProcessor } from 'src/share/media/media-item-processor';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { MediaType, UploadType } from 'src/share/media/media-item/media-item.entity';
 import { RouteService } from 'src/route/route.service';
 import { RouteType } from 'src/route/route-page.entity';
+import { GetSheltersService } from './get-shelters.service';
+import { ShelterEntity } from '../entities/shelter.entity/shelter.entity';
+import { TeamsService } from 'src/modules/teams/services/teams.service';
+import { CreateTeamDto } from 'src/modules/teams/dto/create-team.dto';
+import { UpdateTeamDto } from 'src/modules/teams/dto/update-team.dto';
 
 type Ctx = { role?: string; userId?: string | null };
 
@@ -19,11 +28,113 @@ export class UpdateSheltersService {
     private readonly mediaItemProcessor: MediaItemProcessor,
     private readonly s3Service: AwsS3Service,
     private readonly routeService: RouteService,
+    @Inject(forwardRef(() => GetSheltersService))
+    private readonly getService: GetSheltersService,
+    @Inject(forwardRef(() => TeamsService))
+    private readonly teamsService: TeamsService,
   ) { }
 
   private async getCtx(req: Request): Promise<Ctx> {
     const p = await this.authCtx.tryGetPayload(req);
     return { role: p?.role?.toLowerCase(), userId: p?.sub ?? null };
+  }
+
+  /**
+   * Parseia e valida o body (form-data ou JSON) retornando o DTO validado
+   */
+  parseAndValidateBody(body: any): UpdateShelterDto {
+    let dto: UpdateShelterDto;
+    
+    // Verificar se veio como form-data com shelterData
+    if (body.shelterData) {
+      const parsed = typeof body.shelterData === 'string' 
+        ? JSON.parse(body.shelterData) 
+        : body.shelterData;
+      dto = plainToInstance(UpdateShelterDto, parsed);
+    } else {
+      // Se veio como JSON puro
+      dto = plainToInstance(UpdateShelterDto, body);
+    }
+
+    return dto;
+  }
+
+  /**
+   * Valida o DTO e lança exceção se houver erros
+   */
+  async validateDto(dto: UpdateShelterDto): Promise<void> {
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new BadRequestException(errors);
+    }
+  }
+
+  /**
+   * Mapeia array de arquivos para um dicionário por fieldname
+   */
+  mapFiles(files: Express.Multer.File[]): Record<string, Express.Multer.File> {
+    const filesDict: Record<string, Express.Multer.File> = {};
+    files.forEach((file) => {
+      filesDict[file.fieldname] = file;
+    });
+    return filesDict;
+  }
+
+  /**
+   * Atualiza um shelter a partir de body e arquivos brutos
+   */
+  async updateFromRaw(id: string, body: any, files: Express.Multer.File[], req: Request): Promise<ShelterEntity> {
+    const dto = this.parseAndValidateBody(body);
+    await this.validateDto(dto);
+    const filesDict = this.mapFiles(files);
+    return this.update(id, dto, req, filesDict);
+  }
+
+  /**
+   * Atualiza apenas a mídia de um shelter
+   */
+  async updateMediaFromRaw(id: string, body: any, files: Express.Multer.File[], req: Request): Promise<ShelterEntity> {
+    // Buscar o abrigo atual para obter os campos obrigatórios no DTO
+    const currentShelter = await this.getService.findOne(id, req);
+    if (!currentShelter) {
+      throw new BadRequestException('Abrigo não encontrado');
+    }
+
+    // Parsear mediaData
+    let mediaDto: { title?: string; description?: string; uploadType?: UploadType; url?: string; isLocalFile?: boolean };
+    if (body.mediaData) {
+      mediaDto = typeof body.mediaData === 'string' 
+        ? JSON.parse(body.mediaData) 
+        : body.mediaData;
+    } else if (body.title || body.url) {
+      mediaDto = {
+        title: body.title,
+        description: body.description,
+        uploadType: body.uploadType,
+        url: body.url,
+        isLocalFile: body.isLocalFile,
+      };
+    } else {
+      throw new BadRequestException('mediaData é obrigatório ou envie campos diretos (title, url)');
+    }
+
+    const filesDict = this.mapFiles(files);
+    const hasFile = files.length > 0;
+    const uploadTypeValue = mediaDto.uploadType || (hasFile ? UploadType.UPLOAD : UploadType.LINK);
+
+    const updateDto: UpdateShelterDto = {
+      teamsQuantity: currentShelter.teamsQuantity || 0,
+      mediaItem: {
+        title: mediaDto.title || 'Foto do Abrigo',
+        description: mediaDto.description || 'Imagem principal do abrigo',
+        uploadType: uploadTypeValue,
+        url: mediaDto.url,
+        isLocalFile: hasFile,
+        fieldKey: hasFile ? files[0].fieldname : undefined,
+      },
+    };
+
+    return this.update(id, updateDto, req, filesDict);
   }
 
   async update(id: string, dto: UpdateShelterDto, req: Request, filesDict?: Record<string, Express.Multer.File>) {
@@ -37,8 +148,20 @@ export class UpdateSheltersService {
       // ❌ REMOVIDO: Validação de leaderProfileIds - Agora feito através de Teams
     }
 
+    // Buscar shelter atual para comparar teamsQuantity
+    const currentShelter = await this.sheltersRepository.findOneOrFailForResponse(id, ctx);
+    if (!currentShelter) {
+      throw new NotFoundException('Shelter não encontrado');
+    }
+    const currentTeamsQuantity = currentShelter.teamsQuantity ?? 0;
+
     // Atualizar shelter
     const updatedShelter = await this.sheltersRepository.updateShelter(id, dto);
+
+    // Atualizar equipes se teamsQuantity mudou ou se teams foi fornecido
+    if (dto.teamsQuantity !== currentTeamsQuantity || dto.teams) {
+      await this.updateTeams(id, dto, currentTeamsQuantity);
+    }
 
     // Atualizar route se nome ou descrição mudaram
     if (dto.name || dto.description) {
@@ -53,7 +176,82 @@ export class UpdateSheltersService {
     return updatedShelter;
   }
 
-  private shouldUpdateMedia(mediaInput: any, filesDict: Record<string, Express.Multer.File>): boolean {
+  /**
+   * Atualiza as equipes do abrigo baseado em teamsQuantity e teams array
+   */
+  private async updateTeams(shelterId: string, dto: UpdateShelterDto, currentTeamsQuantity: number): Promise<void> {
+    const existingTeams = await this.teamsService.findByShelter(shelterId);
+    const existingTeamsMap = new Map<number, { id: string; numberTeam: number }>();
+    
+    existingTeams.forEach(team => {
+      existingTeamsMap.set(team.numberTeam, { id: team.id, numberTeam: team.numberTeam });
+    });
+
+    type TeamInput = NonNullable<UpdateShelterDto['teams']>[0];
+    const teamsMap = new Map<number, TeamInput>();
+    
+    // Criar mapa das equipes fornecidas (se houver)
+    if (dto.teams && dto.teams.length > 0) {
+      for (const team of dto.teams) {
+        if (team.numberTeam < 1 || team.numberTeam > dto.teamsQuantity) {
+          throw new BadRequestException(
+            `numberTeam ${team.numberTeam} deve estar entre 1 e ${dto.teamsQuantity}`
+          );
+        }
+        if (teamsMap.has(team.numberTeam)) {
+          throw new BadRequestException(`Duplicata: equipe ${team.numberTeam} já foi definida`);
+        }
+        teamsMap.set(team.numberTeam, team);
+      }
+    }
+
+    // Se teamsQuantity diminuiu, remover equipes extras
+    if (dto.teamsQuantity < currentTeamsQuantity) {
+      for (let i = dto.teamsQuantity + 1; i <= currentTeamsQuantity; i++) {
+        const existingTeam = existingTeamsMap.get(i);
+        if (existingTeam) {
+          await this.teamsService.remove(existingTeam.id);
+        }
+      }
+    }
+
+    // Atualizar ou criar equipes (1 até teamsQuantity)
+    for (let i = 1; i <= dto.teamsQuantity; i++) {
+      const teamData = teamsMap.get(i);
+      const existingTeam = existingTeamsMap.get(i);
+
+      if (existingTeam) {
+        // Atualizar equipe existente
+        if (teamData) {
+          const updateTeamDto: UpdateTeamDto = {
+            description: teamData.description,
+            leaderProfileIds: teamData.leaderProfileIds,
+            teacherProfileIds: teamData.teacherProfileIds,
+          };
+          await this.teamsService.update(existingTeam.id, updateTeamDto);
+        }
+      } else {
+        // Criar nova equipe
+        const createTeamDto: CreateTeamDto = {
+          numberTeam: i,
+          description: teamData?.description,
+          shelterId: shelterId,
+          leaderProfileIds: teamData?.leaderProfileIds,
+          teacherProfileIds: teamData?.teacherProfileIds,
+        };
+        await this.teamsService.create(createTeamDto);
+      }
+    }
+  }
+
+  private shouldUpdateMedia(
+    mediaInput: { 
+      id?: string; 
+      url?: string; 
+      uploadType?: UploadType; 
+    }, 
+    filesDict: Record<string, Express.Multer.File>
+  ): boolean {
     // Se tem arquivo novo para upload
     if (filesDict && Object.keys(filesDict).length > 0) {
       return true;
@@ -149,7 +347,15 @@ export class UpdateSheltersService {
 
   private async updateMediaItem(
     shelterId: string,
-    mediaInput: any,
+    mediaInput: { 
+      id?: string;
+      title?: string;
+      description?: string;
+      uploadType?: UploadType;
+      url?: string;
+      isLocalFile?: boolean;
+      fieldKey?: string;
+    },
     filesDict: Record<string, Express.Multer.File>,
   ) {
     // Buscar media item existente
