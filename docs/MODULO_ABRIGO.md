@@ -67,7 +67,8 @@ O módulo de **Abrigo** é responsável por gerenciar todos os abrigos do sistem
    - O campo `numberTeam` é do tipo **number** (não string)
 
 2. **Líderes e Professores:**
-   - Um líder ou professor pode pertencer a apenas **1 equipe** (ou nenhuma)
+   - ⭐ **Líderes podem pertencer a MÚLTIPLAS equipes** (ManyToMany) - podem estar em equipes do mesmo abrigo ou de abrigos diferentes
+   - **Professores podem pertencer a apenas 1 equipe** (ou nenhuma) - ManyToOne
    - **NÃO têm relacionamento direto** com abrigos - sempre através de equipes
    - Para adicionar um líder/professor a um abrigo, você deve adicioná-lo a uma equipe do abrigo
 
@@ -1385,6 +1386,8 @@ Veja os documentos:
 
 ### Com Líderes e Professores
 - Líderes e professores estão vinculados a abrigos **através de equipes**
+- ⭐ **Líderes podem estar em múltiplas equipes** (ManyToMany) - podem estar em equipes do mesmo abrigo ou de abrigos diferentes
+- **Professores podem estar em apenas 1 equipe** (ManyToOne) - não podem estar em múltiplas equipes ou abrigos
 - Um abrigo pode ter múltiplos líderes e professores (distribuídos em equipes)
 - As propriedades `leaders` e `teachers` na resposta agregam todos os membros de todas as equipes
 
@@ -1402,4 +1405,8 @@ Veja os documentos:
 
 ---
 
-**Última atualização:** 2024-11-29
+**Última atualização:** 2024-12-06
+
+**Mudanças recentes:**
+- ⭐ **Atualizado:** Líderes agora podem estar em **múltiplas equipes** (ManyToMany)
+- ⭐ **Atualizado:** Professores continuam podendo estar em apenas **1 equipe** (ManyToOne)

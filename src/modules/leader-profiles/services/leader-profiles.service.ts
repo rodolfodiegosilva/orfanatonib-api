@@ -77,7 +77,7 @@ export class LeaderProfilesService {
 
   /**
    * Vincula líder a uma equipe de um abrigo
-   * Se já estiver vinculado a outra equipe, move para a nova
+   * Agora um líder pode estar em múltiplas equipes (do mesmo ou de diferentes abrigos)
    */
   async manageTeam(leaderId: string, dto: ManageLeaderTeamDto, req: Request): Promise<LeaderResponseDto> {
     const ctx = await this.getCtx(req);
@@ -101,20 +101,12 @@ export class LeaderProfilesService {
       });
       targetTeam = newTeam;
     } else {
-      // Se o líder já está em outra equipe, remover primeiro
-      if (leader.team && leader.team.id !== targetTeam.id) {
-        const currentTeam = await this.teamsService.findOne(leader.team.id);
-        if (currentTeam) {
-          const currentLeaderIds = currentTeam.leaders.map(l => l.id).filter(id => id !== leaderId);
-          await this.teamsService.update(currentTeam.id, {
-            leaderProfileIds: currentLeaderIds,
-          });
-        }
-      }
-
-      // Adicionar à equipe (se já não estiver nela)
-      if (!leader.team || leader.team.id !== targetTeam.id) {
-        const currentLeaderIds = targetTeam.leaders.map(l => l.id).filter(id => id !== leaderId);
+      // Verificar se o líder já está na equipe
+      const isAlreadyInTeam = targetTeam.leaders.some(l => l.id === leaderId);
+      
+      if (!isAlreadyInTeam) {
+        // Adicionar o líder à equipe (sem remover de outras equipes)
+        const currentLeaderIds = targetTeam.leaders.map(l => l.id);
         await this.teamsService.update(targetTeam.id, {
           leaderProfileIds: [...currentLeaderIds, leaderId],
         });

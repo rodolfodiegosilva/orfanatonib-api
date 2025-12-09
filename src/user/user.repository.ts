@@ -33,7 +33,7 @@ export class UserRepository {
       where: { id },
       relations: {
         teacherProfile: { team: { shelter: true } },
-        leaderProfile: { team: { shelter: true } },
+        leaderProfile: { teams: { shelter: true } },
       },
     });
   }

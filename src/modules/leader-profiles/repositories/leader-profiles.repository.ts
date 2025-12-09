@@ -44,7 +44,7 @@ export class LeaderProfilesRepository {
 
     return repo
       .createQueryBuilder('leader')
-      .leftJoinAndSelect('leader.team', 'team')
+      .leftJoinAndSelect('leader.teams', 'team')
       .leftJoinAndSelect('team.shelter', 'shelter')
       .leftJoinAndSelect('team.teachers', 'teachers')
       .leftJoin('leader.user', 'leader_user')
@@ -125,10 +125,11 @@ export class LeaderProfilesRepository {
       qb.andWhere(
         `EXISTS (
           SELECT 1
-          FROM teams t
+          FROM leader_teams lt
+          JOIN teams t ON t.id = lt.team_id
           JOIN shelters s ON s.id = t.shelter_id
           LEFT JOIN addresses shelter_addr ON shelter_addr.id = s.address_id
-          WHERE t.id = leader.team_id
+          WHERE lt.leader_id = leader.id
             AND (
               LOWER(s.name) LIKE :shelterSearchString OR
               LOWER(shelter_addr.street) LIKE :shelterSearchString OR
@@ -150,15 +151,29 @@ export class LeaderProfilesRepository {
     // Se está vinculado a algum team (e consequentemente a um shelter) ou não
     // ⚠️ Só aplica o filtro se hasShelter for explicitamente true ou false
     if (hasShelter === true) {
-      qb.andWhere('leader.team_id IS NOT NULL');
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1 FROM leader_teams lt WHERE lt.leader_id = leader.id
+        )`
+      );
     } else if (hasShelter === false) {
-      qb.andWhere('leader.team_id IS NULL');
+      qb.andWhere(
+        `NOT EXISTS (
+          SELECT 1 FROM leader_teams lt WHERE lt.leader_id = leader.id
+        )`
+      );
     }
     // Se hasShelter for undefined, não aplica filtro (retorna todos)
 
     // 🎯 FILTRO: teamId - filtrar por ID da equipe
     if (teamId?.trim()) {
-      qb.andWhere('leader.team_id = :teamId', { teamId: teamId.trim() });
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1 FROM leader_teams lt 
+          WHERE lt.leader_id = leader.id AND lt.team_id = :teamId
+        )`,
+        { teamId: teamId.trim() }
+      );
     }
 
     // 🎯 FILTRO: teamName - filtrar por número da equipe
@@ -167,8 +182,9 @@ export class LeaderProfilesRepository {
       if (!isNaN(teamNumber)) {
         qb.andWhere(
           `EXISTS (
-            SELECT 1 FROM teams t
-            WHERE t.id = leader.team_id
+            SELECT 1 FROM leader_teams lt
+            JOIN teams t ON t.id = lt.team_id
+            WHERE lt.leader_id = leader.id
               AND t.numberTeam = :teamNumber
           )`,
           { teamNumber }
@@ -178,9 +194,17 @@ export class LeaderProfilesRepository {
 
     // 🎯 FILTRO: hasTeam - se está vinculado a alguma equipe
     if (hasTeam === true) {
-      qb.andWhere('leader.team_id IS NOT NULL');
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1 FROM leader_teams lt WHERE lt.leader_id = leader.id
+        )`
+      );
     } else if (hasTeam === false) {
-      qb.andWhere('leader.team_id IS NULL');
+      qb.andWhere(
+        `NOT EXISTS (
+          SELECT 1 FROM leader_teams lt WHERE lt.leader_id = leader.id
+        )`
+      );
     }
 
     return qb;
@@ -275,13 +299,13 @@ export class LeaderProfilesRepository {
 
       const leader = await txLeader.findOne({
         where: { user: { id: userId } },
-        relations: { team: true },
+        relations: { teams: true },
       });
       if (!leader) return;
 
-      if (leader.team) {
-        // Remover a vinculação do líder ao team
-        leader.team = null;
+      if (leader.teams && leader.teams.length > 0) {
+        // Remover todas as vinculações do líder aos teams
+        leader.teams = [];
         await txLeader.save(leader);
       }
 
@@ -294,7 +318,7 @@ export class LeaderProfilesRepository {
       .createQueryBuilder('leader')
       .leftJoin('leader.user', 'user')
       .addSelect(['user.id', 'user.name'])
-      .leftJoin('leader.team', 'team')
+      .leftJoin('leader.teams', 'team')
       .leftJoin('team.shelter', 'shelter')
       .addSelect(['shelter.id'])
       .where('user.active = true')

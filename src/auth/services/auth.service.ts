@@ -187,10 +187,18 @@ export class AuthService {
         ? {
           id: user.leaderProfile.id,
           active: user.leaderProfile.active,
-          shelter: user.leaderProfile.team?.shelter ? {
-            id: user.leaderProfile.team.shelter.id,
-            name: user.leaderProfile.team.shelter.name,
-          } : null,
+          clubs: user.leaderProfile.teams && user.leaderProfile.teams.length > 0
+            ? user.leaderProfile.teams
+                .map(team => team.shelter)
+                .filter((shelter, index, self) => 
+                  shelter && self.findIndex(s => s?.id === shelter.id) === index
+                )
+                .map(shelter => ({
+                  id: shelter!.id,
+                  number: 0, // TODO: Verificar se há um campo number no shelter
+                  weekday: '', // TODO: Verificar se há um campo weekday no shelter
+                }))
+            : [],
         }
         : null,
     };

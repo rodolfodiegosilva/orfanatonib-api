@@ -7,7 +7,8 @@ import {
   OneToOne,
   JoinColumn,
   Unique,
-  ManyToOne,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 @Unique('UQ_leader_profile_user', ['user'])
@@ -23,10 +24,13 @@ export class LeaderProfileEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @ManyToOne(() => TeamEntity, (team) => team.leaders, {
-    nullable: true,
-    onDelete: 'SET NULL',
+  @ManyToMany(() => TeamEntity, (team) => team.leaders, {
+    cascade: false,
   })
-  @JoinColumn({ name: 'team_id' })
-  team: TeamEntity | null;
+  @JoinTable({
+    name: 'leader_teams',
+    joinColumn: { name: 'leader_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'team_id', referencedColumnName: 'id' },
+  })
+  teams: TeamEntity[];
 }

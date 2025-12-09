@@ -21,10 +21,11 @@ import { AwsModule } from 'src/aws/aws.module';
 import { RouteModule } from 'src/route/route.module';
 import { RouteEntity } from 'src/route/route-page.entity';
 import { TeamsModule } from '../teams/teams.module';
+import { TeamEntity } from '../teams/entities/team.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ShelterEntity, AddressEntity, RouteEntity]),
+    TypeOrmModule.forFeature([ShelterEntity, AddressEntity, RouteEntity, TeamEntity]),
     forwardRef(() => AddressesModule),
     forwardRef(() => TeacherProfilesModule),
     forwardRef(() => LeaderProfilesModule),

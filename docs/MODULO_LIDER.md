@@ -14,11 +14,11 @@
 
 ## 📋 Visão Geral
 
-O módulo de **Líder** gerencia os perfis de líderes do sistema. Cada líder está vinculado a um usuário e pode estar associado a uma equipe (team), que por sua vez está vinculada a um abrigo (shelter).
+O módulo de **Líder** gerencia os perfis de líderes do sistema. Cada líder está vinculado a um usuário e pode estar associado a **múltiplas equipes** (teams), que por sua vez estão vinculadas a abrigos (shelters). Um líder pode estar em equipes do mesmo abrigo ou de abrigos diferentes.
 
 ### 🎯 Conceitos Principais
 
-- **Líder (Leader)**: Coordenador que pertence a uma equipe
+- **Líder (Leader)**: Coordenador que pode pertencer a múltiplas equipes
 - **Equipe (Team)**: Grupo de trabalho dentro de um abrigo, identificado por um **número** (1, 2, 3, 4...)
 - **Abrigo (Shelter)**: Unidade física que abriga pessoas
 - **Usuário (User)**: Conta de acesso ao sistema
@@ -39,45 +39,54 @@ O módulo de **Líder** gerencia os perfis de líderes do sistema. Cada líder e
 │   PROFILE   │
 └──────┬──────┘
        │
-       │ N:1 (ManyToOne) - nullable
+       │ N:N (ManyToMany) - pode estar em múltiplas equipes
        │
-       ▼
-┌─────────────┐
-│    TEAM     │ (Equipe)
-│  (Equipe)   │
-└──────┬──────┘
-       │
-       │ N:1 (ManyToOne)
-       │
-       ▼
-┌─────────────┐
-│   SHELTER   │ (Abrigo)
-│  (Abrigo)   │
-└─────────────┘
+       ├──────────────┬──────────────┐
+       │              │              │
+       ▼              ▼              ▼
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│    TEAM     │  │    TEAM     │  │    TEAM     │
+│  (Equipe)   │  │  (Equipe)   │  │  (Equipe)   │
+└──────┬──────┘  └──────┬──────┘  └──────┬──────┘
+       │                │                │
+       │ N:1            │ N:1            │ N:1
+       │                │                │
+       ▼                ▼                ▼
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│   SHELTER   │  │   SHELTER   │  │   SHELTER   │
+│  (Abrigo)   │  │  (Abrigo)   │  │  (Abrigo)   │
+└─────────────┘  └─────────────┘  └─────────────┘
 ```
 
 **Fluxo de Relacionamento:**
 ```
-Líder → Equipe → Abrigo
+Líder → Múltiplas Equipes → Múltiplos Abrigos
 ```
+
+**Exemplo:**
+- Líder 1 → Equipe 1 (Abrigo 1) + Equipe 2 (Abrigo 1) + Equipe 1 (Abrigo 2)
+- Líder 2 → Equipe 1 (Abrigo 1) + Equipe 2 (Abrigo 1)
 
 ### 📌 Regras Importantes
 
-1. **Relacionamento com Equipe:**
-   - Um líder pode pertencer a apenas **1 equipe** (ou nenhuma)
+1. **Relacionamento com Equipes:**
+   - ⭐ **Um líder pode pertencer a MÚLTIPLAS equipes** (ManyToMany)
+   - Um líder pode estar em equipes do **mesmo abrigo** ou de **abrigos diferentes**
    - Uma equipe pode ter **múltiplos líderes**
    - Uma equipe pertence a **1 abrigo**
    - Um abrigo pode ter **múltiplas equipes**
    - A equipe é identificada por um **número** (1, 2, 3, 4...), não por um nome descritivo
    - O campo `numberTeam` é do tipo **number** (não string)
 
-2. **Relacionamento com Abrigo:**
+2. **Relacionamento com Abrigos:**
    - **Líderes NÃO têm relacionamento direto com abrigos**, apenas através de equipes
+   - Um líder pode estar vinculado a **múltiplos abrigos** através de diferentes equipes
    - Para vincular um líder a um abrigo, você deve vinculá-lo a uma equipe do abrigo
 
 3. **Vinculação:**
-   - Se o líder já estiver vinculado a outra equipe, será automaticamente movido para a nova
+   - ⭐ Ao vincular um líder a uma equipe, ele é **adicionado** à equipe **sem remover** de outras equipes
    - Se a equipe não existir, será criada automaticamente
+   - Um líder pode estar simultaneamente em várias equipes
 
 ---
 
@@ -98,15 +107,15 @@ interface LeaderResponseDto {
     completed: boolean;
     commonUser: boolean;
   };
-  shelter?: {                // Abrigo (através da equipe)
+  shelters: {                // ⭐ Array de abrigos (através das equipes)
     id: string;
     name: string;
-    team: {                  // Equipe à qual o líder pertence (dentro do abrigo)
+    teams: {                 // Array de equipes do líder neste abrigo
       id: string;
       numberTeam: number;    // Número da equipe: 1, 2, 3, 4... (tipo number)
       description?: string;
-    } | null;
-    teachers: {              // Professores da equipe
+    }[];
+    teachers: {              // Professores de todas as equipes do líder neste abrigo
       id: string;
       active: boolean;
       user: {
@@ -119,7 +128,7 @@ interface LeaderResponseDto {
         commonUser: boolean;
       };
     }[];
-  } | null;
+  }[];                       // ⭐ Array vazio se não estiver vinculado a nenhuma equipe
   createdAt: Date;
   updatedAt: Date;
 }
@@ -128,10 +137,17 @@ interface LeaderResponseDto {
 **Estrutura de Relacionamento na Resposta:**
 ```
 Líder
-  └── shelter (Abrigo)
-        └── team (Equipe à qual o líder pertence)
-        └── teachers (Professores da equipe)
+  └── shelters[] (Array de Abrigos)
+        ├── Abrigo 1
+        │     ├── teams[] (Equipes do líder neste abrigo)
+        │     └── teachers[] (Professores das equipes)
+        ├── Abrigo 2
+        │     ├── teams[] (Equipes do líder neste abrigo)
+        │     └── teachers[] (Professores das equipes)
+        └── ...
 ```
+
+**Nota:** Os abrigos são agrupados automaticamente. Se um líder está em múltiplas equipes do mesmo abrigo, todas as equipes aparecem dentro do mesmo objeto de abrigo.
 
 ### Tipo: LeaderSimpleListDto
 
@@ -196,30 +212,51 @@ Authorization: Bearer {token}
         "completed": true,
         "commonUser": false
       },
-      "shelter": {
-        "id": "770e8400-e29b-41d4-a716-446655440000",
-        "name": "Abrigo Esperança",
-        "team": {
-          "id": "990e8400-e29b-41d4-a716-446655440001",
-          "numberTeam": 1,
-          "description": "Equipe Matutina"
-        },
-        "teachers": [
-          {
-            "id": "660e8400-e29b-41d4-a716-446655440000",
-            "active": true,
-            "user": {
-              "id": "550e8400-e29b-41d4-a716-446655440000",
-              "name": "Maria Santos",
-              "email": "maria@example.com",
-              "phone": "(11) 98765-4321",
-              "active": true,
-              "completed": true,
-              "commonUser": false
+      "shelters": [
+        {
+          "id": "770e8400-e29b-41d4-a716-446655440000",
+          "name": "Abrigo Esperança",
+          "teams": [
+            {
+              "id": "990e8400-e29b-41d4-a716-446655440001",
+              "numberTeam": 1,
+              "description": "Equipe Matutina"
+            },
+            {
+              "id": "990e8400-e29b-41d4-a716-446655440002",
+              "numberTeam": 2,
+              "description": "Equipe Vespertina"
             }
-          }
-        ]
-      },
+          ],
+          "teachers": [
+            {
+              "id": "660e8400-e29b-41d4-a716-446655440000",
+              "active": true,
+              "user": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "Maria Santos",
+                "email": "maria@example.com",
+                "phone": "(11) 98765-4321",
+                "active": true,
+                "completed": true,
+                "commonUser": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "880e8400-e29b-41d4-a716-446655440000",
+          "name": "Abrigo Nova Esperança",
+          "teams": [
+            {
+              "id": "aa0e8400-e29b-41d4-a716-446655440001",
+              "numberTeam": 1,
+              "description": "Equipe Principal"
+            }
+          ],
+          "teachers": []
+        }
+      ],
       "createdAt": "2024-11-29T10:00:00.000Z",
       "updatedAt": "2024-11-29T10:00:00.000Z"
     }
@@ -306,30 +343,39 @@ Authorization: Bearer {token}
     "completed": true,
     "commonUser": false
   },
-  "shelter": {
-    "id": "770e8400-e29b-41d4-a716-446655440000",
-    "name": "Abrigo Esperança",
-    "team": {
-      "id": "990e8400-e29b-41d4-a716-446655440001",
-      "numberTeam": 1,
-      "description": "Equipe Matutina"
-    },
-    "teachers": [
-      {
-        "id": "660e8400-e29b-41d4-a716-446655440000",
-        "active": true,
-        "user": {
-          "id": "550e8400-e29b-41d4-a716-446655440000",
-          "name": "Maria Santos",
-          "email": "maria@example.com",
-          "phone": "(11) 98765-4321",
-          "active": true,
-          "completed": true,
-          "commonUser": false
+  "shelters": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440000",
+      "name": "Abrigo Esperança",
+      "teams": [
+        {
+          "id": "990e8400-e29b-41d4-a716-446655440001",
+          "numberTeam": 1,
+          "description": "Equipe Matutina"
+        },
+        {
+          "id": "990e8400-e29b-41d4-a716-446655440002",
+          "numberTeam": 2,
+          "description": "Equipe Vespertina"
         }
-      }
-    ]
-  },
+      ],
+      "teachers": [
+        {
+          "id": "660e8400-e29b-41d4-a716-446655440000",
+          "active": true,
+          "user": {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "name": "Maria Santos",
+            "email": "maria@example.com",
+            "phone": "(11) 98765-4321",
+            "active": true,
+            "completed": true,
+            "commonUser": false
+          }
+        }
+      ]
+    }
+  ],
   "createdAt": "2024-11-29T10:00:00.000Z",
   "updatedAt": "2024-11-29T10:00:00.000Z"
 }
@@ -341,7 +387,7 @@ Authorization: Bearer {token}
 
 **Endpoint:** `PUT /leader-profiles/:leaderId`
 
-**Descrição:** Vincula o líder a uma equipe de um abrigo. Se já estiver vinculado a outra equipe, move para a nova. Se a equipe não existir, cria automaticamente.
+**Descrição:** Vincula o líder a uma equipe de um abrigo. ⭐ **O líder é adicionado à equipe sem remover de outras equipes**. Se a equipe não existir, cria automaticamente.
 
 **Autenticação:** Requerida (Bearer Token)
 
@@ -365,8 +411,8 @@ Authorization: Bearer {token}
 **Comportamento:**
 - ✅ Busca a equipe com o `numberTeam` especificado no abrigo
 - ✅ Se a equipe não existir, cria uma nova equipe automaticamente
-- ✅ Se o líder já estiver vinculado a outra equipe, remove da anterior e vincula à nova
-- ✅ Se o líder não estiver vinculado, apenas vincula à equipe
+- ⭐ **O líder é adicionado à equipe sem remover de outras equipes** (pode estar em múltiplas equipes simultaneamente)
+- ✅ Se o líder já estiver na equipe especificada, não faz nada (idempotente)
 
 **Resposta:** `LeaderResponseDto`
 
@@ -512,18 +558,20 @@ interface LeaderResponseDto {
   id: string;                // UUID do perfil do líder
   active: boolean;           // Status ativo/inativo do perfil
   user: UserMiniDto;         // Dados do usuário associado
-  shelter?: ShelterMiniWithCoordinatorDto | null;  // Abrigo (através da equipe) ou null
+  shelters: ShelterMiniWithCoordinatorDto[];  // ⭐ Array de abrigos (através das equipes)
   createdAt: Date;           // Data de criação
   updatedAt: Date;           // Data de última atualização
 }
 ```
 
-**Estrutura do `shelter`:**
-- Quando o líder está vinculado a uma equipe, o `shelter` contém:
+**Estrutura do `shelters`:**
+- ⭐ É um **array** de abrigos (pode estar em múltiplos abrigos)
+- Cada abrigo contém:
   - `id` e `name` do abrigo
-  - `team` (equipe à qual o líder pertence) com `id`, `numberTeam` e `description`
-  - `teachers` (array de professores da equipe)
-- Quando o líder não está vinculado, `shelter` é `null`
+  - `teams` (array de equipes do líder neste abrigo) com `id`, `numberTeam` e `description`
+  - `teachers` (array de professores de todas as equipes do líder neste abrigo)
+- Quando o líder não está vinculado a nenhuma equipe, `shelters` é um array vazio `[]`
+- Os abrigos são agrupados automaticamente: se o líder está em múltiplas equipes do mesmo abrigo, todas aparecem no mesmo objeto
 
 #### UserMiniDto (DTO Interno)
 ```typescript
@@ -552,12 +600,12 @@ interface TeamMiniDto {
 interface ShelterMiniWithCoordinatorDto {
   id: string;                // UUID do abrigo
   name: string;              // Nome do abrigo
-  team: TeamMiniDto | null;  // Equipe à qual o líder pertence (dentro do abrigo)
-  teachers: TeacherMiniDto[];  // Professores da equipe
+  teams: TeamMiniDto[];      // ⭐ Array de equipes do líder neste abrigo
+  teachers: TeacherMiniDto[];  // Professores de todas as equipes do líder neste abrigo
 }
 ```
 
-**Nota:** A estrutura mostra `shelter.team`, indicando que a equipe está dentro do abrigo, refletindo o relacionamento: Líder → Equipe → Abrigo.
+**Nota:** A estrutura mostra `shelters[].teams[]`, indicando que o líder pode estar em múltiplas equipes do mesmo abrigo, refletindo o relacionamento ManyToMany: Líder → Múltiplas Equipes → Abrigos.
 
 #### TeacherMiniDto (DTO Interno)
 ```typescript
@@ -595,7 +643,7 @@ interface LeaderMiniDto {
 ### 3. Buscar Líder por ID
 - **DTO de Entrada:** `id` (path parameter - UUID)
 - **DTO de Saída:** `LeaderResponseDto`
-- **Dica:** O campo `shelter` será `null` se o líder não estiver vinculado a uma equipe/abrigo.
+- **Dica:** O campo `shelters` será um array vazio `[]` se o líder não estiver vinculado a nenhuma equipe/abrigo.
 
 ### 4. Vincular Líder a Equipe
 - **DTO de Entrada:** `ManageLeaderTeamDto` (obrigatório: `shelterId` e `numberTeam`)
@@ -603,13 +651,13 @@ interface LeaderMiniDto {
 - **Dicas:**
   - ⭐ Antes de vincular, busque `GET /shelters/:shelterId/teams-quantity` para validar que `numberTeam` não exceda a quantidade total
   - Se a equipe não existir, será criada automaticamente
-  - Se o líder já estiver em outra equipe, será movido automaticamente para a nova
+  - ⭐ **O líder é adicionado à equipe sem remover de outras equipes** (pode estar em múltiplas equipes simultaneamente)
 
 ### Validações Importantes
 - `shelterId` e `numberTeam` são obrigatórios
 - `numberTeam` deve ser um número maior que 0
 - `numberTeam` não deve exceder o `teamsQuantity` do abrigo (valide antes de enviar)
-- O líder será automaticamente removido da equipe anterior ao ser adicionado a uma nova
+- ⭐ **O líder NÃO é removido de outras equipes** - ele pode estar em múltiplas equipes simultaneamente
 
 ### Tratamento de Erros
 - **400:** Dados inválidos - verifique os campos obrigatórios
@@ -627,27 +675,31 @@ interface LeaderMiniDto {
 2. Use `PUT /leader-profiles/:leaderId` com `{ shelterId: "...", numberTeam: 1 }`
 3. Valide que `numberTeam` não exceda o `teamsQuantity` do abrigo
 4. Se a equipe não existir, será criada automaticamente
-5. Se o líder já estiver em outra equipe, será movido automaticamente
+5. ⭐ **O líder é adicionado à equipe sem remover de outras equipes**
 
-### Fluxo 2: Mover Líder entre Equipes
-1. Use `PUT /leader-profiles/:leaderId` com `{ shelterId: "...", numberTeam: 2 }` (nova equipe)
-2. O sistema remove automaticamente da equipe anterior e adiciona à nova
+### Fluxo 2: Adicionar Líder a Múltiplas Equipes
+1. Use `PUT /leader-profiles/:leaderId` com `{ shelterId: "...", numberTeam: 1 }` (primeira equipe)
+2. Use `PUT /leader-profiles/:leaderId` com `{ shelterId: "...", numberTeam: 2 }` (segunda equipe do mesmo abrigo)
+3. Use `PUT /leader-profiles/:leaderId` com `{ shelterId: "...", numberTeam: 1 }` (equipe de outro abrigo)
+4. ⭐ O líder agora está em 3 equipes diferentes (2 do primeiro abrigo, 1 do segundo)
 
 ### Fluxo 3: Verificar Status de Vinculação
 1. Use `GET /leader-profiles/:id`
-2. Verifique o campo `shelter`:
-   - Se `shelter` for `null`, o líder não está vinculado
-   - Se `shelter` tiver dados, o líder está vinculado através de uma equipe
-3. Para obter detalhes da equipe, busque o abrigo completo: `GET /shelters/:shelterId`
+2. Verifique o campo `shelters`:
+   - Se `shelters` for um array vazio `[]`, o líder não está vinculado a nenhuma equipe
+   - Se `shelters` tiver elementos, o líder está vinculado através de equipes
+   - Cada elemento do array representa um abrigo, com suas equipes e professores
+3. Para obter detalhes completos, busque o abrigo: `GET /shelters/:shelterId`
 
 ---
 
 ## ⚠️ Regras e Validações
 
-1. **Um líder por equipe:**
-   - Um líder pode pertencer a apenas **1 equipe** (ou nenhuma)
-   - Se você adicionar um líder a uma nova equipe, ele será automaticamente removido da equipe anterior
-   - **Não há relacionamento direto** entre líder e abrigo - sempre através de equipe
+1. **Múltiplas equipes por líder:**
+   - ⭐ **Um líder pode pertencer a MÚLTIPLAS equipes** (ManyToMany)
+   - Um líder pode estar em equipes do **mesmo abrigo** ou de **abrigos diferentes**
+   - Ao adicionar um líder a uma nova equipe, ele **NÃO é removido** de outras equipes
+   - **Não há relacionamento direto** entre líder e abrigo - sempre através de equipes
 
 2. **Criação de equipe:**
    - Ao vincular um líder a um abrigo sem equipe correspondente, uma nova equipe será criada automaticamente
@@ -663,22 +715,29 @@ interface LeaderMiniDto {
    - O `numberTeam` deve ser um número maior que 0
    - O `numberTeam` não deve exceder o `teamsQuantity` do abrigo (valide antes de enviar)
 
-5. **Comportamento ao mover:**
-   - Ao mover um líder de uma equipe para outra, ele é automaticamente removido da equipe anterior
-   - Não é necessário fazer duas chamadas (remover + adicionar) - uma única chamada resolve
+5. **Comportamento ao adicionar:**
+   - ⭐ Ao adicionar um líder a uma equipe, ele é **adicionado** sem remover de outras equipes
+   - Um líder pode estar simultaneamente em várias equipes
+   - Se o líder já estiver na equipe especificada, a operação é idempotente (não faz nada)
 
 ---
 
 ## 🔗 Relacionamentos
 
 ### Com Abrigos
-- Líderes estão vinculados a abrigos **através de equipes**
+- ⭐ Líderes estão vinculados a abrigos **através de equipes** (ManyToMany)
+- Um líder pode estar vinculado a **múltiplos abrigos** através de diferentes equipes
 - Um abrigo pode ter múltiplas equipes
 - Cada equipe pode ter múltiplos líderes
 
+### Com Equipes
+- ⭐ **Um líder pode estar em MÚLTIPLAS equipes** (ManyToMany)
+- Um líder pode estar em equipes do mesmo abrigo ou de abrigos diferentes
+- Exemplo: Líder 1 → Equipe 1 (Abrigo 1) + Equipe 2 (Abrigo 1) + Equipe 1 (Abrigo 2)
+
 ### Com Professores
 - Líderes e professores podem estar na mesma equipe
-- Um líder pode ver os professores de sua equipe na resposta (`shelter.teachers`)
+- Um líder pode ver os professores de todas as suas equipes na resposta (`shelters[].teachers`)
 
 ### Com Usuários
 - Cada perfil de líder está vinculado a **1 usuário**
@@ -688,4 +747,9 @@ interface LeaderMiniDto {
 ---
 
 **Última atualização:** 2024-12-06
+
+**Mudanças recentes:**
+- ⭐ **Atualizado:** Líderes agora podem estar em **múltiplas equipes** (ManyToMany)
+- ⭐ **Atualizado:** `LeaderResponseDto` agora retorna `shelters` (array) ao invés de `shelter` (singular)
+- ⭐ **Atualizado:** Ao vincular líder a equipe, ele é adicionado sem remover de outras equipes
 

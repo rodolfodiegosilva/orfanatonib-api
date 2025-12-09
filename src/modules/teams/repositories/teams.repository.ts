@@ -47,19 +47,34 @@ export class TeamsRepository {
       if (dto.leaderProfileIds && dto.leaderProfileIds.length > 0) {
         const leaders = await txLeader.find({
           where: { id: In(dto.leaderProfileIds) },
+          relations: ['teams'],
         });
         for (const leader of leaders) {
-          leader.team = savedTeam as any;
-          await txLeader.save(leader);
+          // Adicionar a equipe à lista de equipes do líder (sem remover as outras)
+          if (!leader.teams) {
+            leader.teams = [];
+          }
+          if (!leader.teams.some(t => t.id === savedTeam.id)) {
+            leader.teams.push(savedTeam as any);
+            await txLeader.save(leader);
+          }
         }
       }
 
       // Atribuir professores se fornecidos
+      // IMPORTANTE: Um professor só pode estar em UMA equipe
       if (dto.teacherProfileIds && dto.teacherProfileIds.length > 0) {
         const teachers = await txTeacher.find({
           where: { id: In(dto.teacherProfileIds) },
+          relations: ['team'],
         });
         for (const teacher of teachers) {
+          // Se o professor já está em outra equipe, remover primeiro
+          if (teacher.team && teacher.team.id !== savedTeam.id) {
+            teacher.team = null as any;
+            await txTeacher.save(teacher);
+          }
+          // Atribuir à nova equipe
           teacher.team = savedTeam as any;
           await txTeacher.save(teacher);
         }
@@ -107,23 +122,34 @@ export class TeamsRepository {
 
       // Atualizar líderes se fornecido
       if (dto.leaderProfileIds !== undefined) {
-        // Remover líderes atuais da equipe
-        const currentLeaders = await txLeader.find({
-          where: { team: { id } },
-        });
+        // Buscar líderes atuais da equipe através da relação ManyToMany
+        const currentLeaders = await txLeader
+          .createQueryBuilder('leader')
+          .innerJoin('leader.teams', 'team', 'team.id = :teamId', { teamId: id })
+          .getMany();
+
+        // Remover a equipe dos líderes atuais
         for (const leader of currentLeaders) {
-          leader.team = null as any;
-          await txLeader.save(leader);
+          if (leader.teams) {
+            leader.teams = leader.teams.filter(t => t.id !== id);
+            await txLeader.save(leader);
+          }
         }
 
-        // Adicionar novos líderes
+        // Adicionar novos líderes à equipe
         if (dto.leaderProfileIds.length > 0) {
           const leaders = await txLeader.find({
             where: { id: In(dto.leaderProfileIds) },
+            relations: ['teams'],
           });
           for (const leader of leaders) {
-            leader.team = team as any;
-            await txLeader.save(leader);
+            if (!leader.teams) {
+              leader.teams = [];
+            }
+            if (!leader.teams.some(t => t.id === id)) {
+              leader.teams.push(team as any);
+              await txLeader.save(leader);
+            }
           }
         }
       }
@@ -140,11 +166,19 @@ export class TeamsRepository {
         }
 
         // Adicionar novos professores
+        // IMPORTANTE: Um professor só pode estar em UMA equipe
         if (dto.teacherProfileIds.length > 0) {
           const teachers = await txTeacher.find({
             where: { id: In(dto.teacherProfileIds) },
+            relations: ['team'],
           });
           for (const teacher of teachers) {
+            // Se o professor já está em outra equipe (diferente da atual), remover primeiro
+            if (teacher.team && teacher.team.id !== id) {
+              teacher.team = null as any;
+              await txTeacher.save(teacher);
+            }
+            // Atribuir à nova equipe
             teacher.team = team as any;
             await txTeacher.save(teacher);
           }
@@ -166,13 +200,17 @@ export class TeamsRepository {
       const txTeacher = manager.withRepository(this.teacherRepo);
       const txTeam = manager.withRepository(this.teamRepo);
 
-      // Remover líderes da equipe
-      const leaders = await txLeader.find({
-        where: { team: { id } },
-      });
+      // Remover líderes da equipe através da relação ManyToMany
+      const leaders = await txLeader
+        .createQueryBuilder('leader')
+        .innerJoin('leader.teams', 'team', 'team.id = :teamId', { teamId: id })
+        .getMany();
+      
       for (const leader of leaders) {
-        leader.team = null as any;
-        await txLeader.save(leader);
+        if (leader.teams) {
+          leader.teams = leader.teams.filter(t => t.id !== id);
+          await txLeader.save(leader);
+        }
       }
 
       // Remover professores da equipe

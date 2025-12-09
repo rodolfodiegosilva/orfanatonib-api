@@ -12,7 +12,7 @@ export class LeaderSimpleListDto {
   name!: string;
 
   @Expose()
-  @Transform(({ obj }) => !!obj.team)
+  @Transform(({ obj }) => !!(obj.teams && obj.teams.length > 0))
   vinculado!: boolean;
 }
 

@@ -64,7 +64,8 @@ Professor → Equipe → Abrigo
 ### 📌 Regras Importantes
 
 1. **Relacionamento com Equipe:**
-   - Um professor pode pertencer a apenas **1 equipe** (ou nenhuma)
+   - ⭐ **Um professor pode pertencer a apenas 1 equipe** (ou nenhuma) - ManyToOne
+   - ⭐ **Um professor NÃO pode estar em múltiplas equipes** ou múltiplos abrigos
    - Uma equipe pode ter **múltiplos professores**
    - Uma equipe pertence a **1 abrigo**
    - Um abrigo pode ter **múltiplas equipes**
@@ -73,11 +74,13 @@ Professor → Equipe → Abrigo
 
 2. **Relacionamento com Abrigo:**
    - **Professores NÃO têm relacionamento direto com abrigos**, apenas através de equipes
+   - ⭐ **Um professor pode estar em apenas 1 abrigo** (através de sua única equipe)
    - Para vincular um professor a um abrigo, você deve vinculá-lo a uma equipe do abrigo
 
 3. **Vinculação:**
-   - Se o professor já estiver vinculado a outra equipe, será automaticamente movido para a nova
+   - ⭐ Se o professor já estiver vinculado a outra equipe, será **automaticamente removido** da equipe anterior e movido para a nova
    - Se a equipe não existir, será criada automaticamente
+   - ⚠️ **Importante:** Ao vincular um professor a uma nova equipe, ele perde o vínculo com a equipe anterior
 
 ---
 
@@ -361,8 +364,9 @@ Authorization: Bearer {token}
 **Comportamento:**
 - ✅ Busca a equipe com o `numberTeam` especificado no abrigo
 - ✅ Se a equipe não existir, cria uma nova equipe automaticamente
-- ✅ Se o professor já estiver vinculado a outra equipe, remove da anterior e vincula à nova
+- ⭐ Se o professor já estiver vinculado a outra equipe, **remove automaticamente** da equipe anterior e vincula à nova
 - ✅ Se o professor não estiver vinculado, apenas vincula à equipe
+- ⚠️ **Importante:** Um professor só pode estar em 1 equipe por vez - ao vincular a uma nova, perde o vínculo com a anterior
 
 **Resposta:** `TeacherResponseDto`
 
@@ -641,9 +645,11 @@ interface TeacherMiniDto {
 ## ⚠️ Regras e Validações
 
 1. **Um professor por equipe:**
-   - Um professor pode pertencer a apenas **1 equipe** (ou nenhuma)
-   - Se você adicionar um professor a uma nova equipe, ele será automaticamente removido da equipe anterior
+   - ⭐ **Um professor pode pertencer a apenas 1 equipe** (ou nenhuma) - ManyToOne
+   - ⭐ **Um professor NÃO pode estar em múltiplas equipes** ou múltiplos abrigos simultaneamente
+   - Se você adicionar um professor a uma nova equipe, ele será **automaticamente removido** da equipe anterior
    - **Não há relacionamento direto** entre professor e abrigo - sempre através de equipe
+   - ⚠️ **Diferente de líderes:** Enquanto líderes podem estar em múltiplas equipes, professores só podem estar em 1 equipe
 
 2. **Criação de equipe:**
    - Ao vincular um professor a um abrigo sem equipe correspondente, uma nova equipe será criada automaticamente
@@ -669,12 +675,14 @@ interface TeacherMiniDto {
 
 ### Com Abrigos
 - Professores estão vinculados a abrigos **através de equipes**
+- ⭐ **Um professor pode estar em apenas 1 abrigo** (através de sua única equipe)
 - Um abrigo pode ter múltiplas equipes
 - Cada equipe pode ter múltiplos professores
 
 ### Com Líderes
 - Professores e líderes podem estar na mesma equipe
-- Um professor pode ver o líder de sua equipe na resposta (`shelter.leader`)
+- ⭐ **Diferente de professores:** Líderes podem estar em múltiplas equipes, professores apenas em 1
+- Um professor pode ver os líderes de sua equipe na resposta (`shelter.leader`)
 
 ### Com Usuários
 - Cada perfil de professor está vinculado a **1 usuário**
@@ -684,4 +692,8 @@ interface TeacherMiniDto {
 ---
 
 **Última atualização:** 2024-12-06
+
+**Nota importante:**
+- ⭐ **Professores continuam ManyToOne:** Um professor pode estar em apenas 1 equipe de 1 abrigo
+- ⚠️ **Diferente de líderes:** Enquanto líderes podem estar em múltiplas equipes (ManyToMany), professores só podem estar em 1 equipe
 

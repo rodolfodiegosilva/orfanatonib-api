@@ -44,7 +44,8 @@ export class ShelterMiniWithCoordinatorDto {
 
   @Expose()
   @Type(() => TeamMiniDto)
-  team!: TeamMiniDto | null;
+  @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  teams!: TeamMiniDto[];
 
   @Expose()
   @Type(() => TeacherMiniDto)
@@ -77,30 +78,54 @@ export class LeaderResponseDto {
   @Expose()
   @Type(() => ShelterMiniWithCoordinatorDto)
   @Transform(({ obj }) => {
-    // Se o líder não tem equipe, não tem abrigo
-    if (!obj.team || !obj.team.shelter) {
-      return null;
+    // Se o líder não tem equipes, retornar array vazio
+    if (!obj.teams || !Array.isArray(obj.teams) || obj.teams.length === 0) {
+      return [];
     }
 
-    // Montar o shelter com a equipe dentro
-    return {
-      id: obj.team.shelter.id,
-      name: obj.team.shelter.name,
-      team: {
-        id: obj.team.id,
-        numberTeam: obj.team.numberTeam,
-        description: obj.team.description,
-      },
-      teachers: obj.team.teachers && Array.isArray(obj.team.teachers)
-        ? obj.team.teachers.map((t: any) => ({
-            id: t.id,
-            active: t.active,
-            user: t.user,
-          }))
-        : [],
-    };
+    // Agrupar equipes por abrigo
+    const sheltersMap = new Map<string, ShelterMiniWithCoordinatorDto>();
+
+    for (const team of obj.teams) {
+      if (!team || !team.shelter) continue;
+
+      const shelterId = team.shelter.id;
+      
+      if (!sheltersMap.has(shelterId)) {
+        sheltersMap.set(shelterId, {
+          id: team.shelter.id,
+          name: team.shelter.name,
+          teams: [],
+          teachers: [],
+        });
+      }
+
+      const shelter = sheltersMap.get(shelterId)!;
+      
+      // Adicionar a equipe ao abrigo
+      shelter.teams!.push({
+        id: team.id,
+        numberTeam: team.numberTeam,
+        description: team.description,
+      });
+
+      // Adicionar professores da equipe (evitar duplicatas)
+      if (team.teachers && Array.isArray(team.teachers)) {
+        for (const teacher of team.teachers) {
+          if (!shelter.teachers!.some(t => t.id === teacher.id)) {
+            shelter.teachers!.push({
+              id: teacher.id,
+              active: teacher.active,
+              user: teacher.user,
+            });
+          }
+        }
+      }
+    }
+
+    return Array.from(sheltersMap.values());
   })
-  shelter!: ShelterMiniWithCoordinatorDto | null;
+  shelters!: ShelterMiniWithCoordinatorDto[];
 
   @Expose()
   createdAt!: Date;

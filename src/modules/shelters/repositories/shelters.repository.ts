@@ -43,6 +43,9 @@ export class SheltersRepository {
 
     @InjectRepository(TeacherProfileEntity)
     private readonly teacherProfileRepo: Repository<TeacherProfileEntity>,
+
+    @InjectRepository(TeamEntity)
+    private readonly teamRepo: Repository<TeamEntity>,
   ) { }
 
   private buildShelterBaseQB(manager?: EntityManager): SelectQueryBuilder<ShelterEntity> {
@@ -120,8 +123,9 @@ export class SheltersRepository {
           LOWER(address.district) LIKE LOWER(:searchString) OR
           EXISTS (
             SELECT 1 FROM teams t
-            JOIN leader_profiles lp ON lp.team_id = t.id
-          JOIN users lu ON lu.id = lp.user_id
+            JOIN leader_teams lt ON lt.team_id = t.id
+            JOIN leader_profiles lp ON lp.id = lt.leader_id
+            JOIN users lu ON lu.id = lp.user_id
             WHERE t.shelter_id = shelter.id
               AND LOWER(lu.name) LIKE LOWER(:searchString)
         ) OR EXISTS (
@@ -205,14 +209,15 @@ export class SheltersRepository {
       ORDER BY t.numberTeam ASC
     `, [id]);
 
-    // Buscar líderes através de teams usando SQL raw
+    // Buscar líderes através de teams usando SQL raw (usando tabela de junção ManyToMany)
     const leadersData = await manager.query(`
-      SELECT lp.id, lp.active, lp.createdAt, lp.updatedAt, lp.user_id, lp.team_id,
+      SELECT lp.id, lp.active, lp.createdAt, lp.updatedAt, lp.user_id,
              u.id as user_id, u.name, u.email, u.phone, u.active as user_active, u.completed, u.commonUser, u.role,
              t.id as team_id, t.numberTeam as team_numberTeam
       FROM leader_profiles lp
       JOIN users u ON u.id = lp.user_id
-      JOIN teams t ON t.id = lp.team_id
+      JOIN leader_teams lt ON lt.leader_id = lp.id
+      JOIN teams t ON t.id = lt.team_id
       WHERE t.shelter_id = ?
     `, [id]);
 
@@ -400,6 +405,7 @@ export class SheltersRepository {
       const txTeacher = manager.withRepository(this.teacherProfileRepo);
       const txLeader = manager.withRepository(this.leaderRepo);
       const txAddress = manager.withRepository(this.addressRepo);
+      const txTeam = manager.withRepository(this.teamRepo);
 
       const shelter = await txShelter.findOne({
         where: { id },
@@ -407,13 +413,48 @@ export class SheltersRepository {
       });
       if (!shelter) throw new NotFoundException('Shelter não encontrado');
 
-      // ❌ REMOVIDO: Desvinculação direta de teachers e leaders
-      // Agora isso é feito através de Teams (CASCADE)
+      // Buscar todas as equipes do abrigo
+      const teams = await txTeam.find({
+        where: { shelter: { id } },
+      });
 
+      // Para cada equipe, limpar relacionamentos antes de deletar
+      for (const team of teams) {
+        // 1. Remover líderes da equipe (ManyToMany - tabela leader_teams)
+        const leaders = await txLeader
+          .createQueryBuilder('leader')
+          .innerJoinAndSelect('leader.teams', 'team', 'team.id = :teamId', { teamId: team.id })
+          .getMany();
+        
+        for (const leader of leaders) {
+          // Remover a equipe da lista de equipes do líder
+          if (leader.teams && leader.teams.length > 0) {
+            leader.teams = leader.teams.filter(t => t.id !== team.id);
+            await txLeader.save(leader);
+          }
+        }
+
+        // 2. Remover professores da equipe (ManyToOne - setar team_id = null)
+        const teachers = await txTeacher.find({
+          where: { team: { id: team.id } },
+        });
+        
+        for (const teacher of teachers) {
+          teacher.team = null as any;
+          await txTeacher.save(teacher);
+        }
+      }
+
+      // 3. Deletar todas as equipes do abrigo
+      if (teams.length > 0) {
+        await txTeam.remove(teams);
+      }
+
+      // 4. Deletar o abrigo
       const addressId = shelter.address?.id;
-
       await txShelter.delete(shelter.id);
 
+      // 5. Deletar o endereço se existir
       if (addressId) {
         await txAddress.delete(addressId);
       }
