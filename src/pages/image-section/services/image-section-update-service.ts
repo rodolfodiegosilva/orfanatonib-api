@@ -45,7 +45,7 @@ export class ImageSectionUpdateService {
         throw new NotFoundException('Seção não encontrada');
       }
 
-      const pageIdFromEnv = this.configService.get<string>('FEED_CLUBINHO_PAGE_ID');
+      const pageIdFromEnv = this.configService.get<string>('FEED_ORFANATO_PAGE_ID');
       const page = await this.pageRepo.findOneBy({ id: pageIdFromEnv });
       if (!page) {
         throw new NotFoundException('Página padrão não encontrada');

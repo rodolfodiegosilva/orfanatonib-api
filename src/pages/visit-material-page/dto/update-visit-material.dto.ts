@@ -3,12 +3,14 @@ import {
   IsBoolean,
   IsOptional,
   IsString,
+  IsEnum,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MediaItemDto } from 'src/share/share-dto/media-item-dto';
+import { TestamentType } from '../entities/visit-material-page.entity';
 
-export class UpdateWeekMaterialsPageDto {
+export class UpdateVisitMaterialsPageDto {
   @IsString({ message: 'O campo "id" da página deve ser uma string.' })
   id: string;
 
@@ -17,6 +19,10 @@ export class UpdateWeekMaterialsPageDto {
 
   @IsString({ message: 'O campo "pageSubtitle" da página deve ser uma string.' })
   pageSubtitle: string;
+
+  @IsOptional()
+  @IsEnum(TestamentType, { message: 'O campo "testament" deve ser OLD_TESTAMENT ou NEW_TESTAMENT.' })
+  testament?: TestamentType;
 
   @IsString({ message: 'O campo "pageDescription" da página deve ser uma string.' })
   pageDescription: string;
@@ -48,3 +54,4 @@ export class UpdateWeekMaterialsPageDto {
   @Type(() => MediaItemDto)
   audios?: MediaItemDto[];
 }
+

@@ -74,7 +74,6 @@ node automations/shelters/test-shelters-with-media.js
 
 - **Guia Completo:** `../../docs/documentation/SHELTERS_COMPLETE_GUIDE.md`
 - **Collection Postman:** `../../docs/collections/Shelters_API_Collection.postman_collection.json`
-- **Migration SQL:** `../../database-migrations/add-routeId-to-shelters.sql`
 
 ## ⚠️ Pré-requisitos
 

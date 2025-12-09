@@ -1,52 +1,79 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { RouteService } from 'src/route/route.service';
 import { RouteType } from 'src/route/route-page.entity';
 import { MediaTargetType } from 'src/share/media/media-target-type.enum';
 import { MediaItemProcessor } from 'src/share/media/media-item-processor';
-import { WeekMaterialsPageRepository } from '../week-material.repository';
+import { VisitMaterialsPageRepository } from '../visit-material.repository';
 import { MediaItemEntity, MediaType, UploadType } from 'src/share/media/media-item/media-item.entity';
-import { CreateWeekMaterialsPageDto } from '../dto/create-week-material.dto';
-import { WeekMaterialsPageResponseDTO } from '../dto/week-material-response.dto';
-import { WeekMaterialsPageEntity } from '../entities/week-material-page.entity';
+import { CreateVisitMaterialsPageDto } from '../dto/create-visit-material.dto';
+import { VisitMaterialsPageResponseDTO } from '../dto/visit-material-response.dto';
+import { VisitMaterialsPageEntity, TestamentType } from '../entities/visit-material-page.entity';
 import { MediaItemDto } from 'src/share/share-dto/media-item-dto';
 
 @Injectable()
-export class WeekMaterialsPageCreateService {
-  private readonly logger = new Logger(WeekMaterialsPageCreateService.name);
+export class VisitMaterialsPageCreateService {
+  private readonly logger = new Logger(VisitMaterialsPageCreateService.name);
 
   constructor(
     private readonly dataSource: DataSource,
-    private readonly repo: WeekMaterialsPageRepository,
+    private readonly repo: VisitMaterialsPageRepository,
     private readonly s3: AwsS3Service,
     private readonly routeService: RouteService,
     private readonly mediaItemProcessor: MediaItemProcessor,
   ) { }
 
-  async createWeekMaterialsPage(
-    dto: CreateWeekMaterialsPageDto,
+  async createFromRaw(
+    raw: string,
+    files: Express.Multer.File[],
+  ): Promise<VisitMaterialsPageResponseDTO> {
+    this.logger.debug('📥 Processando dados brutos para criação de página');
+
+    if (!raw) {
+      throw new BadRequestException('visitMaterialsPageData é obrigatório.');
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      const dto: CreateVisitMaterialsPageDto = await new ValidationPipe({ transform: true }).transform(parsed, {
+        type: 'body',
+        metatype: CreateVisitMaterialsPageDto,
+      });
+
+      const filesDict = Object.fromEntries(files.map((f) => [f.fieldname, f]));
+
+      return this.createVisitMaterialsPage(dto, filesDict);
+    } catch (err) {
+      this.logger.error('❌ Erro ao processar dados para criação', err);
+      throw new BadRequestException('Erro ao criar a página de materiais: ' + err.message);
+    }
+  }
+
+  async createVisitMaterialsPage(
+    dto: CreateVisitMaterialsPageDto,
     filesDict: Record<string, Express.Multer.File>,
-  ): Promise<WeekMaterialsPageResponseDTO> {
+  ): Promise<VisitMaterialsPageResponseDTO> {
     this.logger.debug(`🚧 Criando nova página: "${dto.pageTitle}"`);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    let savedPage: WeekMaterialsPageEntity;
+    let savedPage: VisitMaterialsPageEntity;
     let mediaItems: MediaItemEntity[] = [];
 
     try {
-      const page = queryRunner.manager.create(WeekMaterialsPageEntity, {
+      const page = queryRunner.manager.create(VisitMaterialsPageEntity, {
         title: dto.pageTitle,
         subtitle: dto.pageSubtitle,
+        testament: dto.testament || TestamentType.OLD_TESTAMENT,
         description: dto.pageDescription,
       });
       savedPage = await queryRunner.manager.save(page);
       this.logger.debug(`💾 Página salva. ID=${savedPage.id}`);
 
-      const path = await this.routeService.generateAvailablePath(dto.pageTitle, 'materiais_semanal_');
+      const path = await this.routeService.generateAvailablePath(dto.pageTitle, 'materiais_visita_');
       const route = await this.routeService.createRouteWithManager(queryRunner.manager, {
         title: dto.pageTitle,
         subtitle: dto.pageSubtitle,
@@ -55,7 +82,7 @@ export class WeekMaterialsPageCreateService {
         type: RouteType.PAGE,
         entityId: savedPage.id,
         idToFetch: savedPage.id,
-        entityType: 'WeekMaterialsPage',
+        entityType: 'VisitMaterialsPage',
         image: 'https://clubinho-nib.s3.us-east-1.amazonaws.com/production/cards/card_materiais.png',
         public: true,
         current: false
@@ -76,7 +103,7 @@ export class WeekMaterialsPageCreateService {
       mediaItems = await this.mediaItemProcessor.processMediaItemsPolymorphic(
         adjustedMediaItems,
         savedPage.id,
-        MediaTargetType.WeekMaterialsPage,
+        MediaTargetType.VisitMaterialsPage,
         filesDict,
         this.s3.upload.bind(this.s3),
       );
@@ -84,7 +111,7 @@ export class WeekMaterialsPageCreateService {
       await queryRunner.commitTransaction();
       this.logger.debug(`✅ Página criada com sucesso. ID=${savedPage.id}`);
 
-      return WeekMaterialsPageResponseDTO.fromEntity(savedPage, mediaItems);
+      return VisitMaterialsPageResponseDTO.fromEntity(savedPage, mediaItems);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.logger.error('❌ Erro ao criar página. Rollback executado.', error);
@@ -133,3 +160,4 @@ export class WeekMaterialsPageCreateService {
     return mediaItems;
   }
 }
+

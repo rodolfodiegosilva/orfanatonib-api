@@ -8,7 +8,7 @@ import { DatabaseModule } from '../database/database.module';
 import { MeditationModule } from './meditation/meditation.module';
 import { ImageModule } from './pages/image-page/image-page.module';
 import { VideosPageModule } from './pages/video-page/video-page.module';
-import { WeekMaterialsPageModule } from './pages/week-material-page/week-material-page.module';
+import { VisitMaterialsPageModule } from './pages/visit-material-page/visit-material-page.module';
 import { ContactModule } from './contact/contact.module';
 import { EventModule } from './pages/event-page/event.module';
 import { CommentModule } from './comment/comment.module';
@@ -53,7 +53,7 @@ function getEnvFilePath(): string {
     UserModule,
     AuthModule,
     VideosPageModule,
-    WeekMaterialsPageModule,
+    VisitMaterialsPageModule,
     MeditationModule,
     ContactModule,
     EventModule,

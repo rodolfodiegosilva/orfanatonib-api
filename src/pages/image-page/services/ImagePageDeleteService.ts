@@ -3,7 +3,9 @@ import {
     Logger,
     NotFoundException,
     BadRequestException,
+    ForbiddenException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { RouteService } from 'src/route/route.service';
@@ -20,11 +22,20 @@ export class ImagePageDeleteService {
         private readonly routeService: RouteService,
         private readonly awsS3Service: AwsS3Service,
         private readonly mediaItemProcessor: MediaItemProcessor,
+        private readonly configService: ConfigService,
     ) {
     }
 
     async removePage(id: string): Promise<void> {
         this.logger.log(`🚀 Iniciando remoção da página de imagens com ID: ${id}`);
+        
+        // Verificar se é a página protegida do feed do orfanato
+        const protectedPageId = this.configService.get<string>('FEED_ORFANATO_PAGE_ID');
+        if (protectedPageId && id === protectedPageId) {
+            this.logger.warn(`⚠️ Tentativa de excluir página protegida: ID=${id}`);
+            throw new ForbiddenException('Esta página não pode ser excluída pois é a página do feed do orfanato.');
+        }
+
         const queryRunner = this.dataSource.createQueryRunner();
         this.logger.debug('🔗 Conectando ao QueryRunner');
         await queryRunner.connect();

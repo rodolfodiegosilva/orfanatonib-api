@@ -9,12 +9,12 @@ import {
   import { RouteService } from 'src/route/route.service';
   import { MediaTargetType } from 'src/share/media/media-target-type.enum';
   import { MediaItemProcessor } from 'src/share/media/media-item-processor';
-  import { WeekMaterialsPageEntity } from '../entities/week-material-page.entity';
+  import { VisitMaterialsPageEntity } from '../entities/visit-material-page.entity';
   import { MediaItemEntity } from 'src/share/media/media-item/media-item.entity';
   
   @Injectable()
-  export class WeekMaterialsPageRemoveService {
-    private readonly logger = new Logger(WeekMaterialsPageRemoveService.name);
+  export class VisitMaterialsPageRemoveService {
+    private readonly logger = new Logger(VisitMaterialsPageRemoveService.name);
   
     constructor(
       private readonly dataSource: DataSource,
@@ -23,7 +23,7 @@ import {
       private readonly mediaItemProcessor: MediaItemProcessor,
     ) {}
   
-    async removeWeekMaterial(id: string): Promise<void> {
+    async removeVisitMaterial(id: string): Promise<void> {
       const queryRunner = this.dataSource.createQueryRunner();
       await queryRunner.connect();
       await queryRunner.startTransaction();
@@ -47,7 +47,7 @@ import {
           }
         }
   
-        await queryRunner.manager.remove(WeekMaterialsPageEntity, page);
+        await queryRunner.manager.remove(VisitMaterialsPageEntity, page);
         this.logger.debug(`🗑️ Página ID=${id} removida do banco`);
   
         await queryRunner.commitTransaction();
@@ -61,8 +61,8 @@ import {
       }
     }
   
-    private async validatePage(id: string, queryRunner: QueryRunner): Promise<WeekMaterialsPageEntity> {
-      const page = await queryRunner.manager.findOne(WeekMaterialsPageEntity, {
+    private async validatePage(id: string, queryRunner: QueryRunner): Promise<VisitMaterialsPageEntity> {
+      const page = await queryRunner.manager.findOne(VisitMaterialsPageEntity, {
         where: { id },
         relations: ['route'],
       });
@@ -76,7 +76,7 @@ import {
     private async validateMedia(pageId: string, queryRunner: QueryRunner): Promise<MediaItemEntity[]> {
       const mediaItems = await this.mediaItemProcessor.findMediaItemsByTarget(
         pageId,
-        MediaTargetType.WeekMaterialsPage,
+        MediaTargetType.VisitMaterialsPage,
       );
       this.logger.debug(`🔍 Encontradas ${mediaItems.length} mídias para página ID=${pageId}`);
       return mediaItems;

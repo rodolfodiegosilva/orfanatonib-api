@@ -1,5 +1,5 @@
 export enum MediaTargetType {
-  WeekMaterialsPage = 'WeekMaterialsPage',
+  VisitMaterialsPage = 'VisitMaterialsPage',
   VideosPage = 'VideosPage',
   ImagesPage = 'ImagesPage',  
   ImagesSection = 'ImagesSection',

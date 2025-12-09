@@ -5,18 +5,22 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { RouteService } from 'src/route/route.service';
 import { RouteEntity, RouteType } from 'src/route/route-page.entity';
 import { MediaTargetType } from 'src/share/media/media-target-type.enum';
 import { MediaItemProcessor } from 'src/share/media/media-item-processor';
 import { MediaItemEntity, MediaType, UploadType } from 'src/share/media/media-item/media-item.entity';
-import { WeekMaterialsPageEntity } from '../entities/week-material-page.entity';
+import { VisitMaterialsPageEntity } from '../entities/visit-material-page.entity';
 import { MediaItemDto } from 'src/share/share-dto/media-item-dto';
+import { UpdateVisitMaterialsPageDto } from '../dto/update-visit-material.dto';
+import { VisitMaterialsPageResponseDTO } from '../dto/visit-material-response.dto';
 
 @Injectable()
-export class WeekMaterialsPageUpdateService {
-  private readonly logger = new Logger(WeekMaterialsPageUpdateService.name);
+export class VisitMaterialsPageUpdateService {
+  private readonly logger = new Logger(VisitMaterialsPageUpdateService.name);
 
   constructor(
     private readonly dataSource: DataSource,
@@ -26,11 +30,48 @@ export class WeekMaterialsPageUpdateService {
   ) {
   }
 
-  async updateWeekMaterialsPage(
+  async updateFromRaw(
+    id: string,
+    raw: string,
+    files: Express.Multer.File[],
+  ): Promise<VisitMaterialsPageResponseDTO> {
+    this.logger.debug(`✏️ Processando dados brutos para atualização da página ID=${id}`);
+
+    if (!raw) {
+      throw new BadRequestException('visitMaterialsPageData é obrigatório.');
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      const dto = plainToInstance(UpdateVisitMaterialsPageDto, parsed);
+      const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
+
+      if (errors.length > 0) {
+        throw new BadRequestException('Dados inválidos na requisição');
+      }
+
+      const filesDict = Object.fromEntries(files.map((f) => [f.fieldname, f]));
+
+      const result = await this.updateVisitMaterialsPage(id, dto, filesDict);
+      
+      // Buscar mídias atualizadas para incluir no response
+      const mediaItems = await this.mediaItemProcessor.findMediaItemsByTarget(
+        result.id,
+        MediaTargetType.VisitMaterialsPage,
+      );
+
+      return VisitMaterialsPageResponseDTO.fromEntity(result, mediaItems);
+    } catch (err) {
+      this.logger.error(`❌ Erro ao processar dados para atualização ID=${id}`, err);
+      throw new BadRequestException('Erro ao atualizar a página de materiais: ' + err.message);
+    }
+  }
+
+  async updateVisitMaterialsPage(
     id: string,
     dto: any,
     filesDict: Record<string, Express.Multer.File>,
-  ): Promise<WeekMaterialsPageEntity> {
+  ): Promise<VisitMaterialsPageEntity> {
     this.logger.debug(`🚀 Iniciando atualização da página ID=${id}`);
     const queryRunner = this.dataSource.createQueryRunner();
     this.logger.debug('🔗 Conectando ao QueryRunner');
@@ -46,8 +87,8 @@ export class WeekMaterialsPageUpdateService {
       const existingImages = await this.validateImageMedia(existingPage.id);
       const existingAudios = await this.validateAudioMedia(existingPage.id);
 
-      const { pageTitle, pageSubtitle, pageDescription, videos, documents, images, audios, currentWeek } = dto;
-      this.logger.debug(`📋 Dados extraídos: title="${pageTitle}", subtitle="${pageSubtitle}", vídeos=${videos?.length || 0}, documentos=${documents?.length || 0}, imagens=${images?.length || 0}, áudios=${audios?.length || 0}`);
+      const { pageTitle, pageSubtitle, pageDescription, videos, documents, images, audios, currentWeek, testament } = dto;
+      this.logger.debug(`📋 Dados extraídos: title="${pageTitle}", subtitle="${pageSubtitle}", testament="${testament}", vídeos=${videos?.length || 0}, documentos=${documents?.length || 0}, imagens=${images?.length || 0}, áudios=${audios?.length || 0}`);
 
       await this.deleteVideoMedia(existingVideos, videos);
       await this.deleteDocumentMedia(existingDocuments, documents);
@@ -89,8 +130,11 @@ export class WeekMaterialsPageUpdateService {
       existingPage.subtitle = pageSubtitle;
       existingPage.description = pageDescription;
       existingPage.currentWeek = currentWeek;
+      if (testament !== undefined) {
+        existingPage.testament = testament;
+      }
       existingPage.route = routeUpsert;
-      const updatedPage = await queryRunner.manager.save(WeekMaterialsPageEntity, existingPage);
+      const updatedPage = await queryRunner.manager.save(VisitMaterialsPageEntity, existingPage);
 
       await queryRunner.commitTransaction();
       this.logger.debug(`✅ Página atualizada com sucesso. ID=${updatedPage.id}`);
@@ -107,7 +151,7 @@ export class WeekMaterialsPageUpdateService {
   private async upsertRoute(
     routeId: string,
     pageData: { pageTitle: string; pageSubtitle: string; pageDescription: string, currentWeek: boolean },
-    weekMaterialsPageId: string,
+    visitMaterialsPageId: string,
     existingRoutePublic: boolean,
     existingRouteCurrent?: boolean,
   ): Promise<RouteEntity> {
@@ -116,13 +160,13 @@ export class WeekMaterialsPageUpdateService {
       title: pageData.pageTitle,
       subtitle: pageData.pageSubtitle,
       description: pageData.pageDescription,
-      idToFetch: weekMaterialsPageId,
-      entityType: 'WeekMaterialsPage',
-      entityId: weekMaterialsPageId,
+      idToFetch: visitMaterialsPageId,
+      entityType: 'VisitMaterialsPage',
+      entityId: visitMaterialsPageId,
       public: existingRoutePublic,
       current: existingRouteCurrent,
       type: RouteType.PAGE,
-      path: 'materiais_semanal_',
+      path: 'materiais_visita_',
       image: 'https://clubinho-nib.s3.us-east-1.amazonaws.com/production/cards/card_materiais.png',
     };
     const savedRoute = await this.routeService.upsertRoute(routeId, routeData);
@@ -130,9 +174,9 @@ export class WeekMaterialsPageUpdateService {
     return savedRoute;
   }
 
-  private async validatePage(id: string, queryRunner: QueryRunner): Promise<WeekMaterialsPageEntity> {
+  private async validatePage(id: string, queryRunner: QueryRunner): Promise<VisitMaterialsPageEntity> {
     this.logger.debug(`🔍 Buscando página ID=${id}`);
-    const page = await queryRunner.manager.findOne(WeekMaterialsPageEntity, {
+    const page = await queryRunner.manager.findOne(VisitMaterialsPageEntity, {
       where: { id },
       relations: ['route'],
     });
@@ -157,7 +201,7 @@ export class WeekMaterialsPageUpdateService {
 
   private async validateVideoMedia(pageId: string): Promise<MediaItemEntity[]> {
     this.logger.debug(`🔍 Buscando vídeos para página ID=${pageId}`);
-    const items = await this.mediaItemProcessor.findMediaItemsByTarget(pageId, MediaTargetType.WeekMaterialsPage);
+    const items = await this.mediaItemProcessor.findMediaItemsByTarget(pageId, MediaTargetType.VisitMaterialsPage);
     const videos = items.filter(item => item.mediaType === MediaType.VIDEO);
     this.logger.debug(`✅ Encontrados ${videos.length} vídeos`);
     return videos;
@@ -165,7 +209,7 @@ export class WeekMaterialsPageUpdateService {
 
   private async validateDocumentMedia(pageId: string): Promise<MediaItemEntity[]> {
     this.logger.debug(`🔍 Buscando documentos para página ID=${pageId}`);
-    const items = await this.mediaItemProcessor.findMediaItemsByTarget(pageId, MediaTargetType.WeekMaterialsPage);
+    const items = await this.mediaItemProcessor.findMediaItemsByTarget(pageId, MediaTargetType.VisitMaterialsPage);
     const documents = items.filter(item => item.mediaType === MediaType.DOCUMENT);
     this.logger.debug(`✅ Encontrados ${documents.length} documentos`);
     return documents;
@@ -173,7 +217,7 @@ export class WeekMaterialsPageUpdateService {
 
   private async validateImageMedia(pageId: string): Promise<MediaItemEntity[]> {
     this.logger.debug(`🔍 Buscando imagens para página ID=${pageId}`);
-    const items = await this.mediaItemProcessor.findMediaItemsByTarget(pageId, MediaTargetType.WeekMaterialsPage);
+    const items = await this.mediaItemProcessor.findMediaItemsByTarget(pageId, MediaTargetType.VisitMaterialsPage);
     const images = items.filter(item => item.mediaType === MediaType.IMAGE);
     this.logger.debug(`✅ Encontradas ${images.length} imagens`);
     return images;
@@ -181,7 +225,7 @@ export class WeekMaterialsPageUpdateService {
 
   private async validateAudioMedia(pageId: string): Promise<MediaItemEntity[]> {
     this.logger.debug(`🔍 Buscando áudios para página ID=${pageId}`);
-    const items = await this.mediaItemProcessor.findMediaItemsByTarget(pageId, MediaTargetType.WeekMaterialsPage);
+    const items = await this.mediaItemProcessor.findMediaItemsByTarget(pageId, MediaTargetType.VisitMaterialsPage);
     const audios = items.filter(item => item.mediaType === MediaType.AUDIO);
     this.logger.debug(`✅ Encontrados ${audios.length} áudios`);
     return audios;
@@ -261,7 +305,7 @@ export class WeekMaterialsPageUpdateService {
     const media = this.mediaItemProcessor.buildBaseMediaItem(
       { ...videoInput, mediaType: MediaType.VIDEO },
       pageId,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
 
     const isUpload = videoInput.uploadType === UploadType.UPLOAD || videoInput.isLocalFile === true;
@@ -314,7 +358,7 @@ export class WeekMaterialsPageUpdateService {
     const media = this.mediaItemProcessor.buildBaseMediaItem(
       { ...documentInput, mediaType: MediaType.DOCUMENT },
       pageId,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
 
     if (documentInput.uploadType === UploadType.UPLOAD || documentInput.isLocalFile === true) {
@@ -359,7 +403,7 @@ export class WeekMaterialsPageUpdateService {
     const media = this.mediaItemProcessor.buildBaseMediaItem(
       { ...imageInput, mediaType: MediaType.IMAGE },
       pageId,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
 
     if (imageInput.uploadType === UploadType.UPLOAD || imageInput.isLocalFile === true) {
@@ -405,7 +449,7 @@ export class WeekMaterialsPageUpdateService {
     const media = this.mediaItemProcessor.buildBaseMediaItem(
       { ...audioInput, mediaType: MediaType.AUDIO },
       pageId,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
 
     if (audioInput.uploadType === UploadType.UPLOAD || audioInput.isLocalFile === true) {
@@ -453,7 +497,7 @@ export class WeekMaterialsPageUpdateService {
     const media = this.mediaItemProcessor.buildBaseMediaItem(
       { ...videoInput, mediaType: MediaType.VIDEO },
       pageId,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
 
     if (videoInput.uploadType === UploadType.UPLOAD && videoInput.isLocalFile && videoInput.fieldKey) {
@@ -506,7 +550,7 @@ export class WeekMaterialsPageUpdateService {
     const media = this.mediaItemProcessor.buildBaseMediaItem(
       { ...documentInput, mediaType: MediaType.DOCUMENT },
       pageId,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
     if (documentInput.uploadType === UploadType.UPLOAD && documentInput.isLocalFile && documentInput.fieldKey) {
       this.logger.debug(`🔍 Verificando documento existente ID=${documentInput.id}`);
@@ -556,7 +600,7 @@ export class WeekMaterialsPageUpdateService {
     const media = this.mediaItemProcessor.buildBaseMediaItem(
       { ...imageInput, mediaType: MediaType.IMAGE },
       pageId,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
     if (imageInput.uploadType === UploadType.UPLOAD && imageInput.isLocalFile && imageInput.fieldKey) {
       this.logger.debug(`🔍 Verificando imagem existente ID=${imageInput.id}`);
@@ -606,7 +650,7 @@ export class WeekMaterialsPageUpdateService {
     const media = this.mediaItemProcessor.buildBaseMediaItem(
       { ...audioInput, mediaType: MediaType.AUDIO },
       pageId,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
     if (audioInput.uploadType === UploadType.UPLOAD && audioInput.isLocalFile && audioInput.fieldKey) {
       this.logger.debug(`🔍 Verificando áudio existente ID=${audioInput.id}`);

@@ -99,6 +99,6 @@ jobs:
             -e TWILIO_AUTH_TOKEN=${{ secrets.STAGING_TWILIO_AUTH_TOKEN }} \
             -e TWILIO_WHATSAPP_FROM=${{ secrets.STAGING_TWILIO_WHATSAPP_FROM }} \
             -e TWILIO_WHATSAPP_TO=${{ secrets.STAGING_TWILIO_WHATSAPP_TO }} \
-            -e FEED_CLUBINHO_PAGE_ID=${{ secrets.STAGING_FEED_CLUBINHO_PAGE_ID }} \
+            -e FEED_ORFANATO_PAGE_ID=${{ secrets.STAGING_FEED_ORFANATO_PAGE_ID }} \
             -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             --name clubinho-api-staging diegoseven/clubinho-api:staging

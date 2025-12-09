@@ -1,9 +1,10 @@
 import { RouteType } from 'src/route/route-page.entity';
-import { WeekMaterialsPageEntity } from '../entities/week-material-page.entity';
+import { VisitMaterialsPageEntity, TestamentType } from '../entities/visit-material-page.entity';
 import { Logger } from '@nestjs/common';
 import { MediaItemEntity, PlatformType, MediaType, UploadType } from 'src/share/media/media-item/media-item.entity';
+import { Expose } from 'class-transformer';
 
-export class weekMediaItemResponseDTO {
+export class VisitMediaItemResponseDTO {
   id: string;
   title: string;
   description: string;
@@ -16,7 +17,7 @@ export class weekMediaItemResponseDTO {
   originalName?: string;
 }
 
-export class weekRouteResponseDTO {
+export class VisitRouteResponseDTO {
   id: string;
   path: string;
   title: string;
@@ -26,32 +27,47 @@ export class weekRouteResponseDTO {
   public: boolean;
 }
 
-export class WeekMaterialsPageResponseDTO {
+export class VisitMaterialsPageResponseDTO {
+  @Expose()
   id: string;
+  @Expose()
   title: string;
+  @Expose()
   subtitle: string;
+  @Expose()
+  testament: TestamentType;
+  @Expose()
   description: string;
+  @Expose()
   currentWeek: boolean;
-  route: weekRouteResponseDTO;
-  videos: weekMediaItemResponseDTO[];
-  documents: weekMediaItemResponseDTO[];
-  images: weekMediaItemResponseDTO[];
-  audios: weekMediaItemResponseDTO[];
+  @Expose()
+  route: VisitRouteResponseDTO;
+  @Expose()
+  videos: VisitMediaItemResponseDTO[];
+  @Expose()
+  documents: VisitMediaItemResponseDTO[];
+  @Expose()
+  images: VisitMediaItemResponseDTO[];
+  @Expose()
+  audios: VisitMediaItemResponseDTO[];
+  @Expose()
   createdAt: Date;
+  @Expose()
   updatedAt: Date;
 
   static fromEntity(
-    entity: WeekMaterialsPageEntity,
+    entity: VisitMaterialsPageEntity,
     mediaItems: MediaItemEntity[] = []
-  ): WeekMaterialsPageResponseDTO {
-    const logger = new Logger(WeekMaterialsPageResponseDTO.name);
+  ): VisitMaterialsPageResponseDTO {
+    const logger = new Logger(VisitMaterialsPageResponseDTO.name);
     logger.debug(`🧩 Convertendo entidade para DTO: ID=${entity.id}`);
 
-    const dto = new WeekMaterialsPageResponseDTO();
+    const dto = new VisitMaterialsPageResponseDTO();
 
     dto.id = entity.id;
     dto.title = entity.title;
     dto.subtitle = entity.subtitle;
+    dto.testament = entity.testament ?? TestamentType.OLD_TESTAMENT; // Garantir que sempre tenha um valor
     dto.description = entity.description;
     dto.createdAt = entity.createdAt;
     dto.updatedAt = entity.updatedAt;
@@ -68,7 +84,7 @@ export class WeekMaterialsPageResponseDTO {
       public: entity.route.public,
     };
 
-    const mapItem = (item: MediaItemEntity): weekMediaItemResponseDTO => {
+    const mapItem = (item: MediaItemEntity): VisitMediaItemResponseDTO => {
       logger.debug(`🎞️ Mapeando mídia: ID=${item.id}, tipo=${item.mediaType}`);
       return {
         id: item.id,
@@ -93,3 +109,4 @@ export class WeekMaterialsPageResponseDTO {
     return dto;
   }
 }
+

@@ -1,49 +1,60 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { WeekMaterialsPageRepository } from '../week-material.repository';
+import { VisitMaterialsPageRepository } from '../visit-material.repository';
 import { MediaItemProcessor } from 'src/share/media/media-item-processor';
-import { WeekMaterialsPageResponseDTO } from '../dto/week-material-response.dto';
-import { WeekMaterialsPageEntity } from '../entities/week-material-page.entity';
+import { VisitMaterialsPageResponseDTO } from '../dto/visit-material-response.dto';
+import { VisitMaterialsPageEntity } from '../entities/visit-material-page.entity';
 import { MediaTargetType } from 'src/share/media/media-target-type.enum';
 import { MediaItemEntity } from 'src/share/media/media-item/media-item.entity';
+import { QueryVisitMaterialsPageDto } from '../dto/query-visit-material-pages.dto';
 
 @Injectable()
-export class WeekMaterialsPageGetService {
-  private readonly logger = new Logger(WeekMaterialsPageGetService.name);
+export class VisitMaterialsPageGetService {
+  private readonly logger = new Logger(VisitMaterialsPageGetService.name);
 
   constructor(
-    private readonly repo: WeekMaterialsPageRepository,
+    private readonly repo: VisitMaterialsPageRepository,
     private readonly mediaItemProcessor: MediaItemProcessor,
   ) { }
 
-  async findAllPages(): Promise<WeekMaterialsPageEntity[]> {
+  async findAllPages(): Promise<VisitMaterialsPageEntity[]> {
     this.logger.debug('📥 Buscando todas as páginas');
     return this.repo.findAllPages();
   }
 
-  async findOnePage(id: string): Promise<WeekMaterialsPageEntity> {
+  async findOnePage(id: string): Promise<VisitMaterialsPageEntity> {
     this.logger.debug(`📄 Buscando página ID=${id}`);
     const page = await this.repo.findOnePageById(id);
     if (!page) throw new NotFoundException('Página não encontrada');
     return page;
   }
 
-  async findPageWithMedia(id: string): Promise<WeekMaterialsPageResponseDTO> {
+  async findPageWithMedia(id: string): Promise<VisitMaterialsPageResponseDTO> {
     this.logger.debug(`🔍 Buscando página com mídias ID=${id}`);
     const page = await this.findOnePage(id);
     const mediaItems = await this.mediaItemProcessor.findMediaItemsByTarget(
       page.id,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
-    return WeekMaterialsPageResponseDTO.fromEntity(page, mediaItems);
+    return VisitMaterialsPageResponseDTO.fromEntity(page, mediaItems);
   }
 
-  async findAllPagesWithMedia(): Promise<WeekMaterialsPageResponseDTO[]> {
-    this.logger.debug('📥 Buscando todas as páginas com mídias');
-    const pages = await this.repo.findAllPages();
+  async findAllPagesWithMedia(
+    query?: QueryVisitMaterialsPageDto,
+  ): Promise<VisitMaterialsPageResponseDTO[]> {
+    if (query) {
+      this.logger.debug(`📥 Buscando páginas com mídias e filtros: ${JSON.stringify(query)}`);
+    } else {
+      this.logger.debug('📥 Buscando todas as páginas com mídias');
+    }
+    
+    const pages = query
+      ? await this.repo.findAllPagesWithFilters(query)
+      : await this.repo.findAllPages();
+    
     const pageIds = pages.map((p) => p.id);
     const allMedia = await this.mediaItemProcessor.findManyMediaItemsByTargets(
       pageIds,
-      MediaTargetType.WeekMaterialsPage,
+      MediaTargetType.VisitMaterialsPage,
     );
 
     const grouped = pageIds.reduce((acc, id) => {
@@ -52,7 +63,7 @@ export class WeekMaterialsPageGetService {
     }, {} as Record<string, MediaItemEntity[]>);
 
     return pages.map((page) =>
-      WeekMaterialsPageResponseDTO.fromEntity(page, grouped[page.id] || []),
+      VisitMaterialsPageResponseDTO.fromEntity(page, grouped[page.id] || []),
     );
   }
 
@@ -99,7 +110,7 @@ export class WeekMaterialsPageGetService {
     }
   }
 
-  async getCurrentWeek(): Promise<WeekMaterialsPageEntity | { message: string }> {
+  async getCurrentWeek(): Promise<VisitMaterialsPageEntity | { message: string }> {
     this.logger.debug(`📄 Buscando página de material da semana atual`);
     const page = await this.repo.findCurrentWeek();
     if (!page) {

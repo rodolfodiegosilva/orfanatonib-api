@@ -2,47 +2,73 @@
 
 ## 📋 Visão Geral
 
-Esta API foi desenvolvida para gerenciar um sistema completo de orfanato, incluindo usuários, abrigos (shelters), crianças abrigadas (sheltered), perfis de líderes e professores.
+API REST desenvolvida com NestJS para gerenciar um sistema completo de orfanato, incluindo usuários, abrigos, crianças abrigadas, perfis de líderes e professores, além de páginas de conteúdo (eventos, vídeos, imagens, ideias, materiais de visita, meditações, etc.).
 
 ## 🏗️ Arquitetura
 
 ### Módulos Principais
-- **Auth** - Autenticação e autorização
-- **Users** - Gerenciamento de usuários
-- **Shelters** - Gerenciamento de abrigos
-- **Sheltered** - Crianças abrigadas
+
+#### 🔐 Autenticação e Usuários
+- **Auth** - Autenticação JWT, login, refresh tokens
+- **Users** - Gerenciamento de usuários, roles, permissões
+
+#### 🏠 Gestão de Abrigos
+- **Shelters** - Gerenciamento de abrigos, equipes, endereços
+- **Sheltered** - Crianças abrigadas, dados pessoais, responsáveis
 - **Leader Profiles** - Perfis de líderes/coordenadores
 - **Teacher Profiles** - Perfis de professores
+- **Pagelas** - Sistema de relatórios e visitas
+
+#### 📄 Páginas de Conteúdo
+- **Events** - Eventos e atividades
+- **Video Pages** - Páginas de vídeos
+- **Image Pages** - Galerias de imagens
+- **Ideas Pages** - Páginas de ideias com seções
+- **Visit Material Pages** - Materiais de visita bíblicos
+- **Meditations** - Meditações semanais
+- **Comments** - Comentários
+- **Contacts** - Mensagens de contato
+- **Documents** - Documentos
+- **Feedbacks** - Feedback do site
+- **Informatives** - Banners informativos
 
 ## 📁 Estrutura do Projeto
 
 ```
 orfanatonib-api/
 ├── 📚 docs/                    # Documentação completa
-│   ├── auth/                   # Documentação do módulo Auth
-│   ├── users/                   # Documentação do módulo Users
-│   ├── shelters/               # Documentação do módulo Shelters
-│   ├── sheltered/              # Documentação do módulo Sheltered
-│   ├── leader-profiles/        # Documentação do módulo Leader Profiles
-│   ├── teacher-profiles/       # Documentação do módulo Teacher Profiles
-│   ├── *_API_Collection.postman_collection.json
-│   ├── *_API_Documentation.md
-│   ├── *_API_Environment.postman_environment.json
-│   └── *_Usage_Examples.md
-├── 🧪 tests/                   # Scripts de teste
-│   ├── auth/                   # Testes do módulo Auth
-│   ├── users/                  # Testes do módulo Users
-│   ├── shelters/               # Testes do módulo Shelters
-│   ├── sheltered/              # Testes do módulo Sheltered
-│   ├── leader-profiles/        # Testes do módulo Leader Profiles
-│   └── teacher-profiles/       # Testes do módulo Teacher Profiles
-├── 🤖 automations/             # Scripts de automação
-│   ├── auth/                   # Automações do módulo Auth
-│   ├── users/                  # Automações do módulo Users
-│   ├── shelters/               # Automações do módulo Shelters
-│   ├── sheltered/              # Automações do módulo Sheltered
-│   ├── leader-profiles/        # Automações do módulo Leader Profiles
-│   └── teacher-profiles/       # Automações do módulo Teacher Profiles
+│   ├── modules/                # Documentação por módulo
+│   │   ├── auth/
+│   │   ├── users/
+│   │   ├── shelters/
+│   │   ├── sheltered/
+│   │   ├── leader-profiles/
+│   │   ├── teacher-profiles/
+│   │   └── pagelas/
+│   ├── guides/                 # Guias gerais
+│   ├── MODULO_*.md            # Guias completos para frontend
+│   ├── INDEX.md               # Índice geral
+│   └── CHANGELOG.md           # Histórico de mudanças
+├── 🧪 test/                    # Scripts de teste e automação
+│   ├── automations/            # Automações de criação de dados
+│   │   ├── events/
+│   │   ├── video-pages/
+│   │   ├── image-pages/
+│   │   ├── ideas-pages/
+│   │   ├── visit-material-pages/
+│   │   ├── meditations/
+│   │   ├── comments/
+│   │   ├── contacts/
+│   │   ├── documents/
+│   │   ├── feedbacks/
+│   │   ├── informatives/
+│   │   ├── users/
+│   │   ├── shelters/
+│   │   ├── sheltered/
+│   │   ├── leader-profiles/
+│   │   ├── teacher-profiles/
+│   │   └── pagelas/
+│   └── run-all-automations.js  # Script master para todas as automações
 └── src/                        # Código fonte da aplicação
 ```
 
@@ -50,7 +76,7 @@ orfanatonib-api/
 
 ### Pré-requisitos
 - Node.js 18+
-- PostgreSQL
+- MySQL/MariaDB
 - npm ou yarn
 
 ### Instalação
@@ -59,7 +85,8 @@ orfanatonib-api/
 npm install
 
 # Configurar variáveis de ambiente
-cp .env.example .env
+cp env/local.env.example env/local.env
+# Edite env/local.env com suas credenciais
 
 # Executar migrações
 npm run migration:run
@@ -68,48 +95,38 @@ npm run migration:run
 npm run start:dev
 ```
 
-### Credenciais de Teste
+### Credenciais de Teste (Admin)
 ```json
 {
-  "email": "joao@example.com",
-  "password": "password123"
+  "email": "superuser@orfanatonib.com",
+  "password": "Abc@123"
 }
 ```
 
-## 📖 Documentação por Módulo
+## 📖 Documentação
 
-### 🔐 [Auth Module](docs/auth/README.md)
-- Autenticação JWT
-- Registro de usuários
-- Login/Logout
-- Refresh tokens
+### 📚 Documentação Completa
+- **[Índice Geral](docs/INDEX.md)** - Índice completo de toda a documentação
+- **[README Principal](docs/README.md)** - Documentação detalhada por módulos
+- **[Changelog](docs/CHANGELOG.md)** - Histórico de mudanças
 
-### 👥 [Users Module](docs/users/README.md)
-- Gerenciamento de usuários
-- Perfis e roles
-- Ativação/Desativação
+### 🎯 Guias para Frontend
+- **[Módulo Abrigo](docs/MODULO_ABRIGO.md)** - Guia completo de abrigos, equipes, líderes e professores
+- **[Módulo Líder](docs/MODULO_LIDER.md)** - Guia completo de perfis de líderes
+- **[Módulo Professor](docs/MODULO_PROFESSOR.md)** - Guia completo de perfis de professores
+- **[Módulo Materiais de Visita](docs/MODULO_MATERIAIS_VISITA.md)** - Guia de materiais bíblicos
 
-### 🏠 [Shelters Module](docs/shelters/README.md)
-- CRUD de abrigos
-- Vinculação com líderes
-- Paginação e filtros
+### 📦 Documentação por Módulo
+Cada módulo tem sua própria documentação em `docs/modules/[módulo]/`:
+- **[Auth](docs/modules/auth/README.md)** - Autenticação JWT
+- **[Users](docs/modules/users/README.md)** - Gerenciamento de usuários
+- **[Shelters](docs/modules/shelters/README.md)** - Gerenciamento de abrigos
+- **[Sheltered](docs/modules/sheltered/README.md)** - Crianças abrigadas
+- **[Leader Profiles](docs/modules/leader-profiles/README.md)** - Perfis de líderes
+- **[Teacher Profiles](docs/modules/teacher-profiles/README.md)** - Perfis de professores
+- **[Pagelas](docs/modules/pagelas/README.md)** - Sistema de relatórios
 
-### 👶 [Sheltered Module](docs/sheltered/README.md)
-- Crianças abrigadas
-- Vinculação com abrigos
-- Dados pessoais e responsáveis
-
-### 👨‍💼 [Leader Profiles Module](docs/leader-profiles/README.md)
-- Perfis de líderes
-- Vinculação com abrigos
-- Gerenciamento de professores
-
-### 👨‍🏫 [Teacher Profiles Module](docs/teacher-profiles/README.md)
-- Perfis de professores
-- Vinculação com abrigos
-- Atribuição de responsabilidades
-
-## 🧪 Testes
+## 🧪 Testes e Automações
 
 ### Executar Testes
 ```bash
@@ -118,54 +135,72 @@ npm run test
 
 # Testes e2e
 npm run test:e2e
-
-# Scripts de teste específicos
-node tests/[module]/[test-file].js
 ```
 
-### Automações Disponíveis
+### Automações de Criação de Dados
+
+O projeto inclui scripts de automação para criar dados em massa para todos os módulos:
+
 ```bash
-# Criar usuários em massa
-node automations/users/create-users-automation.js
+# Executar todas as automações
+node test/automations/run-all-automations.js
 
-# Criar abrigos
-node automations/shelters/create-shelters-automation.js
-
-# Criar perfis de líderes
-node automations/leader-profiles/create-leader-profiles-smart.js
-
-# Criar perfis de professores
-node automations/teacher-profiles/create-teacher-profiles-automation.js
+# Executar automação específica
+node test/automations/events/events-complete-automation.js
+node test/automations/video-pages/video-pages-complete-automation.js
+node test/automations/image-pages/image-pages-complete-automation.js
+node test/automations/ideas-pages/ideas-pages-complete-automation.js
+node test/automations/visit-material-pages/visit-material-pages-complete-automation.js
+node test/automations/meditations/meditations-complete-automation.js
+# ... e mais 7 automações
 ```
 
-### Resultados de Automações
-Os resultados das execuções são salvos na documentação de cada módulo:
-- `docs/[module]/results/created-*-YYYY-MM-DD.json` - Arquivos de resultado das automações
-- Contém dados criados, estatísticas e logs de execução
-- Útil para auditoria e análise de dados por módulo
+**📚 Documentação completa:** [test/automations/README.md](test/automations/README.md)
+
+### Módulos com Automação
+- ✅ Events (15 eventos)
+- ✅ Video Pages (10 páginas)
+- ✅ Image Pages (10 galerias)
+- ✅ Ideas Pages (10 páginas)
+- ✅ Visit Material Pages (30 páginas)
+- ✅ Ideas Sections Órfãs (15 seções)
+- ✅ Image Sections Órfãs (15 seções)
+- ✅ Comments (20 comentários)
+- ✅ Contacts (15 contatos)
+- ✅ Documents (15 documentos)
+- ✅ Feedbacks (20 feedbacks)
+- ✅ Informatives (15 informativos)
+- ✅ Meditations (10 meditações)
+- ✅ Users, Shelters, Sheltered, Leaders, Teachers, Pagelas
 
 ## 📊 Postman Collections
 
-Todas as collections estão disponíveis na pasta `docs/`:
+Todas as collections estão disponíveis em `docs/modules/[módulo]/`:
 
 - `Auth_API_Collection.postman_collection.json`
-- `User_API_Collection.postman_collection.json`
+- `Users_API_Collection.postman_collection.json`
 - `Shelters_API_Collection.postman_collection.json`
 - `Sheltered_API_Collection.postman_collection.json`
 - `Leader_Profiles_API_Collection.postman_collection.json`
 - `Teacher_Profiles_API_Collection.postman_collection.json`
+- `Pagelas_API_Collection.postman_collection.json`
 
 ### Ambiente Postman
-Use o arquivo `General_API_Environment.postman_environment.json` para configurar as variáveis de ambiente.
+Use o arquivo `docs/Orfanatonib_API_Environment.postman_environment.json` para configurar as variáveis de ambiente.
+
+**📚 Guia completo:** [docs/README.md](docs/README.md)
 
 ## 🔧 Tecnologias Utilizadas
 
 - **Backend:** NestJS, TypeScript
-- **Database:** PostgreSQL, TypeORM
+- **Database:** MySQL/MariaDB, TypeORM
 - **Auth:** JWT, Passport
 - **Validation:** class-validator, class-transformer
+- **File Storage:** AWS S3
+- **Email:** AWS SES
+- **Messaging:** Twilio (WhatsApp)
 - **Testing:** Jest, Supertest
-- **Documentation:** Postman Collections
+- **Documentation:** Postman Collections, Markdown
 
 ## 📝 Convenções
 
@@ -176,9 +211,16 @@ Use o arquivo `General_API_Environment.postman_environment.json` para configurar
 
 ### Padrões de API
 - RESTful endpoints
-- Paginação padrão: `page=1&limit=12`
+- Paginação padrão: `page=1&limit=12` (varia por módulo)
 - Filtros por query parameters
 - Respostas padronizadas com status codes HTTP
+- Suporte a JSON e Form-Data (para uploads)
+
+### Estrutura de Relacionamentos
+```
+User → Leader/Teacher Profile → Team → Shelter
+Sheltered → Shelter (direto)
+```
 
 ## 🤝 Contribuição
 
@@ -194,8 +236,20 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ## 📞 Suporte
 
-Para dúvidas ou suporte, entre em contato através dos issues do GitHub.
+Para dúvidas ou suporte:
+1. Consulte a [documentação completa](docs/README.md)
+2. Verifique o [índice geral](docs/INDEX.md)
+3. Entre em contato através dos issues do GitHub
+
+## 🔗 Links Úteis
+
+- [Documentação Completa](docs/README.md)
+- [Índice Geral](docs/INDEX.md)
+- [Changelog](docs/CHANGELOG.md)
+- [Automações](test/automations/README.md)
 
 ---
 
 **Desenvolvido com ❤️ para o sistema de orfanato**
+
+**Última atualização:** Dezembro 2025
