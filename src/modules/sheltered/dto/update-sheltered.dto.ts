@@ -7,6 +7,7 @@ import {
   ValidateNested,
   IsIn,
   ValidateIf,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -74,6 +75,10 @@ export class UpdateShelteredDto {
   @IsOptional()
   @IsDateString()
   joinedAt?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
 
   @IsOptional()
   @IsUUID()

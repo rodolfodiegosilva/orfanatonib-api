@@ -7,6 +7,7 @@ export class ShelteredListItemDto {
   gender: string;
   guardianPhone?: string | null;
   shelterId?: string | null;
+  active: boolean;
   acceptedChrists?: AcceptedChristShortDto[];
 }
 
@@ -38,6 +39,7 @@ export class ShelteredResponseDto {
   gender: string;
   guardianPhone?: string | null;
   joinedAt?: string | null;
+  active: boolean;
   shelter?: { id: string; name: string } | null;
   address?: AddressResponseDto | null;
   pagelas?: PagelaMiniDto[];

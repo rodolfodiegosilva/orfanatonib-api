@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Patch,
   Query,
   Req,
   UseGuards,
@@ -16,6 +17,7 @@ import { Request } from 'express';
 import { ShelteredService } from './sheltered.service';
 import { CreateShelteredDto } from './dto/create-sheltered.dto';
 import { UpdateShelteredDto } from './dto/update-sheltered.dto';
+import { UpdateShelteredStatusDto } from './dto/update-sheltered-status.dto';
 import { QueryShelteredDto, QueryShelteredSimpleDto } from './dto/query-sheltered.dto';
 import { PaginatedResponseDto, ShelteredResponseDto, ShelteredListItemDto } from './dto/sheltered-response.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -64,6 +66,15 @@ export class ShelteredController {
     @Req() req: Request,
   ): Promise<ShelteredResponseDto> {
     return this.service.update(id, dto, req);
+  }
+
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() dto: UpdateShelteredStatusDto,
+    @Req() req: Request,
+  ): Promise<ShelteredResponseDto> {
+    return this.service.updateStatus(id, dto.active, req);
   }
 
   @Delete(':id')

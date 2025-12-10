@@ -36,6 +36,7 @@ export const toShelteredListItemDto = (e: ShelteredEntity): ShelteredListItemDto
   gender: e.gender,
   guardianPhone: e.guardianPhone,
   shelterId: e.shelter?.id ?? null,
+  active: e.active ?? true,
   acceptedChrists: (e.acceptedChrists ?? []).map((a): AcceptedChristShortDto => ({
     id: a.id,
     decision: a.decision,
@@ -66,6 +67,7 @@ export const toShelteredResponseDto = (e: ShelteredEntity): ShelteredResponseDto
   gender: e.gender,
   guardianPhone: e.guardianPhone,
   joinedAt: dateOnly((e as any).joinedAt),
+  active: e.active ?? true,
   shelter: (e as any).shelter
     ? {
       id: (e as any).shelter.id,

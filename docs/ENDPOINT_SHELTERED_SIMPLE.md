@@ -34,6 +34,7 @@ GET /sheltered/simple
 | `limit` | number | Não | `20` | Quantidade de itens por página (mínimo: 1) |
 | `searchString` | string | Não | - | Busca unificada que filtra por:<br>- Nome do abrigo<br>- Nome do responsável<br>- Telefone do responsável |
 | `acceptedJesus` | string | Não | `all` | Filtro de decisão de aceitar Jesus:<br>- `accepted` - Retorna apenas abrigados que aceitaram Jesus<br>- `not_accepted` - Retorna apenas abrigados que não aceitaram<br>- `all` - Retorna todos (padrão) |
+| `active` | string | Não | `all` | Filtro de status ativo:<br>- `active` - Retorna apenas abrigados ativos<br>- `inactive` - Retorna apenas abrigados inativos<br>- `all` - Retorna todos (padrão) |
 
 ### Exemplos de Request
 
@@ -112,6 +113,7 @@ Authorization: Bearer <token>
   gender: string;                // Gênero (M ou F)
   guardianPhone?: string | null; // Telefone do responsável
   shelterId?: string | null;     // UUID do abrigo (se vinculado)
+  active: boolean;               // Status ativo/inativo
   acceptedChrists?: AcceptedChristShortDto[]; // Lista de decisões de Cristo aceitas
 }
 ```
@@ -139,6 +141,7 @@ Authorization: Bearer <token>
       "gender": "M",
       "guardianPhone": "+5511999999999",
       "shelterId": "660e8400-e29b-41d4-a716-446655440001",
+      "active": true,
       "acceptedChrists": [
         {
           "id": "770e8400-e29b-41d4-a716-446655440002",
@@ -155,6 +158,7 @@ Authorization: Bearer <token>
       "gender": "F",
       "guardianPhone": null,
       "shelterId": null,
+      "active": true,
       "acceptedChrists": []
     }
   ],
@@ -256,6 +260,42 @@ GET /sheltered/simple?acceptedJesus=accepted&page=1&limit=10
 ```
 Retorna a primeira página (10 itens) de abrigados que aceitaram Jesus.
 
+## ✅ Filtro: Status Ativo (active)
+
+O parâmetro `active` filtra os abrigados baseado em seu status ativo/inativo.
+
+### Valores Possíveis
+
+- **`active`**: Retorna apenas abrigados com `active = true`
+- **`inactive`**: Retorna apenas abrigados com `active = false`
+- **`all`** (padrão): Retorna todos os abrigados, independente do status
+
+### Comportamento
+
+- O campo `active` é um booleano que indica se o abrigado está ativo no sistema
+- Por padrão, novos abrigados são criados com `active = true`
+- Abrigados inativos podem ser filtrados ou ocultados em listagens
+
+### Exemplos de Uso
+
+#### Buscar apenas abrigados ativos
+```
+GET /sheltered/simple?active=active
+```
+Retorna apenas abrigados com status ativo.
+
+#### Buscar apenas abrigados inativos
+```
+GET /sheltered/simple?active=inactive
+```
+Retorna apenas abrigados com status inativo.
+
+#### Combinar com outros filtros
+```
+GET /sheltered/simple?active=active&acceptedJesus=accepted
+```
+Retorna apenas abrigados ativos que aceitaram Jesus.
+
 ## 📄 Paginação
 
 ### Parâmetros
@@ -322,7 +362,9 @@ Parâmetros de query inválidos (ex: `page` ou `limit` não são números inteir
 
 ## 📝 Notas Importantes
 
-1. **Ordenação**: Os resultados são sempre ordenados por nome do abrigado em ordem crescente (A-Z)
+1. **Ordenação**: Os resultados são ordenados por:
+   - Primeiro: Status ativo (ativos primeiro, depois inativos)
+   - Depois: Nome do abrigado em ordem alfabética crescente (A-Z)
 
 2. **Campos Opcionais**: 
    - `guardianName` e `guardianPhone` podem ser `null` se o abrigado não tiver responsável cadastrado
@@ -337,12 +379,85 @@ Parâmetros de query inválidos (ex: `page` ou `limit` não são números inteir
    - Busca em nomes (abrigo e responsável): **case-insensitive**
    - Busca em telefone: **case-sensitive**
 
+## 🔧 Endpoint: PATCH /sheltered/:id/status
+
+Endpoint para atualizar o status ativo/inativo de um abrigado.
+
+### Request
+
+```http
+PATCH /sheltered/:id/status
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+### Body
+
+```json
+{
+  "active": true
+}
+```
+
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|-------------|-----------|
+| `active` | boolean | Sim | Status ativo (`true`) ou inativo (`false`) |
+
+### Response (200 OK)
+
+Retorna o abrigado atualizado com todos os detalhes:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "João Silva",
+  "birthDate": "2010-05-15",
+  "guardianName": "Maria Silva",
+  "gender": "M",
+  "guardianPhone": "+5511999999999",
+  "joinedAt": "2024-01-10",
+  "active": true,
+  "shelter": {
+    "id": "660e8400-e29b-41d4-a716-446655440001",
+    "name": "Associação Brasília"
+  },
+  "address": { ... },
+  "createdAt": "2024-01-10T10:00:00.000Z",
+  "updatedAt": "2024-01-15T14:30:00.000Z"
+}
+```
+
+### Exemplo de Uso
+
+#### Ativar abrigado
+```bash
+curl -X PATCH "http://localhost:3000/sheltered/550e8400-e29b-41d4-a716-446655440000/status" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"active": true}'
+```
+
+#### Desativar abrigado
+```bash
+curl -X PATCH "http://localhost:3000/sheltered/550e8400-e29b-41d4-a716-446655440000/status" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"active": false}'
+```
+
+### Permissões
+
+- **Admin**: Pode atualizar status de qualquer abrigado
+- **Leader**: Pode atualizar status apenas de abrigados dos abrigos onde está vinculado
+- **Teacher**: Pode atualizar status apenas de abrigados dos abrigos onde está vinculado
+
 ## 🔗 Endpoints Relacionados
 
 - `GET /sheltered` - Lista completa de abrigados com mais detalhes e filtros avançados
 - `GET /sheltered/:id` - Detalhes completos de um abrigado específico
 - `POST /sheltered` - Criar novo abrigado
-- `PUT /sheltered/:id` - Atualizar abrigado
+- `PUT /sheltered/:id` - Atualizar abrigado (inclui campo `active`)
+- `PATCH /sheltered/:id/status` - Atualizar apenas o status ativo/inativo
 - `DELETE /sheltered/:id` - Remover abrigado
 
 ## 📚 Exemplos Completos
@@ -394,5 +509,28 @@ curl -X GET "http://localhost:3000/sheltered/simple?acceptedJesus=not_accepted" 
 ```bash
 curl -X GET "http://localhost:3000/sheltered/simple?searchString=Maria&acceptedJesus=accepted&page=1&limit=20" \
   -H "Authorization: Bearer <token>"
+```
+
+### Exemplo 8: Filtrar apenas abrigados ativos
+
+```bash
+curl -X GET "http://localhost:3000/sheltered/simple?active=active&page=1&limit=20" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Exemplo 9: Combinar todos os filtros
+
+```bash
+curl -X GET "http://localhost:3000/sheltered/simple?searchString=João&acceptedJesus=accepted&active=active&page=1&limit=20" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Exemplo 10: Atualizar status de abrigado
+
+```bash
+curl -X PATCH "http://localhost:3000/sheltered/550e8400-e29b-41d4-a716-446655440000/status" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"active": false}'
 ```
 

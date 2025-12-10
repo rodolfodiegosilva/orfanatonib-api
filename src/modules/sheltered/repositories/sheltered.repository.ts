@@ -98,10 +98,10 @@ export class ShelteredRepository {
   }
 
   async findAllSimple(
-    query: { page?: number; limit?: number; searchString?: string; acceptedJesus?: 'accepted' | 'not_accepted' | 'all' },
+    query: { page?: number; limit?: number; searchString?: string; acceptedJesus?: 'accepted' | 'not_accepted' | 'all'; active?: 'active' | 'inactive' | 'all' },
     ctx?: RoleCtx,
   ): Promise<PaginatedRows<ShelteredEntity>> {
-    const { page = 1, limit = 20, searchString, acceptedJesus = 'all' } = query;
+    const { page = 1, limit = 20, searchString, acceptedJesus = 'all', active = 'all' } = query;
 
     const qb = this.repo
       .createQueryBuilder('c')
@@ -145,8 +145,17 @@ export class ShelteredRepository {
     }
     // Se for 'all' ou undefined, não aplica filtro
 
-    // Ordenação padrão por nome
-    qb.orderBy('c.name', 'ASC');
+    // ✅ Filtro: status ativo
+    if (active === 'active') {
+      qb.andWhere('c.active = :active', { active: true });
+    } else if (active === 'inactive') {
+      qb.andWhere('c.active = :active', { active: false });
+    }
+    // Se for 'all' ou undefined, não aplica filtro
+
+    // Ordenação padrão: alfabética e ativos primeiro
+    qb.orderBy('c.active', 'DESC') // Ativos primeiro (true > false)
+      .addOrderBy('c.name', 'ASC'); // Depois alfabética
 
     // Paginação
     qb.skip((page - 1) * limit).take(limit);

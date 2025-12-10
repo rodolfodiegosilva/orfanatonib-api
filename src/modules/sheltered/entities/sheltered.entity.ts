@@ -32,6 +32,9 @@ export class ShelteredEntity extends BaseEntity {
   @Column({ type: 'date', nullable: true })
   joinedAt?: string | null;
 
+  @Column({ type: 'boolean', default: true })
+  active: boolean;
+
   @ManyToOne(() => ShelterEntity, (shelter) => shelter.sheltered, {
     nullable: true,
     onDelete: 'SET NULL',

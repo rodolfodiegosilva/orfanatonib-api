@@ -89,6 +89,7 @@ export class ShelteredService {
         limit,
         searchString: query.searchString,
         acceptedJesus: query.acceptedJesus,
+        active: query.active,
       },
       ctx,
     );
@@ -163,6 +164,7 @@ export class ShelteredService {
     if (dto.guardianPhone !== undefined) entity.guardianPhone = dto.guardianPhone;
     if (dto.birthDate !== undefined) entity.birthDate = toDateOnlyStr(dto.birthDate) as any;
     if (dto.joinedAt !== undefined) entity.joinedAt = toDateOnlyStr(dto.joinedAt) as any;
+    if (dto.active !== undefined) entity.active = dto.active;
 
     if (dto.shelterId !== undefined) {
       if (dto.shelterId === null) {
@@ -191,6 +193,18 @@ export class ShelteredService {
     }
 
     await this.shelteredRepo.save(entity);
+    const reloaded = await this.shelteredRepo.findOneForResponse(id, ctx);
+    return toShelteredResponseDto(reloaded!);
+  }
+
+  async updateStatus(id: string, active: boolean, request: Request): Promise<ShelteredResponseDto> {
+    const ctx = await this.getCtx(request);
+    const entity = await this.shelteredRepo.findOneForResponse(id, ctx);
+    if (!entity) throw new NotFoundException('Abrigado não encontrado ou sem acesso');
+    
+    entity.active = active;
+    await this.shelteredRepo.save(entity);
+    
     const reloaded = await this.shelteredRepo.findOneForResponse(id, ctx);
     return toShelteredResponseDto(reloaded!);
   }

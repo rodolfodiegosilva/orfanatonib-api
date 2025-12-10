@@ -50,4 +50,11 @@ export class QueryShelteredSimpleDto {
   // 'all' ou undefined - retorna todos (padrão)
   @IsOptional() @IsIn(['accepted', 'not_accepted', 'all'])
   acceptedJesus?: 'accepted' | 'not_accepted' | 'all' = 'all';
+
+  // ✅ Filtro: status ativo
+  // 'active' - apenas abrigados ativos
+  // 'inactive' - apenas abrigados inativos
+  // 'all' ou undefined - retorna todos (padrão)
+  @IsOptional() @IsIn(['active', 'inactive', 'all'])
+  active?: 'active' | 'inactive' | 'all' = 'all';
 }
