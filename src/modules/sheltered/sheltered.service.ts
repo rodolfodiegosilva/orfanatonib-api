@@ -75,10 +75,33 @@ export class ShelteredService {
     };
   }
 
-  async findAllSimples(request: Request,): Promise<ShelteredListItemDto[]> {
+  async findAllSimples(
+    query: QueryShelteredSimpleDto,
+    request: Request,
+  ): Promise<PaginatedResponseDto<ShelteredListItemDto>> {
     const ctx = await this.getCtx(request);
-    const rows = await this.shelteredRepo.findAllSimple(ctx);
-    return rows.map(toShelteredListItemDto);
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const { items, total } = await this.shelteredRepo.findAllSimple(
+      {
+        page,
+        limit,
+        searchString: query.searchString,
+        acceptedJesus: query.acceptedJesus,
+      },
+      ctx,
+    );
+
+    return {
+      data: items.map(toShelteredListItemDto),
+      meta: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string, request: Request): Promise<ShelteredResponseDto> {

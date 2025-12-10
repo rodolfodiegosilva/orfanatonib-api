@@ -171,6 +171,23 @@ export class SheltersRepository {
     return qb.getMany();
   }
 
+  /**
+   * Busca os IDs dos abrigos onde o líder está em pelo menos uma equipe
+   * Usado para depois buscar todos os abrigos com todas as equipes
+   */
+  async findShelterIdsForLeader(userId: string): Promise<string[]> {
+    const result = await this.shelterRepo
+      .createQueryBuilder('shelter')
+      .innerJoin('shelter.teams', 'team')
+      .innerJoin('team.leaders', 'leader')
+      .innerJoin('leader.user', 'leaderUser')
+      .where('leaderUser.id = :userId', { userId })
+      .select('DISTINCT shelter.id', 'id')
+      .getRawMany();
+
+    return result.map((row: any) => row.id);
+  }
+
   async findOneOrFailForResponse(id: string, ctx?: RoleCtx): Promise<ShelterEntity | null> {
     const qb = this.buildShelterBaseQB()
       .where('shelter.id = :id', { id })
@@ -377,12 +394,25 @@ export class SheltersRepository {
 
       if (dto.address) {
         if (shelter.address) {
-          Object.assign(shelter.address, dto.address);
+          // Atualizar apenas os campos fornecidos (ignorar id, createdAt, updatedAt)
+          const addressUpdate: any = {};
+          if (dto.address.street !== undefined) addressUpdate.street = dto.address.street;
+          if (dto.address.number !== undefined) addressUpdate.number = dto.address.number;
+          if (dto.address.district !== undefined) addressUpdate.district = dto.address.district;
+          if (dto.address.city !== undefined) addressUpdate.city = dto.address.city;
+          if (dto.address.state !== undefined) addressUpdate.state = dto.address.state;
+          if (dto.address.postalCode !== undefined) addressUpdate.postalCode = dto.address.postalCode;
+          if (dto.address.complement !== undefined) addressUpdate.complement = dto.address.complement;
+          
+          Object.assign(shelter.address, addressUpdate);
           await addressRepo.save(shelter.address);
         } else {
-          const newAddress = addressRepo.create(dto.address);
-          await addressRepo.save(newAddress);
-          shelter.address = newAddress;
+          // Criar novo endereço (remover id, createdAt, updatedAt se existirem)
+          const { id, createdAt, updatedAt, ...addressData } = dto.address as any;
+          const newAddress = addressRepo.create(addressData);
+          const savedAddress = await addressRepo.save(newAddress);
+          // Garantir que savedAddress é uma única entidade, não um array
+          shelter.address = Array.isArray(savedAddress) ? savedAddress[0] : savedAddress;
         }
       }
 

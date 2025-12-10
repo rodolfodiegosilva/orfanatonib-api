@@ -327,4 +327,11 @@ export class LeaderProfilesRepository {
 
     return items.map(toLeaderSimple);
   }
+
+  async findByUserId(userId: string): Promise<LeaderProfileEntity | null> {
+    return this.leaderRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['teams'],
+    });
+  }
 }

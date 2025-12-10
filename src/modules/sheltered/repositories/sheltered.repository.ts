@@ -31,12 +31,16 @@ export class ShelteredRepository {
     if (!role || role === 'admin' || !userId) return;
 
     if (role === 'leader') {
-      qb.leftJoin('shelter.leader', 'leader')
+      // Líderes estão relacionados através de equipes (ManyToMany)
+      qb.leftJoin('shelter.teams', 'team')
+        .leftJoin('team.leaders', 'leader')
         .leftJoin('leader.user', 'leaderUser')
         .andWhere('leaderUser.id = :uid', { uid: userId })
         .distinct(true);
     } else if (role === 'teacher') {
-      qb.leftJoin('shelter.teachers', 'teachers')
+      // Professores estão relacionados através de equipes (ManyToOne)
+      qb.leftJoin('shelter.teams', 'team')
+        .leftJoin('team.teachers', 'teachers')
         .leftJoin('teachers.user', 'teacherUser')
         .andWhere('teacherUser.id = :uid', { uid: userId })
         .distinct(true);
@@ -93,20 +97,62 @@ export class ShelteredRepository {
     return { items, total };
   }
 
-  async findAllSimple(ctx?: RoleCtx): Promise<ShelteredEntity[]> {
+  async findAllSimple(
+    query: { page?: number; limit?: number; searchString?: string; acceptedJesus?: 'accepted' | 'not_accepted' | 'all' },
+    ctx?: RoleCtx,
+  ): Promise<PaginatedRows<ShelteredEntity>> {
+    const { page = 1, limit = 20, searchString, acceptedJesus = 'all' } = query;
+
     const qb = this.repo
       .createQueryBuilder('c')
-      .leftJoin('c.shelter', 'shelter')
-      .select([
-        'c.id',
-        'c.name',
-        'c.guardianName',
-        'c.gender',
-        'c.guardianPhone',
-        'shelter.id',
-      ]);
-    this.applyRoleFilter(qb as any as SelectQueryBuilder<ShelteredEntity>, ctx);
-    return qb.getMany();
+      .leftJoinAndSelect('c.shelter', 'shelter')
+      .leftJoinAndSelect('c.acceptedChrists', 'acceptedChrists');
+
+    this.applyRoleFilter(qb, ctx);
+
+    // 🔍 Busca unificada: nome do abrigo, nome do responsável ou telefone do responsável
+    if (searchString?.trim()) {
+      const like = `%${searchString.trim()}%`;
+      qb.andWhere(
+        `(
+          LOWER(COALESCE(shelter.name, '')) LIKE LOWER(:searchString) OR
+          LOWER(COALESCE(c.guardianName, '')) LIKE LOWER(:searchString) OR
+          COALESCE(c.guardianPhone, '') LIKE :searchStringRaw
+        )`,
+        { searchString: like, searchStringRaw: `%${searchString.trim()}%` }
+      );
+    }
+
+    // ✝️ Filtro: aceitou Jesus
+    if (acceptedJesus === 'accepted') {
+      // Tem pelo menos uma decisão de aceitar Jesus (ACCEPTED ou RECONCILED)
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1 FROM accepted_christs ac 
+          WHERE ac.sheltered_id = c.id 
+          AND ac.decision IN ('ACCEPTED', 'RECONCILED')
+        )`
+      );
+    } else if (acceptedJesus === 'not_accepted') {
+      // Não tem nenhuma decisão OU todas as decisões são null
+      qb.andWhere(
+        `NOT EXISTS (
+          SELECT 1 FROM accepted_christs ac 
+          WHERE ac.sheltered_id = c.id 
+          AND ac.decision IN ('ACCEPTED', 'RECONCILED')
+        )`
+      );
+    }
+    // Se for 'all' ou undefined, não aplica filtro
+
+    // Ordenação padrão por nome
+    qb.orderBy('c.name', 'ASC');
+
+    // Paginação
+    qb.skip((page - 1) * limit).take(limit);
+
+    const [items, total] = await qb.getManyAndCount();
+    return { items, total };
   }
 
   async findOneForResponse(id: string, ctx?: RoleCtx): Promise<ShelteredEntity | null> {
@@ -123,11 +169,15 @@ export class ShelteredRepository {
     const qb = this.shelterRepo.createQueryBuilder('shelter').where('shelter.id = :shelterId', { shelterId });
 
     if (role === 'leader') {
-      qb.leftJoin('shelter.leader', 'leader')
+      // Líderes estão relacionados através de equipes (ManyToMany)
+      qb.leftJoin('shelter.teams', 'team')
+        .leftJoin('team.leaders', 'leader')
         .leftJoin('leader.user', 'leaderUser')
         .andWhere('leaderUser.id = :uid', { uid: userId });
     } else if (role === 'teacher') {
-      qb.leftJoin('shelter.teachers', 'teachers')
+      // Professores estão relacionados através de equipes (ManyToOne)
+      qb.leftJoin('shelter.teams', 'team')
+        .leftJoin('team.teachers', 'teachers')
         .leftJoin('teachers.user', 'teacherUser')
         .andWhere('teacherUser.id = :uid', { uid: userId });
     }

@@ -34,8 +34,11 @@ export class ShelteredController {
   }
 
   @Get('simple')
-  async findAllSimples(@Req() req: Request,): Promise<ShelteredListItemDto[]> {
-    return this.service.findAllSimples(req);
+  async findAllSimples(
+    @Query() query: QueryShelteredSimpleDto,
+    @Req() req: Request,
+  ): Promise<PaginatedResponseDto<ShelteredListItemDto>> {
+    return this.service.findAllSimples(query, req);
   }
 
   @Get(':id')

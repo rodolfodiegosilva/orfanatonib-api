@@ -31,10 +31,23 @@ export class QueryShelteredDto {
 }
 
 export class QueryShelteredSimpleDto {
-  @IsOptional() @IsString()
-  searchString?: string;
+  // Paginação
+  @Transform(({ value }) => Number(value))
+  @IsOptional() @IsInt() @Min(1)
+  page?: number = 1;
 
   @Transform(({ value }) => Number(value))
   @IsOptional() @IsInt() @Min(1)
   limit?: number = 20;
+
+  // 🔍 Busca unificada: nome do abrigo, nome do responsável ou telefone do responsável
+  @IsOptional() @IsString()
+  searchString?: string;
+
+  // ✝️ Filtro: aceitou Jesus
+  // 'accepted' - tem pelo menos uma decisão de aceitar Jesus (ACCEPTED ou RECONCILED)
+  // 'not_accepted' - não tem nenhuma decisão ou todas são null
+  // 'all' ou undefined - retorna todos (padrão)
+  @IsOptional() @IsIn(['accepted', 'not_accepted', 'all'])
+  acceptedJesus?: 'accepted' | 'not_accepted' | 'all' = 'all';
 }

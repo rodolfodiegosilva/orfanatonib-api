@@ -704,6 +704,20 @@ Authorization: Bearer {token}
     "postalCode": "01234-567",
     "complement": "Apto 45"
   },
+  "teams": [
+    {
+      "numberTeam": 1,
+      "description": "Equipe Matutina",
+      "leaderProfileIds": ["leader-uuid-1", "leader-uuid-2"],
+      "teacherProfileIds": ["teacher-uuid-1"]
+    },
+    {
+      "numberTeam": 2,
+      "description": "Equipe Vespertina",
+      "leaderProfileIds": ["leader-uuid-3"],
+      "teacherProfileIds": ["teacher-uuid-2", "teacher-uuid-3"]
+    }
+  ],
   "mediaItem": {
     "title": "Foto do Abrigo",
     "description": "Imagem principal",
@@ -712,6 +726,15 @@ Authorization: Bearer {token}
   }
 }
 ```
+
+**⭐ IMPORTANTE - Array `teams`:**
+- O campo `teams` é **opcional** na criação
+- Se fornecido, permite vincular líderes e professores às equipes durante a criação
+- O sistema cria **todas as equipes de 1 até `teamsQuantity`**
+- Se `teams` for fornecido, os dados são aplicados às equipes correspondentes
+- Equipes não especificadas em `teams` serão criadas sem líderes/professores
+- **Líderes:** Podem ser vinculados a múltiplas equipes (ManyToMany) - ao vincular, adiciona sem remover de outras equipes
+- **Professores:** Podem ser vinculados a apenas 1 equipe (ManyToOne) - ao vincular, remove automaticamente da equipe anterior (se houver)
 
 **Body (Form-Data):**
 
@@ -734,6 +757,11 @@ image: [arquivo de imagem]
 - `description` (string)
 - `address.number` (string)
 - `address.complement` (string)
+- `teams` (array de objetos TeamInputDto) - ⭐ Permite vincular líderes/professores durante a criação
+  - `numberTeam` (number) - Número da equipe (1, 2, 3... até `teamsQuantity`)
+  - `description` (string, opcional) - Descrição da equipe
+  - `leaderProfileIds` (array de UUIDs, opcional) - IDs dos perfis de líderes para vincular
+  - `teacherProfileIds` (array de UUIDs, opcional) - IDs dos perfis de professores para vincular
 - `mediaItem` (objeto)
 
 **Resposta de Sucesso (201):** `ShelterResponseDto`
@@ -970,9 +998,42 @@ Content-Type: application/json
 {
   "name": "Abrigo Esperança Atualizado",
   "description": "Nova descrição",
-  "teamsQuantity": 4
+  "teamsQuantity": 4,
+  "teams": [
+    {
+      "numberTeam": 1,
+      "description": "Equipe Matutina Atualizada",
+      "leaderProfileIds": ["leader-uuid-1", "leader-uuid-2"],
+      "teacherProfileIds": ["teacher-uuid-1"]
+    },
+    {
+      "numberTeam": 2,
+      "description": "Equipe Vespertina",
+      "leaderProfileIds": ["leader-uuid-3"],
+      "teacherProfileIds": ["teacher-uuid-2"]
+    },
+    {
+      "numberTeam": 3,
+      "description": "Nova Equipe",
+      "leaderProfileIds": [],
+      "teacherProfileIds": []
+    }
+  ]
 }
 ```
+
+**⭐ IMPORTANTE - Array `teams` na Atualização:**
+- O campo `teams` é **opcional** na atualização
+- Se fornecido, permite **atualizar** líderes e professores das equipes
+- O sistema atualiza apenas as equipes especificadas no array `teams`
+- Equipes não especificadas em `teams` **não são alteradas**
+- Se `teamsQuantity` for alterado:
+  - Se aumentou: novas equipes são criadas (sem líderes/professores, a menos que especificadas em `teams`)
+  - Se diminuiu: equipes extras são **deletadas** (líderes e professores são desvinculados)
+- **Comportamento ao atualizar uma equipe:**
+  - **Líderes:** Substitui completamente os líderes da equipe - remove todos os atuais e adiciona os novos
+  - **Professores:** Substitui completamente os professores da equipe - remove todos os atuais e adiciona os novos
+  - ⚠️ **Atenção:** Se você não incluir uma equipe no array `teams`, ela não será alterada
 
 **⚠️ IMPORTANTE:** O campo `teamsQuantity` é **obrigatório** no DTO, mesmo em atualizações parciais. Você sempre deve fornecer o valor atual desse campo ao atualizar um abrigo.
 
@@ -1146,6 +1207,7 @@ interface UpdateShelterDto {
   name?: string;                 // Opcional (2-255 caracteres)
   description?: string;          // Opcional
   teamsQuantity: number;         // ⭐ OBRIGATÓRIO (número) - mesmo em atualizações parciais
+  teams?: TeamInputDto[];        // ⭐ Opcional - Permite atualizar líderes/professores das equipes
   address?: {
     id?: string;
     street?: string;
@@ -1163,6 +1225,13 @@ interface UpdateShelterDto {
     uploadType?: 'UPLOAD' | 'LINK';
     url?: string;
   };
+}
+
+interface TeamInputDto {
+  numberTeam: number;            // Número da equipe (1, 2, 3... até teamsQuantity)
+  description?: string;          // Descrição da equipe (opcional)
+  leaderProfileIds?: string[];   // Array de UUIDs dos perfis de líderes (opcional) - ⚠️ Substitui completamente os líderes atuais
+  teacherProfileIds?: string[];  // Array de UUIDs dos perfis de professores (opcional) - ⚠️ Substitui completamente os professores atuais
 }
 ```
 
@@ -1265,6 +1334,9 @@ interface PaginatedResponse<T> {
   - Para upload de imagem, use `multipart/form-data` com `shelterData` (JSON stringificado) e `image` (arquivo)
   - O campo `teamsQuantity` é obrigatório
   - O campo `address` é obrigatório
+  - ⭐ **Opcional:** Use o array `teams` para vincular líderes e professores durante a criação
+  - O sistema cria todas as equipes de 1 até `teamsQuantity`
+  - Equipes não especificadas em `teams` serão criadas sem líderes/professores
 
 ### 5. Atualizar Abrigo
 - **DTO de Entrada:** `UpdateShelterDto` (JSON ou Form-Data)
@@ -1273,6 +1345,11 @@ interface PaginatedResponse<T> {
   - ⚠️ **IMPORTANTE:** O campo `teamsQuantity` é obrigatório mesmo em atualizações parciais
   - Se você não tem o valor atual, busque o abrigo primeiro com `GET /shelters/:id` para obter o `teamsQuantity` atual
   - Todos os outros campos são opcionais
+  - ⭐ **Opcional:** Use o array `teams` para atualizar líderes e professores das equipes
+  - ⚠️ **Atenção:** Ao atualizar uma equipe, os líderes e professores são **substituídos completamente**
+  - Equipes não especificadas em `teams` **não são alteradas**
+  - Se `teamsQuantity` aumentar, novas equipes são criadas
+  - Se `teamsQuantity` diminuir, equipes extras são **deletadas** (líderes e professores são desvinculados)
 
 ### 6. Atualizar Mídia
 - **DTO de Entrada:** 
@@ -1307,11 +1384,28 @@ interface PaginatedResponse<T> {
 1. Use `POST /shelters` com `CreateShelterDto`
 2. ⚠️ **Lembre-se:** O campo `teamsQuantity` é obrigatório
 3. Para upload de imagem, use `multipart/form-data` com `shelterData` (JSON stringificado) e `image` (arquivo)
+4. ⭐ **Opcional:** Inclua o array `teams` para vincular líderes e professores durante a criação
+   - Exemplo: `teams: [{ numberTeam: 1, leaderProfileIds: ["uuid1"], teacherProfileIds: ["uuid2"] }]`
+   - O sistema cria todas as equipes de 1 até `teamsQuantity`
+   - Equipes não especificadas serão criadas sem líderes/professores
 
 ### Fluxo 2: Atualizar Abrigo
 1. ⚠️ **IMPORTANTE:** Busque o abrigo atual primeiro com `GET /shelters/:id` para obter o `teamsQuantity` atual
 2. Use `PUT /shelters/:id` com `UpdateShelterDto`
 3. Sempre inclua o campo `teamsQuantity` com seu valor atual (ou novo valor se estiver alterando)
+4. ⭐ **Opcional:** Inclua o array `teams` para atualizar líderes e professores
+   - ⚠️ **Atenção:** Líderes e professores são **substituídos completamente** na equipe
+   - Equipes não especificadas em `teams` **não são alteradas**
+   - Se `teamsQuantity` aumentar, novas equipes são criadas
+   - Se `teamsQuantity` diminuir, equipes extras são **deletadas**
+
+### Fluxo 2.1: Atualizar Apenas Líderes/Professores de uma Equipe
+1. Busque o abrigo atual com `GET /shelters/:id` para obter o `teamsQuantity` e os dados atuais
+2. Use `PUT /shelters/:id` com `UpdateShelterDto` incluindo:
+   - `teamsQuantity` (valor atual)
+   - `teams` com apenas a equipe que deseja atualizar
+   - Exemplo: `teams: [{ numberTeam: 1, leaderProfileIds: ["novo-uuid"], teacherProfileIds: ["novo-uuid"] }]`
+3. ⚠️ **Importante:** Apenas a equipe especificada será atualizada, as outras permanecem inalteradas
 
 ### Fluxo 3: Buscar Quantidade de Equipes para Editar Professor/Líder
 1. Use `GET /shelters/:shelterId/teams-quantity` para obter a quantidade de equipes

@@ -16,6 +16,7 @@ import { LeaderSimpleListDto } from './dto/leader-simple-list.dto';
 import { PageDto, LeaderProfilesQueryDto } from './dto/leader-profiles.query.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ManageLeaderTeamDto } from './dto/assign-team.dto';
+import { ShelterWithLeaderStatusDto } from 'src/modules/shelters/dto/shelter.response.dto';
 
 @Controller('leader-profiles')
 @UseGuards(JwtAuthGuard)
@@ -33,6 +34,11 @@ export class LeaderProfilesController {
   @Get('simple')
   listSimple(@Req() req: Request): Promise<LeaderSimpleListDto[]> {
     return this.service.list(req);
+  }
+
+  @Get('my-shelters')
+  findMyShelters(@Req() req: Request): Promise<ShelterWithLeaderStatusDto[]> {
+    return this.service.findMyShelters(req);
   }
 
   @Get(':id')

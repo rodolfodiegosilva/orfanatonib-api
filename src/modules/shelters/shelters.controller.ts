@@ -13,6 +13,7 @@ import {
   Patch,
   UseInterceptors,
   UploadedFiles,
+  Logger,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
@@ -32,6 +33,8 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 @Controller('shelters')
 @UseGuards(JwtAuthGuard)
 export class SheltersController {
+  private readonly logger = new Logger(SheltersController.name);
+
   constructor(
     private readonly deleteService: DeleteSheltersService,
     private readonly updateService: UpdateSheltersService,
@@ -96,9 +99,17 @@ export class SheltersController {
     @Body('shelterData') shelterDataRaw?: string,
     @Body() body?: any, // Para suportar JSON puro (quando não vem form-data)
   ): Promise<ShelterResponseDto> {
+    this.logger.log(`🔵 [PUT /shelters/:id] Iniciando atualização do abrigo ID=${id}`);
+    this.logger.debug(`📥 Body recebido - shelterDataRaw: ${shelterDataRaw ? 'presente' : 'ausente'}`);
+    this.logger.debug(`📥 Body recebido - body keys: ${body ? Object.keys(body).join(', ') : 'vazio'}`);
+    this.logger.debug(`📁 Arquivos recebidos: ${files.length} arquivo(s)`);
+    
     // Se veio como form-data, usar shelterDataRaw; senão, usar body completo (JSON puro)
     const bodyToProcess = shelterDataRaw ? { shelterData: shelterDataRaw } : (body || {});
+    this.logger.debug(`📦 Body processado: ${JSON.stringify(bodyToProcess, null, 2)}`);
+    
     const entity = await this.updateService.updateFromRaw(id, bodyToProcess, files, req);
+    this.logger.log(`✅ [PUT /shelters/:id] Abrigo atualizado com sucesso ID=${id}`);
     return toShelterDto(entity);
   }
 

@@ -86,6 +86,31 @@ export class ShelterSimpleResponseDto {
 }
 
 @Exclude()
+export class ShelterWithLeaderStatusDto {
+  @Expose() id!: string;
+  @Expose() name!: string;
+  @Expose() description?: string;
+  @Expose() teamsQuantity?: number;
+
+  @Expose()
+  @Type(() => AddressResponseDto)
+  address!: AddressResponseDto;
+
+  @Expose()
+  @Type(() => TeamWithLeaderStatusDto)
+  @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  teams!: TeamWithLeaderStatusDto[];
+
+  @Expose()
+  @Type(() => MediaItemResponseDto)
+  @Transform(({ value }) => value ? MediaItemResponseDto.fromEntity(value) : null)
+  mediaItem?: MediaItemResponseDto | null;
+
+  @Expose() createdAt!: Date;
+  @Expose() updatedAt!: Date;
+}
+
+@Exclude()
 class TeamWithMembersDto {
   @Expose() id!: string;
   @Expose() numberTeam!: number;
@@ -100,6 +125,11 @@ class TeamWithMembersDto {
   @Type(() => TeacherWithUserDto)
   @Transform(({ value }) => (Array.isArray(value) ? value : []))
   teachers!: TeacherWithUserDto[];
+}
+
+@Exclude()
+export class TeamWithLeaderStatusDto extends TeamWithMembersDto {
+  @Expose() isLeaderInTeam!: boolean;
 }
 
 @Exclude()
@@ -169,4 +199,29 @@ export function toShelterSimpleDto(entity: ShelterEntity): ShelterSimpleResponse
 }
 export function toShelterDto(entity: ShelterEntity): ShelterResponseDto {
   return plainToInstance(ShelterResponseDto, entity, { excludeExtraneousValues: true });
+}
+
+export function toShelterWithLeaderStatusDto(
+  entity: ShelterEntity,
+  leaderId: string,
+): ShelterWithLeaderStatusDto {
+  const dto = plainToInstance(ShelterWithLeaderStatusDto, entity, { excludeExtraneousValues: true });
+  
+  // Marcar quais equipes o líder está inserido
+  if (entity.teams && Array.isArray(entity.teams)) {
+    dto.teams = entity.teams.map((team: any) => {
+      // Primeiro transformar o team para o DTO base
+      const teamBase = plainToInstance(TeamWithLeaderStatusDto, team, { excludeExtraneousValues: true });
+      
+      // Verificar se o líder está na equipe através da lista de leaders da entidade original
+      const isLeaderInTeam = team.leaders?.some((leader: any) => leader.id === leaderId) ?? false;
+      teamBase.isLeaderInTeam = isLeaderInTeam;
+      
+      return teamBase;
+    });
+  } else {
+    dto.teams = [];
+  }
+  
+  return dto;
 }

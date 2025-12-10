@@ -10,6 +10,12 @@ import { LeaderProfilesQueryDto, PageDto } from '../dto/leader-profiles.query.dt
 import { AuthContextService } from 'src/auth/services/auth-context.service';
 import { TeamsService } from 'src/modules/teams/services/teams.service';
 import { ManageLeaderTeamDto } from '../dto/assign-team.dto';
+import { SheltersRepository } from 'src/modules/shelters/repositories/shelters.repository';
+import { ShelterSimpleResponseDto, ShelterWithLeaderStatusDto, toShelterSimpleDto, toShelterWithLeaderStatusDto } from 'src/modules/shelters/dto/shelter.response.dto';
+import { MediaItemProcessor } from 'src/share/media/media-item-processor';
+import { ShelterEntity } from 'src/modules/shelters/entities/shelter.entity/shelter.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
 
 type AccessCtx = { role?: string; userId?: string | null };
 
@@ -20,6 +26,11 @@ export class LeaderProfilesService {
     private readonly authCtx: AuthContextService,
     @Inject(forwardRef(() => TeamsService))
     private readonly teamsService: TeamsService,
+    @Inject(forwardRef(() => SheltersRepository))
+    private readonly sheltersRepository: SheltersRepository,
+    private readonly mediaItemProcessor: MediaItemProcessor,
+    @InjectRepository(ShelterEntity)
+    private readonly shelterRepo: Repository<ShelterEntity>,
   ) { }
 
   private async getCtx(req: Request): Promise<AccessCtx> {
@@ -114,5 +125,75 @@ export class LeaderProfilesService {
     }
 
     return this.findOne(leaderId, req);
+  }
+
+  /**
+   * Busca todos os abrigos do líder logado
+   * Retorna todas as equipes de cada abrigo, indicando em quais o líder está inserido
+   */
+  async findMyShelters(req: Request): Promise<ShelterWithLeaderStatusDto[]> {
+    const ctx = await this.getCtx(req);
+    
+    // Verificar se é um líder
+    if (!ctx.role || ctx.role !== 'leader' || !ctx.userId) {
+      throw new ForbiddenException('Apenas líderes podem acessar seus abrigos');
+    }
+
+    // Buscar o perfil do líder logado
+    const leader = await this.repo.findByUserId(ctx.userId);
+
+    if (!leader) {
+      throw new NotFoundException('Perfil de líder não encontrado');
+    }
+
+    // Buscar IDs dos abrigos onde o líder está em pelo menos uma equipe
+    const shelterIds = await this.sheltersRepository.findShelterIdsForLeader(ctx.userId);
+    
+    if (shelterIds.length === 0) {
+      return [];
+    }
+
+    // Buscar todos os abrigos por IDs, com todas as equipes (sem filtro de role nas equipes)
+    const shelters = await this.shelterRepo.find({
+      where: { id: In(shelterIds) },
+      relations: ['address', 'teams', 'teams.leaders', 'teams.leaders.user', 'teams.teachers', 'teams.teachers.user'],
+      order: {
+        name: 'ASC',
+        teams: {
+          numberTeam: 'ASC',
+        },
+      },
+    });
+    
+    // Popular media items
+    const sheltersWithMedia = await this.populateMediaItems(shelters);
+    
+    // Transformar para DTO com status do líder em cada equipe
+    return sheltersWithMedia.map(shelter => toShelterWithLeaderStatusDto(shelter, leader.id));
+  }
+
+  private async populateMediaItems(shelters: ShelterEntity[]): Promise<ShelterEntity[]> {
+    if (!shelters.length) return shelters;
+
+    const shelterIds = shelters.map(s => s.id);
+    const mediaItems = await this.mediaItemProcessor.findManyMediaItemsByTargets(
+      shelterIds,
+      'ShelterEntity'
+    );
+
+    // Criar mapa de media items por shelterId (apenas o primeiro de cada)
+    const mediaMap = new Map();
+    mediaItems.forEach(item => {
+      if (!mediaMap.has(item.targetId)) {
+        mediaMap.set(item.targetId, item);
+      }
+    });
+
+    // Popular o mediaItem em cada shelter
+    shelters.forEach(shelter => {
+      shelter.mediaItem = mediaMap.get(shelter.id) || null;
+    });
+
+    return shelters;
   }
 }
