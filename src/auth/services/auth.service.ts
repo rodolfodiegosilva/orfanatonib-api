@@ -187,7 +187,7 @@ export class AuthService {
         ? {
           id: user.leaderProfile.id,
           active: user.leaderProfile.active,
-          clubs: user.leaderProfile.teams && user.leaderProfile.teams.length > 0
+          shelters: user.leaderProfile.teams && user.leaderProfile.teams.length > 0
             ? user.leaderProfile.teams
                 .map(team => team.shelter)
                 .filter((shelter, index, self) => 
@@ -195,8 +195,7 @@ export class AuthService {
                 )
                 .map(shelter => ({
                   id: shelter!.id,
-                  number: 0, // TODO: Verificar se há um campo number no shelter
-                  weekday: '', // TODO: Verificar se há um campo weekday no shelter
+                  name: shelter!.name,
                 }))
             : [],
         }

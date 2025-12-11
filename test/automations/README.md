@@ -40,7 +40,7 @@ Este diretório contém scripts de automação para criar dados em massa para to
 - Quantidade padrão: 15 seções (2-6 imagens cada)
 
 ### 8. **Comments** (`comments/`)
-- Cria comentários com nome, comentário, clubinho e bairro
+- Cria comentários com nome, comentário, shelter e bairro
 - Endpoint: `POST /comments`
 - Quantidade padrão: 20 comentários
 

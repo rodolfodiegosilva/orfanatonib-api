@@ -7,8 +7,8 @@ export class CreateCommentDto {
   @IsString({ message: 'comment deve ser uma string' })
   comment: string;
 
-  @IsString({ message: 'clubinho deve ser uma string' })
-  clubinho: string;
+  @IsString({ message: 'shelter deve ser uma string' })
+  shelter: string;
 
   @IsString({ message: 'neighborhood deve ser uma string' })
   neighborhood: string;

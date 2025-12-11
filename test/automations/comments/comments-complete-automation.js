@@ -71,7 +71,7 @@ const NAMES = [
   'Larissa Barbosa'
 ];
 
-const CLUBINHOS = [
+const SHELTERS = [
   'Clube do Amor',
   'Clube da Fé',
   'Clube da Esperança',
@@ -125,7 +125,7 @@ async function createComment() {
   const commentData = {
     name: getRandomElement(NAMES),
     comment: getRandomElement(COMMENTS),
-    clubinho: getRandomElement(CLUBINHOS),
+    shelter: getRandomElement(SHELTERS),
     neighborhood: getRandomElement(NEIGHBORHOODS)
   };
 
@@ -133,7 +133,7 @@ async function createComment() {
     const response = await makeRequest('POST', '/comments', commentData);
     
     if (response && response.status === 201) {
-      console.log(`  ✅ Comentário criado: "${commentData.name}" - ${commentData.clubinho}`);
+      console.log(`  ✅ Comentário criado: "${commentData.name}" - ${commentData.shelter}`);
       return response.data;
     } else {
       console.log(`  ⚠️ Erro ao criar comentário: "${commentData.name}"`);

@@ -10,7 +10,7 @@ export class CommentEntity extends BaseEntity {
   comment: string;
 
   @Column({ type: 'varchar', length: 100 })
-  clubinho: string;
+  shelter: string;
 
   @Column({ type: 'varchar', length: 100 })
   neighborhood: string;
