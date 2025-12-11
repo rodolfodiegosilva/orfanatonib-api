@@ -39,6 +39,18 @@ export class PagelasRepository {
       qb.andWhere('sheltered.id = :shelteredId', { shelteredId: f.shelteredId });
     }
 
+    if (f.year !== undefined) {
+      qb.andWhere('p.year = :year', { year: f.year });
+    }
+
+    if (f.visit !== undefined) {
+      qb.andWhere('p.visit = :visit', { visit: f.visit });
+    }
+
+    if (f.present !== undefined) {
+      qb.andWhere('p.present = :present', { present: f.present });
+    }
+
     // 🔍 Busca unificada: número da visita, ano, observação ou nome do professor que lançou a pagela
     if (f.searchString?.trim()) {
       const like = `%${f.searchString.trim()}%`;
