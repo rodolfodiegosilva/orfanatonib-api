@@ -22,10 +22,11 @@ import { RouteModule } from 'src/route/route.module';
 import { RouteEntity } from 'src/route/route-page.entity';
 import { TeamsModule } from '../teams/teams.module';
 import { TeamEntity } from '../teams/entities/team.entity';
+import { MediaItemEntity } from 'src/share/media/media-item/media-item.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ShelterEntity, AddressEntity, RouteEntity, TeamEntity]),
+    TypeOrmModule.forFeature([ShelterEntity, AddressEntity, RouteEntity, TeamEntity, MediaItemEntity]),
     forwardRef(() => AddressesModule),
     forwardRef(() => TeacherProfilesModule),
     forwardRef(() => LeaderProfilesModule),

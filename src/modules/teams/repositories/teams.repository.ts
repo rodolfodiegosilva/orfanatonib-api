@@ -25,64 +25,119 @@ export class TeamsRepository {
   ) {}
 
   async create(dto: CreateTeamDto): Promise<TeamEntity> {
+    this.logger.debug(`🔵 [create] Iniciando criação de equipe: numberTeam=${dto.numberTeam}, shelterId=${dto.shelterId}`);
     return this.dataSource.transaction(async (manager) => {
       const txTeam = manager.withRepository(this.teamRepo);
-      const txLeader = manager.withRepository(this.leaderRepo);
-      const txTeacher = manager.withRepository(this.teacherRepo);
       const txShelter = manager.withRepository(this.shelterRepo);
 
       // Verificar se o shelter existe
+      this.logger.debug(`🔍 [create] Buscando shelter com ID: ${dto.shelterId}`);
       const shelter = await txShelter.findOne({ where: { id: dto.shelterId } });
       if (!shelter) {
+        this.logger.error(`❌ [create] Shelter não encontrado: ${dto.shelterId}`);
         throw new NotFoundException('Shelter não encontrado');
       }
+      this.logger.debug(`✅ [create] Shelter encontrado: ${shelter.id} - ${shelter.name}`);
 
-      // Criar a equipe
+      // Criar a equipe usando o repositório do TypeORM mas sem relações
+      // Isso evita problemas com relações bidirecionais
+      this.logger.debug(`🏗️ [create] Criando entidade Team...`);
       const team = txTeam.create({
         numberTeam: dto.numberTeam,
         description: dto.description,
         shelter: shelter as any,
       });
+      this.logger.debug(`📝 [create] Team criado: numberTeam=${team.numberTeam}, shelter.id=${team.shelter?.id}`);
+      
+      // Salvar a equipe
+      this.logger.debug(`💾 [create] Salvando equipe no banco...`);
       const savedTeam = await txTeam.save(team);
+      this.logger.debug(`✅ [create] Equipe salva: ID=${savedTeam.id}, shelter_id=${savedTeam.shelter?.id || 'N/A'}`);
+      
+      // Verificar se foi salvo corretamente
+      if (!savedTeam || !savedTeam.id) {
+        this.logger.error(`❌ [create] Erro: equipe não tem ID após salvar`);
+        throw new Error('Erro ao criar equipe: não foi possível obter o ID');
+      }
+      
+      const teamId = savedTeam.id;
+      this.logger.debug(`🆔 [create] Team ID: ${teamId}`);
 
-      // Atribuir líderes se fornecidos
+      // Atribuir líderes se fornecidos usando raw SQL
       if (dto.leaderProfileIds && dto.leaderProfileIds.length > 0) {
-        const leaders = await txLeader.find({
-          where: { id: In(dto.leaderProfileIds) },
-          relations: ['teams'],
-        });
-        for (const leader of leaders) {
-          // Adicionar a equipe à lista de equipes do líder (sem remover as outras)
-          if (!leader.teams) {
-            leader.teams = [];
-          }
-          if (!leader.teams.some(t => t.id === savedTeam.id)) {
-            leader.teams.push(savedTeam as any);
-            await txLeader.save(leader);
-          }
+        this.logger.debug(`👥 [create] Processando ${dto.leaderProfileIds.length} líder(es)...`);
+        // Verificar quais líderes já estão na equipe para evitar duplicatas
+        const placeholders = dto.leaderProfileIds.map(() => '?').join(',');
+        const existingLinks = await manager.query(
+          `SELECT leader_id FROM leader_teams WHERE team_id = ? AND leader_id IN (${placeholders})`,
+          [teamId, ...dto.leaderProfileIds]
+        );
+        const existingLeaderIds = existingLinks.map((row: any) => row.leader_id);
+        this.logger.debug(`📊 [create] Líderes já na equipe: ${existingLeaderIds.length}`);
+        
+        // Inserir apenas os líderes que ainda não estão na equipe
+        const leadersToAdd = dto.leaderProfileIds.filter(
+          (id: string) => !existingLeaderIds.includes(id)
+        );
+        this.logger.debug(`➕ [create] Líderes para adicionar: ${leadersToAdd.length}`);
+        
+        if (leadersToAdd.length > 0) {
+          // Inserir na tabela de junção usando raw SQL com placeholders seguros
+          const values = leadersToAdd.map(() => '(?, ?)').join(', ');
+          const params: any[] = [];
+          leadersToAdd.forEach((leaderId: string) => {
+            params.push(leaderId, teamId);
+          });
+          this.logger.debug(`💾 [create] Inserindo ${leadersToAdd.length} líder(es) na tabela leader_teams...`);
+          await manager.query(
+            `INSERT INTO leader_teams (leader_id, team_id) VALUES ${values}`,
+            params
+          );
+          this.logger.debug(`✅ [create] Líderes inseridos com sucesso`);
         }
+      } else {
+        this.logger.debug(`⏭️ [create] Nenhum líder para adicionar`);
       }
 
-      // Atribuir professores se fornecidos
+      // Atribuir professores se fornecidos usando raw SQL
       // IMPORTANTE: Um professor só pode estar em UMA equipe
       if (dto.teacherProfileIds && dto.teacherProfileIds.length > 0) {
-        const teachers = await txTeacher.find({
-          where: { id: In(dto.teacherProfileIds) },
-          relations: ['team'],
-        });
-        for (const teacher of teachers) {
-          // Se o professor já está em outra equipe, remover primeiro
-          if (teacher.team && teacher.team.id !== savedTeam.id) {
-            teacher.team = null as any;
-            await txTeacher.save(teacher);
-          }
-          // Atribuir à nova equipe
-          teacher.team = savedTeam as any;
-          await txTeacher.save(teacher);
-        }
+        this.logger.debug(`👨‍🏫 [create] Processando ${dto.teacherProfileIds.length} professor(es)...`);
+        // Primeiro, remover professores de suas equipes anteriores
+        const placeholders = dto.teacherProfileIds.map(() => '?').join(',');
+        this.logger.debug(`🗑️ [create] Removendo professores de equipes anteriores...`);
+        const removeResult = await manager.query(
+          `UPDATE teacher_profiles SET team_id = NULL WHERE id IN (${placeholders}) AND team_id IS NOT NULL AND team_id != ?`,
+          [...dto.teacherProfileIds, teamId]
+        );
+        this.logger.debug(`✅ [create] Professores removidos de equipes anteriores: ${removeResult.affectedRows || 0} linha(s) afetada(s)`);
+
+        // Agora atribuir todos os professores à nova equipe
+        this.logger.debug(`➕ [create] Atribuindo professores à equipe ${teamId}...`);
+        const assignResult = await manager.query(
+          `UPDATE teacher_profiles SET team_id = ? WHERE id IN (${placeholders})`,
+          [teamId, ...dto.teacherProfileIds]
+        );
+        this.logger.debug(`✅ [create] Professores atribuídos: ${assignResult.affectedRows || 0} linha(s) afetada(s)`);
+      } else {
+        this.logger.debug(`⏭️ [create] Nenhum professor para adicionar`);
       }
 
-      return savedTeam;
+      // Recarregar a equipe do banco sem relações para garantir estado consistente
+      // Não carregar relações de professores/líderes para evitar problemas de sincronização
+      this.logger.debug(`🔄 [create] Recarregando equipe do banco (sem relações)...`);
+      const finalTeam = await txTeam.findOne({
+        where: { id: teamId },
+      });
+
+      if (!finalTeam) {
+        this.logger.error(`❌ [create] Equipe não encontrada após criação: ${teamId}`);
+        throw new Error('Equipe não encontrada após criação');
+      }
+
+      this.logger.debug(`✅ [create] Equipe recarregada: ID=${finalTeam.id}, shelter_id=${(finalTeam as any).shelter_id || finalTeam.shelter?.id || 'N/A'}`);
+      this.logger.debug(`✅ [create] Criação de equipe concluída com sucesso: ID=${finalTeam.id}`);
+      return finalTeam;
     });
   }
 
