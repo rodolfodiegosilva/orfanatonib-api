@@ -31,14 +31,12 @@ export class ShelteredRepository {
     if (!role || role === 'admin' || !userId) return;
 
     if (role === 'leader') {
-      // Líderes estão relacionados através de equipes (ManyToMany)
       qb.leftJoin('shelter.teams', 'team')
         .leftJoin('team.leaders', 'leader')
         .leftJoin('leader.user', 'leaderUser')
         .andWhere('leaderUser.id = :uid', { uid: userId })
         .distinct(true);
     } else if (role === 'teacher') {
-      // Professores estão relacionados através de equipes (ManyToOne)
       qb.leftJoin('shelter.teams', 'team')
         .leftJoin('team.teachers', 'teachers')
         .leftJoin('teachers.user', 'teacherUser')
@@ -60,7 +58,6 @@ export class ShelteredRepository {
     const qb = this.baseQB().distinct(true);
     this.applyRoleFilter(qb, ctx);
 
-    // 🔍 Busca unificada: nome do abrigado, nome do responsável ou número do responsável
     if (searchString?.trim()) {
       const like = `%${searchString.trim()}%`;
       qb.andWhere(
@@ -78,7 +75,6 @@ export class ShelteredRepository {
       qb.andWhere('shelter.id = :shelterId', { shelterId });
     }
 
-    // Ordenação
     const orderByMap: Record<string, string> = {
       name: 'c.name',
       birthDate: 'c.birthDate',
@@ -90,7 +86,6 @@ export class ShelteredRepository {
     const sortOrder = (order || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
     qb.orderBy(sortField, sortOrder as 'ASC' | 'DESC');
 
-    // Paginação
     qb.skip((page - 1) * limit).take(limit);
 
     const [items, total] = await qb.getManyAndCount();
@@ -110,7 +105,6 @@ export class ShelteredRepository {
 
     this.applyRoleFilter(qb, ctx);
 
-    // 🔍 Busca unificada: nome do abrigo, nome do responsável ou telefone do responsável
     if (searchString?.trim()) {
       const like = `%${searchString.trim()}%`;
       qb.andWhere(
@@ -125,7 +119,6 @@ export class ShelteredRepository {
 
     // ✝️ Filtro: aceitou Jesus
     if (acceptedJesus === 'accepted') {
-      // Tem pelo menos uma decisão de aceitar Jesus (ACCEPTED ou RECONCILED)
       qb.andWhere(
         `EXISTS (
           SELECT 1 FROM accepted_christs ac 
@@ -134,7 +127,6 @@ export class ShelteredRepository {
         )`
       );
     } else if (acceptedJesus === 'not_accepted') {
-      // Não tem nenhuma decisão OU todas as decisões são null
       qb.andWhere(
         `NOT EXISTS (
           SELECT 1 FROM accepted_christs ac 
@@ -143,7 +135,6 @@ export class ShelteredRepository {
         )`
       );
     }
-    // Se for 'all' ou undefined, não aplica filtro
 
     // ✅ Filtro: status ativo
     if (active === 'active') {
@@ -151,13 +142,9 @@ export class ShelteredRepository {
     } else if (active === 'inactive') {
       qb.andWhere('c.active = :active', { active: false });
     }
-    // Se for 'all' ou undefined, não aplica filtro
 
-    // Ordenação padrão: alfabética e ativos primeiro
     qb.orderBy('c.active', 'DESC') // Ativos primeiro (true > false)
-      .addOrderBy('c.name', 'ASC'); // Depois alfabética
 
-    // Paginação
     qb.skip((page - 1) * limit).take(limit);
 
     const [items, total] = await qb.getManyAndCount();
@@ -178,13 +165,11 @@ export class ShelteredRepository {
     const qb = this.shelterRepo.createQueryBuilder('shelter').where('shelter.id = :shelterId', { shelterId });
 
     if (role === 'leader') {
-      // Líderes estão relacionados através de equipes (ManyToMany)
       qb.leftJoin('shelter.teams', 'team')
         .leftJoin('team.leaders', 'leader')
         .leftJoin('leader.user', 'leaderUser')
         .andWhere('leaderUser.id = :uid', { uid: userId });
     } else if (role === 'teacher') {
-      // Professores estão relacionados através de equipes (ManyToOne)
       qb.leftJoin('shelter.teams', 'team')
         .leftJoin('team.teachers', 'teachers')
         .leftJoin('teachers.user', 'teacherUser')

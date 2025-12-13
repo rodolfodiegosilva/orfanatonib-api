@@ -19,7 +19,6 @@ export class IdeasSectionDeleteService {
   ) { }
 
   async deleteSection(id: string): Promise<void> {
-    this.logger.log(`🚀 Iniciando exclusão de seção de ideias ID=${id}`);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -50,12 +49,10 @@ export class IdeasSectionDeleteService {
 
       for (const media of mediaItems) {
         if (media.isLocalFile && media.url) {
-          this.logger.debug(`🗑️ Removendo arquivo do S3: ${media.url}`);
           try {
             await this.awsS3Service.delete(media.url);
-            this.logger.debug(`✅ Arquivo removido do S3: ${media.url}`);
           } catch (error) {
-            this.logger.warn(`⚠️ Erro ao remover arquivo do S3: ${media.url}`, error);
+            this.logger.warn(`Error deleting file from S3: ${media.url}`, error);
           }
         }
       }
@@ -65,24 +62,21 @@ export class IdeasSectionDeleteService {
           targetId: id,
           targetType: MediaTargetType.IdeasSection,
         });
-        this.logger.debug(`✅ ${mediaItems.length} mídias removidas do banco`);
       }
 
       await queryRunner.manager.delete(IdeasSectionEntity, { id });
-      this.logger.debug(`✅ Seção de ideias ID=${id} removida do banco`);
 
       await queryRunner.commitTransaction();
-      this.logger.log(`✅ Seção de ideias ID=${id} excluída com sucesso`);
 
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error(`❌ Erro ao excluir seção de ideias ID=${id}`, error);
+      this.logger.error(`Error deleting ideas section ID=${id}`, error);
 
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao excluir a seção de ideias');
+      throw new BadRequestException('Error deleting ideas section');
     } finally {
       await queryRunner.release();
     }

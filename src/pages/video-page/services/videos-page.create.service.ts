@@ -32,7 +32,6 @@ import { MediaTargetType } from 'src/share/media/media-target-type.enum';
       filesDict: Record<string, Express.Multer.File>,
     ): Promise<VideosPageResponseDto> {
       const { title, description, public: isPublic, videos } = dto;
-      this.logger.debug(`🔍 Iniciando criação da página de vídeos: "${title}"`);
   
       const queryRunner = this.dataSource.createQueryRunner();
       await queryRunner.connect();
@@ -81,8 +80,8 @@ import { MediaTargetType } from 'src/share/media/media-target-type.enum';
         return VideosPageResponseDto.fromEntity(finalPage, mediaItems);
       } catch (error) {
         await queryRunner.rollbackTransaction();
-        this.logger.error('❌ Erro ao criar página de vídeos. Rollback executado.', error);
-        throw new BadRequestException('Erro ao criar a página de vídeos.');
+        this.logger.error('Error creating videos page. Rollback executed.', error);
+        throw new BadRequestException('Error creating videos page.');
       } finally {
         await queryRunner.release();
       }

@@ -14,11 +14,9 @@ export class DeleteUserService {
   ) {}
 
   async remove(id: string): Promise<{ message: string }> {
-    this.logger.debug(`Removing user ID: ${id}`);
     await this.teacherService.removeByUserId(id);
     await this.leaderService.removeByUserId(id);
     await this.userRepo.delete(id);
-    this.logger.log(`User removed: ${id}`);
     return { message: 'UserEntity deleted' };
   }
 }

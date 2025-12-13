@@ -34,7 +34,6 @@ export class AuthService {
   }
 
   private generateTokens(user: UserEntity) {
-    this.logger.debug(`Gerando tokens para userId=${user.id}`);
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const accessToken = this.jwtService.sign(payload);
@@ -47,19 +46,14 @@ export class AuthService {
   }
 
   async login({ email, password }: LoginDto) {
-    this.logger.debug(`Tentativa de login: ${email}`);
-
     const user = await this.authRepo.validateUser(email, password);
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      this.logger.warn(`Credenciais inválidas: ${email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
-
 
     const tokens = this.generateTokens(user);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
-    this.logger.log(`Login bem-sucedido para: ${email}`);
     return {
       message: 'Login successful',
       user: this.buildUserResponse(user),
@@ -68,8 +62,6 @@ export class AuthService {
   }
 
   async googleLogin(token: string) {
-    this.logger.debug('Iniciando login via Google');
-
     try {
       const ticket = await this.googleClient.verifyIdToken({
         idToken: token,
@@ -78,7 +70,6 @@ export class AuthService {
 
       const payload = ticket.getPayload();
       if (!payload?.email || !payload?.name) {
-        this.logger.error('Payload do Google inválido');
         throw new UnauthorizedException('Invalid Google token payload');
       }
 
@@ -86,7 +77,6 @@ export class AuthService {
       let user = await this.getUsersService.findByEmail(email);
 
       if (!user) {
-        this.logger.log(`Criando novo usuário Google: ${email}`);
         user = await this.createUserService.create({
           email,
           name,
@@ -102,31 +92,25 @@ export class AuthService {
       }
 
       if (!user.completed) {
-        this.logger.log(`Usuário Google existente sem cadastro completo: ${email}`);
         return { email, name, completed: false, commonUser: user.commonUser, newUser: true };
       }
 
       if (!(user as any).active) {
-        this.logger.warn(`Usuário Google inativo: ${email}`);
-        return { message: 'UserEntity is inactive', active: false, completed: user.completed, commonUser: user.commonUser, newUser: false };
+        return { message: 'User is inactive', active: false, completed: user.completed, commonUser: user.commonUser, newUser: false };
       }
 
       const tokens = this.generateTokens(user);
       await this.updateRefreshToken(user.id, tokens.refreshToken);
 
-      this.logger.log(`Login Google bem-sucedido: ${email}`);
       return { message: 'Login successful', isNewUser: false, user: this.buildUserResponse(user), ...tokens };
     } catch (error) {
-      this.logger.error(`Erro durante login Google: ${error.message}`);
+      this.logger.error(`Error during Google login: ${error.message}`);
       throw new UnauthorizedException('Invalid Google token');
     }
   }
 
   async refreshToken(token: string) {
-    this.logger.debug('Renovando refresh token');
-
     if (!token) {
-      this.logger.warn('Refresh token não fornecido');
       throw new UnauthorizedException('Refresh token is required');
     }
 
@@ -137,26 +121,22 @@ export class AuthService {
 
       const user = await this.getUsersService.findOne(payload.sub);
       if (!user || user.refreshToken !== token) {
-        this.logger.warn(`Refresh token inválido para userId=${payload.sub}`);
         throw new UnauthorizedException('Invalid refresh token');
       }
 
       const tokens = this.generateTokens(user);
       await this.updateRefreshToken(user.id, tokens.refreshToken);
 
-      this.logger.log(`Refresh token renovado para userId=${user.id}`);
       return tokens;
     } catch (error) {
-      this.logger.error(`Erro ao renovar refresh token: ${error.message}`);
+      this.logger.error(`Error refreshing token: ${error.message}`);
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
   async logout(userId: string) {
-    this.logger.debug(`Logout solicitado para userId=${userId}`);
     await this.updateRefreshToken(userId, null);
-    this.logger.log(`Logout concluído para userId=${userId}`);
-    return { message: 'UserEntity logged out' };
+    return { message: 'User logged out' };
   }
 
   private buildMeResponse(user: UserEntity) {
@@ -204,29 +184,22 @@ export class AuthService {
   }
 
   async getMe(userId: string) {
-    this.logger.debug(`Buscando dados do usuário: ${userId}`);
-
     const user = await this.userRepo.findByIdWithProfiles(userId);
     if (!user) {
-      this.logger.warn(`Usuário não encontrado: ${userId}`);
-      throw new UnauthorizedException('UserEntity not found');
+      throw new UnauthorizedException('User not found');
     }
 
     return this.buildMeResponse(user);
   }
 
   async completeRegister(data: CompleteUserDto) {
-    this.logger.debug(`Completar cadastro para: ${data.email}`);
-
     const user = await this.getUsersService.findByEmail(data.email);
     if (!user) {
-      this.logger.warn(`Usuário não encontrado no completeRegister: ${data.email}`);
-      throw new NotFoundException('UserEntity not found');
+      throw new NotFoundException('User not found');
     }
 
     if (user.completed) {
-      this.logger.warn(`Usuário já completou cadastro: ${data.email}`);
-      throw new NotFoundException('UserEntity already completed registration');
+      throw new NotFoundException('User already completed registration');
     }
 
     await this.updateUserService.update(user.id, {
@@ -237,17 +210,13 @@ export class AuthService {
       role: data.role,
     });
 
-    this.logger.log(`Cadastro completado para: ${data.email}`);
     return { message: 'Registration completed successfully' };
   }
 
   async register(data: RegisterUserDto) {
-    this.logger.debug(`Iniciando registro para: ${data.email}`);
-
     const existingUser = await this.getUsersService.findByEmail(data.email);
     if (existingUser) {
-      this.logger.warn(`Tentativa de registrar email já existente: ${data.email}`);
-      throw new UnauthorizedException('UserEntity already exists');
+      throw new UnauthorizedException('User already exists');
     }
 
     const user = await this.createUserService.create({
@@ -261,7 +230,6 @@ export class AuthService {
       role: data.role,
     });
 
-    this.logger.log(`Usuário registrado com sucesso: ${user.email}`);
     return { message: 'Registration successful', user: this.buildUserResponse(user) };
   }
 
@@ -281,7 +249,6 @@ export class AuthService {
   }
 
   async updateRefreshToken(userId: string, token: string | null): Promise<void> {
-    this.logger.debug(`Updating refresh token for user ID: ${userId}`);
     await this.userRepo.updateRefreshToken(userId, token);
   }
 }

@@ -44,20 +44,16 @@ export class MediaItemProcessor {
   async upsertMediaItem(id: string | undefined, media: MediaItemEntity): Promise<MediaItemEntity> {
     if (id) {
       await this.mediaRepo.saveById(id, media);
-      this.logger.debug(`✏️ Mídia atualizada: ID=${id}, título="${media.title}"`);
       media.id = id;
       return media;
     } else {
-      const created = await this.saveMediaItem(media);
-      this.logger.debug(`🆕 Mídia criada: ID=${created.id}, título="${created.title}"`);
-      return created;
+      return this.saveMediaItem(media);
     }
   }
 
   async deleteMediaItems(items: MediaItemEntity[], deleteFn: (url: string) => Promise<void>): Promise<void> {
     for (const item of items) {
       if (item.isLocalFile) {
-        this.logger.debug(`🗑️ Deletando do S3: ${item.url}`);
         await deleteFn(item.url);
       }
     }
@@ -66,7 +62,6 @@ export class MediaItemProcessor {
 
   async removeMediaItem(item: MediaItemEntity, deleteFn?: (url: string) => Promise<void>): Promise<void> {
     if (item.isLocalFile && deleteFn) {
-      this.logger.debug(`🧹 Limpando do S3: ${item.url}`);
       await deleteFn(item.url);
     }
     await this.mediaRepo.removeOne(item);
@@ -86,9 +81,8 @@ export class MediaItemProcessor {
 
       if (item.uploadType === UploadType.UPLOAD) {
         const file = filesDict[item.fileField];
-        if (!file) throw new Error(`Arquivo ausente para "${item.title}"`);
+        if (!file) throw new Error(`File missing for "${item.title}"`);
 
-        this.logger.debug(`⬆️ Upload: ${file.originalname}`);
         media.url = await uploadFn(file);
         media.isLocalFile = true;
         media.originalName = file.originalname;
@@ -114,19 +108,12 @@ export class MediaItemProcessor {
     deleteFn: (url: string) => Promise<void>,
     uploadFn: (file: Express.Multer.File) => Promise<string>,
   ): Promise<MediaItemEntity[]> {
-    const logger = new Logger('MediaItemCleaner');
-    logger.debug(`📦 Substituindo mídias para targetId=${targetId}`);
-
     const validIncoming = items.filter((item) => {
       if (item.uploadType !== UploadType.UPLOAD) return true;
 
       const fileRef = item.url || item.fileField;
       const exists = oldItems.some((old) => old.url === fileRef);
       const hasFile = !!filesDict[item.fileField];
-
-      if (!exists && !hasFile) {
-        logger.warn(`⚠️ Upload ignorado: campo ausente para "${item.title}"`);
-      }
 
       return exists || hasFile;
     });
@@ -143,7 +130,6 @@ export class MediaItemProcessor {
 
     const toRemove = oldItems.filter((item) => item.isLocalFile && !validUploadUrls.has(item.url));
     if (toRemove.length) {
-      logger.debug(`🗑️ Removendo ${toRemove.length} mídia(s) antiga(s) do S3`);
       await this.deleteMediaItems(toRemove, deleteFn);
     }
 
@@ -160,12 +146,10 @@ export class MediaItemProcessor {
           media.isLocalFile = previous.isLocalFile;
           media.originalName = previous.originalName;
           media.size = previous.size;
-          logger.debug(`🔁 Reutilizando mídia existente: ${previous.originalName}`);
         } else {
           const file = filesDict[item.fileField];
-          if (!file) throw new Error(`Arquivo ausente para "${item.title}"`);
+          if (!file) throw new Error(`File missing for "${item.title}"`);
 
-          logger.debug(`⬆️ Upload novo: ${file.originalname}`);
           media.url = await uploadFn(file);
           media.isLocalFile = true;
           media.originalName = file.originalname;

@@ -43,7 +43,6 @@ export class ImageSectionController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('sectionData') raw: string,
   ): Promise<ImageSectionResponseDto> {
-    this.logger.debug('🚀 Criando nova section');
 
     const dto = this.parseDto<CreateImageSectionDto>(raw, CreateImageSectionDto);
     await this.validateDto(dto);
@@ -51,7 +50,6 @@ export class ImageSectionController {
     const filesDict = this.mapFiles(files);
     const result = await this.createService.createSection(dto, filesDict);
 
-    this.logger.log(`✅ Section criada com ID=${result.id}`);
     return result;
   }
 
@@ -62,7 +60,6 @@ export class ImageSectionController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('sectionData') raw: string,
   ): Promise<ImageSectionResponseDto> {
-    this.logger.debug(`🚀 Atualizando section ID=${id}`);
 
     const dto = this.parseDto<UpdateImageSectionDto>(raw, UpdateImageSectionDto);
     await this.validateDto(dto);
@@ -70,39 +67,32 @@ export class ImageSectionController {
     const filesDict = this.mapFiles(files);
     const result = await this.updateService.updateSection(id, dto, filesDict);
 
-    this.logger.log(`✅ Section atualizada com ID=${result.id}`);
     return result;
   }
 
   @Delete(':id')
   async delete(@Param('id') id: string) {
-    this.logger.debug(`🚀 Removendo section ID=${id}`);
 
     await this.deleteService.deleteSection(id);
-    this.logger.log(`✅ Section removida com ID=${id}`);
 
     return { message: 'Section removida com sucesso.' };
   }
 
   @Get(':id')
   async getById(@Param('id') id: string): Promise<ImageSectionResponseDto> {
-    this.logger.debug(`🚀 Buscando section ID=${id}`);
 
     const result = await this.getService.findOne(id);
     if (!result) {
       throw new NotFoundException(`Section com id=${id} não encontrada`);
     }
 
-    this.logger.log(`✅ Section encontrada ID=${id}`);
     return result;
   }
 
   @Get()
   async getAll(): Promise<ImageSectionResponseDto[]> {
-    this.logger.debug('🚀 Listando todas as sections');
 
     const result = await this.getService.findAll();
-    this.logger.log(`✅ ${result.length} sections encontradas`);
     return result;
   }
 
@@ -111,16 +101,16 @@ export class ImageSectionController {
       const obj = JSON.parse(raw);
       return plainToInstance(dtoClass, obj);
     } catch (error) {
-      this.logger.error('❌ Erro ao fazer o parse do JSON recebido.', error);
-      throw new BadRequestException('Formato inválido de JSON.');
+      this.logger.error('Error parsing received JSON.', error);
+      throw new BadRequestException('Invalid JSON format.');
     }
   }
 
   private async validateDto(dto: object): Promise<void> {
     const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
     if (errors.length > 0) {
-      this.logger.error('❌ Erros de validação:', JSON.stringify(errors, null, 2));
-      throw new BadRequestException('Dados inválidos na requisição.');
+      this.logger.error('Validation errors:', JSON.stringify(errors, null, 2));
+      throw new BadRequestException('Invalid data in request.');
     }
   }
 

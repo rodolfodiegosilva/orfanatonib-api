@@ -32,12 +32,9 @@ export class CreateDocumentService {
     dto: CreateDocumentDto,
     file?: Express.Multer.File,
   ): Promise<DocumentDto> {
-    this.logger.verbose(`→ createDocument | name="${dto.name}"`);
-
     const runner = this.dataSource.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
-    this.logger.debug('▶️  Transaction started');
 
     try {
       const savedDoc = await this.persistDocument(runner, dto);
@@ -45,18 +42,16 @@ export class CreateDocumentService {
       const media = await this.processMedia(runner, savedDoc.id, dto, file);
 
       await runner.commitTransaction();
-      this.logger.debug('✅  Transaction committed');
 
       return DocumentDto.fromEntity(savedDoc, media);
     } catch (err) {
       await runner.rollbackTransaction();
-      this.logger.error('💥  Transaction rolled‑back', err.stack);
+      this.logger.error('Transaction rolled back', err.stack);
       throw new BadRequestException(
-        `Erro ao criar o documento: ${err.message}`,
+        `Error creating document: ${err.message}`,
       );
     } finally {
       await runner.release();
-      this.logger.debug('⛔  QueryRunner released');
     }
   }
 
@@ -64,18 +59,13 @@ export class CreateDocumentService {
     runner: QueryRunner,
     dto: CreateDocumentDto,
   ): Promise<DocumentEntity> {
-    this.logger.debug('📝 persistDocument()');
-
     const docRepo = runner.manager.getRepository(DocumentEntity);
 
     const doc = docRepo.create({
       name: dto.name,
       description: dto.description,
     });
-    const saved = await docRepo.save(doc);
-    this.logger.debug(`   ↳ Document saved (ID=${saved.id})`);
-
-    return saved;
+    return docRepo.save(doc);
   }
 
   private async attachRoute(
@@ -83,13 +73,10 @@ export class CreateDocumentService {
     document: DocumentEntity,
     dto: CreateDocumentDto,
   ): Promise<void> {
-    this.logger.debug('🛤️  attachRoute()');
-
     const path = await this.routeService.generateAvailablePath(
       dto.name,
       'documento_',
     );
-    this.logger.debug(`   ↳ availablePath="${path}"`);
 
     const route = await this.routeService.createRouteWithManager(
       runner.manager,
@@ -110,7 +97,6 @@ export class CreateDocumentService {
 
     document.route = route;
     await runner.manager.save(document);
-    this.logger.verbose(`   ↩  attachRoute() OK | routeID=${route.id}`);
   }
 
   private async processMedia(
@@ -119,29 +105,25 @@ export class CreateDocumentService {
     dto: CreateDocumentDto,
     file?: Express.Multer.File,
   ) {
-    this.logger.debug('🎞️  processMedia()');
-
     let mediaUrl = dto.media.url?.trim() || '';
     let originalName = dto.media.originalName;
     let size = dto.media.size;
 
     if (dto.media.isLocalFile) {
       if (!file) {
-        this.logger.error('🚫 Arquivo obrigatório não enviado.');
-        throw new BadRequestException('Arquivo obrigatório não enviado.');
+        throw new BadRequestException('Required file not sent.');
       }
 
-      this.logger.log(`⬆️ Upload para S3: ${file.originalname}`);
       try {
         mediaUrl = await this.s3Service.upload(file);
         originalName = file.originalname;
         size = file.size;
       } catch (error) {
         this.logger.error(
-          `❌ Erro no upload do arquivo: ${file.originalname}`,
+          `Error uploading file: ${file.originalname}`,
           error.stack,
         );
-        throw new InternalServerErrorException('Falha no upload do arquivo.');
+        throw new InternalServerErrorException('File upload failed.');
       }
     }
 
@@ -162,9 +144,6 @@ export class CreateDocumentService {
       MediaTargetType.Document,
     );
 
-    const savedMedia = await this.mediaProcessor.saveMediaItem(mediaEntity);
-
-    this.logger.verbose(`✅ Mídia associada criada | mediaID=${savedMedia.id}`);
-    return savedMedia;
+    return this.mediaProcessor.saveMediaItem(mediaEntity);
   }
 }

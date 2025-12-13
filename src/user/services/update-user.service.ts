@@ -24,7 +24,6 @@ export class UpdateUserService {
   ) { }
 
   async update(id: string, dto: Partial<UpdateUserDto>): Promise<UserEntity> {
-    this.logger.debug(`Updating user ID: ${id}`);
     const current = await this.userRepo.findById(id);
     if (!current) throw new NotFoundException('UserEntity not found');
 
@@ -39,7 +38,6 @@ export class UpdateUserService {
     const willChangeRole = dto.role !== undefined && dto.role !== current.role;
 
     if (willChangeRole) {
-      this.logger.debug(`Role change: ${current.role} -> ${nextRole} (active alvo: ${nextActive})`);
 
       if (nextRole === UserRole.TEACHER) {
         await this.leaderService.removeByUserId(id);
@@ -68,7 +66,6 @@ export class UpdateUserService {
     }
 
     if (!willChangeRole && activeInDto) {
-      this.logger.debug(`Active toggled for same role: role=${nextRole} active=${nextActive}`);
 
       if (nextRole === UserRole.TEACHER) {
         if (nextActive) {
@@ -92,7 +89,6 @@ export class UpdateUserService {
       }
     }
     const user = await this.userRepo.update(id, dto);
-    this.logger.log(`User updated: ${id}`);
     return user;
   }
 }

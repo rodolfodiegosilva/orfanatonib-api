@@ -122,12 +122,10 @@ export class SheltersRepository {
     const qb = this.buildShelterBaseQB().distinct(true);
     this.applyRoleFilter(qb, ctx);
 
-    // 🔍 Filtro específico por nome do abrigo (tem prioridade sobre searchString)
     if (shelterName?.trim()) {
       const like = `%${shelterName.trim()}%`;
       qb.andWhere('LOWER(shelter.name) LIKE LOWER(:shelterName)', { shelterName: like });
     } else if (searchString?.trim()) {
-      // 🔍 Busca unificada: nome do abrigo, cidade, UF, bairro, nome de professores ou líderes
       const like = `%${searchString.trim()}%`;
       qb.andWhere(
         `(
@@ -154,7 +152,6 @@ export class SheltersRepository {
       );
     }
 
-    // Ordenação
     const sortMap: Record<string, string> = {
       name: 'shelter.name',
       createdAt: 'shelter.createdAt',
@@ -168,7 +165,6 @@ export class SheltersRepository {
     qb.orderBy(orderBy, orderDir as 'ASC' | 'DESC')
       .addOrderBy('teams.numberTeam', 'ASC');
 
-    // Paginação
     qb.skip((page - 1) * limit).take(limit);
 
     const [items, total] = await qb.getManyAndCount();
@@ -217,11 +213,6 @@ export class SheltersRepository {
     manager: EntityManager,
     id: string,
   ): Promise<ShelterEntity> {
-    const logger = new Logger('SheltersRepository.findOneOrFailForResponseTx');
-    logger.debug(`🔵 [findOneOrFailForResponseTx] Buscando abrigo: ID=${id}`);
-    
-    // Usar SQL raw para garantir que vemos os dados atualizados
-    logger.debug(`🔍 [findOneOrFailForResponseTx] Buscando dados do abrigo...`);
     const shelterData = await manager.query(`
       SELECT s.id, s.name, s.description, s.teamsQuantity, s.createdAt, s.updatedAt, s.address_id,
              a.id as address_id, a.street, a.number, a.district, a.city, a.state, a.postalCode, a.complement, a.createdAt as address_createdAt, a.updatedAt as address_updatedAt
@@ -231,7 +222,7 @@ export class SheltersRepository {
     `, [id]);
 
     if (!shelterData.length) {
-      throw new NotFoundException('Shelter não encontrado');
+      throw new NotFoundException('Shelter not found');
     }
 
     const shelter = shelterData[0];
@@ -244,7 +235,6 @@ export class SheltersRepository {
       ORDER BY t.numberTeam ASC
     `, [id]);
 
-    // Buscar líderes através de teams usando SQL raw (usando tabela de junção ManyToMany)
     const leadersData = await manager.query(`
       SELECT lp.id, lp.active, lp.createdAt, lp.updatedAt, lp.user_id,
              u.id as user_id, u.name, u.email, u.phone, u.active as user_active, u.completed, u.commonUser, u.role,
@@ -256,7 +246,6 @@ export class SheltersRepository {
       WHERE t.shelter_id = ?
     `, [id]);
 
-    // Buscar professores através de teams usando SQL raw
     const teachersData = await manager.query(`
       SELECT tp.id, tp.active, tp.createdAt, tp.updatedAt, tp.user_id, tp.team_id,
              u.id as user_id, u.name, u.email, u.phone, u.active as user_active, u.completed, u.commonUser, u.role,
@@ -276,7 +265,6 @@ export class SheltersRepository {
     shelterEntity.createdAt = shelter.createdAt;
     shelterEntity.updatedAt = shelter.updatedAt;
 
-    // Construir o endereço
     if (shelter.address_id) {
       const addressEntity = new AddressEntity();
       addressEntity.id = shelter.address_id;
@@ -292,21 +280,15 @@ export class SheltersRepository {
       shelterEntity.address = addressEntity;
     }
 
-    // Construir as teams com seus líderes e professores
-    logger.debug(`🏗️ [findOneOrFailForResponseTx] Construindo ${teamsData.length} equipe(s)...`);
-    shelterEntity.teams = teamsData.map((teamData, index) => {
-      logger.debug(`   🏗️ [findOneOrFailForResponseTx] Construindo equipe ${index + 1}/${teamsData.length}: ID=${teamData.id}, shelter_id=${teamData.shelter_id}`);
+    shelterEntity.teams = teamsData.map((teamData) => {
       const teamEntity = new TeamEntity();
       teamEntity.id = teamData.id;
       teamEntity.numberTeam = teamData.numberTeam;
       teamEntity.description = teamData.description;
       teamEntity.createdAt = teamData.createdAt;
       teamEntity.updatedAt = teamData.updatedAt;
-      // IMPORTANTE: Associar o shelter à equipe para evitar problemas de sincronização do TypeORM
       teamEntity.shelter = shelterEntity;
-      logger.debug(`   ✅ [findOneOrFailForResponseTx] Equipe construída: ID=${teamEntity.id}, shelter.id=${teamEntity.shelter?.id}`);
 
-      // Filtrar líderes desta team
       const teamLeaders = leadersData
         .filter((ld: any) => ld.team_id === teamData.id)
         .map((leaderData: any) => {
@@ -356,13 +338,11 @@ export class SheltersRepository {
 
       teamEntity.leaders = teamLeaders;
       teamEntity.teachers = teamTeachers;
-      logger.debug(`   ✅ [findOneOrFailForResponseTx] Equipe completa: ID=${teamEntity.id}, ${teamLeaders.length} líder(es), ${teamTeachers.length} professor(es)`);
       return teamEntity;
-        });
+    });
 
-      logger.debug(`✅ [findOneOrFailForResponseTx] Abrigo construído: ID=${shelterEntity.id}, ${shelterEntity.teams.length} equipe(s)`);
-      return shelterEntity;
-    }
+    return shelterEntity;
+  }
 
   async list(ctx?: RoleCtx): Promise<ShelterSelectOptionDto[]> {
     const qb = this.buildShelterBaseQB().orderBy('shelter.name', 'ASC');
@@ -372,18 +352,13 @@ export class SheltersRepository {
   }
 
   async createShelter(dto: CreateShelterDto): Promise<ShelterEntity> {
-    const logger = new Logger('SheltersRepository.createShelter');
-    logger.debug(`🔵 [createShelter] Iniciando criação de abrigo: ${dto.name}`);
     return this.dataSource.transaction(async (manager) => {
       const shelterRepo = manager.withRepository(this.shelterRepo);
       const addressRepo = manager.withRepository(this.addressRepo);
       
-      logger.debug(`🏗️ [createShelter] Criando endereço...`);
       const address = addressRepo.create(dto.address);
       await addressRepo.save(address);
-      logger.debug(`✅ [createShelter] Endereço criado: ID=${address.id}`);
 
-      logger.debug(`🏗️ [createShelter] Criando abrigo...`);
       const shelter = shelterRepo.create({
         name: dto.name,
         description: dto.description,
@@ -392,23 +367,14 @@ export class SheltersRepository {
       });
 
       try {
-        logger.debug(`💾 [createShelter] Salvando abrigo no banco...`);
         await shelterRepo.save(shelter);
-        logger.debug(`✅ [createShelter] Abrigo salvo: ID=${shelter.id}`);
       } catch (e: any) {
-        logger.error(`❌ [createShelter] Erro ao salvar abrigo: ${e.message}`);
         if (e?.code === 'ER_DUP_ENTRY' || e?.code === '23505') {
-          throw new ConflictException('Já existe um Shelter com esse nome');
+          throw new ConflictException('A Shelter with this name already exists');
         }
         throw e;
       }
 
-      // ❌ REMOVIDO: Associação direta de líderes e professores
-      // Agora isso é feito através de Teams
-
-      // Retornar apenas o shelter básico sem equipes
-      // As equipes serão criadas depois e o abrigo completo será buscado no final
-      logger.debug(`✅ [createShelter] Abrigo criado com sucesso: ID=${shelter.id}`);
       return shelter;
     });
   }
@@ -422,7 +388,7 @@ export class SheltersRepository {
         where: { id },
         relations: { address: true },
       });
-      if (!shelter) throw new NotFoundException('Shelter não encontrado');
+      if (!shelter) throw new NotFoundException('Shelter not found');
 
       if (dto.name !== undefined) shelter.name = dto.name as any;
       if (dto.description !== undefined) shelter.description = dto.description;
@@ -443,27 +409,20 @@ export class SheltersRepository {
           Object.assign(shelter.address, addressUpdate);
           await addressRepo.save(shelter.address);
         } else {
-          // Criar novo endereço (remover id, createdAt, updatedAt se existirem)
           const { id, createdAt, updatedAt, ...addressData } = dto.address as any;
           const newAddress = addressRepo.create(addressData);
           const savedAddress = await addressRepo.save(newAddress);
-          // Garantir que savedAddress é uma única entidade, não um array
           shelter.address = Array.isArray(savedAddress) ? savedAddress[0] : savedAddress;
         }
       }
 
       await shelterRepo.save(shelter);
 
-      // ❌ REMOVIDO: Associação direta de líderes e professores
-      // Agora isso é feito através de Teams
 
       return this.findOneOrFailForResponseTx(manager, shelter.id);
     });
   }
 
-  // ❌ REMOVIDO: syncTeachersForShelterTx - Agora feito através de Teams
-  // ❌ REMOVIDO: syncLeadersForShelterDirect - Agora feito através de Teams
-  // ❌ REMOVIDO: syncLeadersForShelterTx - Agora feito através de Teams
 
   async deleteById(id: string): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
@@ -477,101 +436,62 @@ export class SheltersRepository {
         where: { id },
         relations: { address: true },
       });
-      if (!shelter) throw new NotFoundException('Shelter não encontrado');
+      if (!shelter) throw new NotFoundException('Shelter not found');
 
-      // Buscar todas as equipes do abrigo
       const teams = await txTeam.find({
         where: { shelter: { id } },
       });
 
-      // Para cada equipe, limpar relacionamentos antes de deletar usando raw SQL
-      // Isso evita problemas com relações bidirecionais do TypeORM
       for (const team of teams) {
-        this.logger.debug(`   🔗 [deleteById] Limpando relacionamentos da equipe ${team.id}...`);
-        
-        // 1. Remover líderes da equipe (ManyToMany - tabela leader_teams) usando raw SQL
         await manager.query(
           `DELETE FROM leader_teams WHERE team_id = ?`,
           [team.id]
         );
-        this.logger.debug(`   ✅ [deleteById] Líderes desvinculados da equipe ${team.id}`);
 
-        // 2. Remover professores da equipe (ManyToOne - setar team_id = null) usando raw SQL
         await manager.query(
           `UPDATE teacher_profiles SET team_id = NULL WHERE team_id = ?`,
           [team.id]
         );
-        this.logger.debug(`   ✅ [deleteById] Professores desvinculados da equipe ${team.id}`);
-      }
+        }
 
-      // 3. Deletar todas as equipes do abrigo
       if (teams.length > 0) {
-        this.logger.debug(`🗑️ [deleteById] Deletando ${teams.length} equipe(s)...`);
         await txTeam.remove(teams);
-        this.logger.debug(`✅ [deleteById] Equipes deletadas`);
       }
 
-      // 4. Deletar a mídia relacionada ao abrigo
-      this.logger.debug(`🗑️ [deleteById] Deletando mídia relacionada...`);
       const txMedia = manager.withRepository(this.mediaRepo);
       const mediaItems = await txMedia.find({
         where: { targetId: id, targetType: 'ShelterEntity' },
       });
       if (mediaItems.length > 0) {
-        this.logger.debug(`   🗑️ [deleteById] Encontradas ${mediaItems.length} mídia(s) para deletar`);
-        // Deletar arquivos do S3 antes de remover do banco
         for (const media of mediaItems) {
           if (media.isLocalFile && media.url) {
             try {
-              this.logger.debug(`   🗑️ [deleteById] Deletando arquivo do S3: ${media.url}`);
               await this.s3Service.delete(media.url);
-              this.logger.debug(`   ✅ [deleteById] Arquivo deletado do S3`);
             } catch (error: any) {
-              // Log mas não falha se não conseguir deletar do S3
-              this.logger.warn(`   ⚠️ [deleteById] Erro ao deletar arquivo do S3: ${error.message}`);
+              this.logger.warn(`Error deleting file from S3: ${error.message}`);
             }
           }
         }
-        // Deletar mídias do banco
         await txMedia.remove(mediaItems);
-        this.logger.debug(`✅ [deleteById] ${mediaItems.length} mídia(s) deletada(s) do banco`);
-      } else {
-        this.logger.debug(`⏭️ [deleteById] Nenhuma mídia encontrada para deletar`);
       }
 
-      // 5. Deletar a rota relacionada ao abrigo
-      this.logger.debug(`🗑️ [deleteById] Deletando rota relacionada...`);
       const txRoute = manager.withRepository(this.routeRepo);
       const route = await txRoute.findOne({
         where: { entityType: 'shelterPage', entityId: id },
       });
       if (route) {
         await txRoute.remove(route);
-        this.logger.debug(`✅ [deleteById] Rota deletada: ID=${route.id}`);
-      } else {
-        this.logger.debug(`⏭️ [deleteById] Nenhuma rota encontrada para deletar`);
       }
 
-      // 6. Deletar o abrigo
-      this.logger.debug(`🗑️ [deleteById] Deletando abrigo...`);
       const addressId = shelter.address?.id;
       await txShelter.delete(shelter.id);
-      this.logger.debug(`✅ [deleteById] Abrigo deletado`);
 
-      // 7. Deletar o endereço se existir
       if (addressId) {
-        this.logger.debug(`🗑️ [deleteById] Deletando endereço...`);
         await txAddress.delete(addressId);
-        this.logger.debug(`✅ [deleteById] Endereço deletado`);
       }
-
-      this.logger.log(`✅ [deleteById] Abrigo e recursos relacionados deletados com sucesso: ID=${id}`);
     });
   }
 
-  // ❌ REMOVIDO: assignTeachers - Agora feito através de Teams
-  // ❌ REMOVIDO: unassignTeachers - Agora feito através de Teams
-  // ❌ REMOVIDO: moveTeachers - Agora feito através de Teams
 
   async userHasAccessToShelter(shelterId: string, ctx?: RoleCtx): Promise<boolean> {
     const role = ctx?.role?.toLowerCase();
@@ -601,7 +521,4 @@ export class SheltersRepository {
     return leader?.id ?? null;
   }
 
-  // ❌ REMOVIDO: assignLeaders - Agora feito através de Teams
-  // ❌ REMOVIDO: removeLeaders - Agora feito através de Teams
-  // ❌ REMOVIDO: removeTeachers - Agora feito através de Teams
 }

@@ -22,7 +22,6 @@ export class GetMeditationService {
   async findAll(): Promise<WeekMeditationResponseDto[]> {
     const meditations = await this.meditationRepo.findAllWithRelations();
     if (!meditations.length) {
-      this.logger.log('📭 Nenhuma meditação encontrada.');
       return [];
     }
 
@@ -39,7 +38,7 @@ export class GetMeditationService {
     return meditations.map((meditation) => {
       const media = mediaMap.get(meditation.id)?.[0] || null;
       if (!media) {
-        this.logger.warn(`⚠️ Meditação sem mídia: "${meditation.topic}"`);
+        this.logger.warn(`Meditation without media: "${meditation.topic}"`);
       }
       return WeekMeditationResponseDto.success(meditation, media);
     });
@@ -47,13 +46,13 @@ export class GetMeditationService {
 
   async findOne(id: string): Promise<WeekMeditationResponseDto> {
     if (!id || typeof id !== 'string') {
-      throw new BadRequestException('ID inválido fornecido');
+      throw new BadRequestException('Invalid ID provided');
     }
 
     const meditation = await this.meditationRepo.findOneWithRelations(id);
     if (!meditation) {
-      this.logger.warn(`⚠️ Meditação não encontrada: ID=${id}`);
-      throw new NotFoundException('Meditação não encontrada');
+      this.logger.warn(`Meditation not found: ID=${id}`);
+      throw new NotFoundException('Meditation not found');
     }
     const media = await this.mediaItemProcessor.findMediaItemByTarget(meditation.id, MediaTargetType.Meditation);
     return WeekMeditationResponseDto.success(meditation, media);
@@ -72,12 +71,11 @@ export class GetMeditationService {
       const end = parseDateAsLocal(m.endDate.toString());
 
       if (todayLocal >= start && todayLocal <= end) {
-        this.logger.log(`✅ Meditação da semana encontrada: ${m.topic} (${m.id})`);
         const mediaList = await this.mediaItemProcessor.findMediaItemsByTarget(m.id, MediaTargetType.Meditation);
         const media = mediaList?.[0];
 
         if (!media) {
-          this.logger.warn(`⚠️ Nenhuma mídia vinculada à meditação ID=${m.id}`);
+          this.logger.warn(`No media linked to meditation ID=${m.id}`);
           return WeekMeditationResponseDto.notFound();
         }
 
@@ -85,7 +83,6 @@ export class GetMeditationService {
       }
     }
 
-    this.logger.log('📭 Nenhuma meditação da semana atual encontrada.');
     return WeekMeditationResponseDto.notFound();
   }
 }

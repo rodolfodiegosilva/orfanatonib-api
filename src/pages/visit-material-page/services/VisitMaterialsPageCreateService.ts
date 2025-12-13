@@ -28,10 +28,9 @@ export class VisitMaterialsPageCreateService {
     raw: string,
     files: Express.Multer.File[],
   ): Promise<VisitMaterialsPageResponseDTO> {
-    this.logger.debug('📥 Processando dados brutos para criação de página');
 
     if (!raw) {
-      throw new BadRequestException('visitMaterialsPageData é obrigatório.');
+      throw new BadRequestException('visitMaterialsPageData is required.');
     }
 
     try {
@@ -45,8 +44,8 @@ export class VisitMaterialsPageCreateService {
 
       return this.createVisitMaterialsPage(dto, filesDict);
     } catch (err) {
-      this.logger.error('❌ Erro ao processar dados para criação', err);
-      throw new BadRequestException('Erro ao criar a página de materiais: ' + err.message);
+      this.logger.error('Error processing data for creation', err);
+      throw new BadRequestException('Error creating materials page: ' + err.message);
     }
   }
 
@@ -54,7 +53,6 @@ export class VisitMaterialsPageCreateService {
     dto: CreateVisitMaterialsPageDto,
     filesDict: Record<string, Express.Multer.File>,
   ): Promise<VisitMaterialsPageResponseDTO> {
-    this.logger.debug(`🚧 Criando nova página: "${dto.pageTitle}"`);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -71,7 +69,6 @@ export class VisitMaterialsPageCreateService {
         description: dto.pageDescription,
       });
       savedPage = await queryRunner.manager.save(page);
-      this.logger.debug(`💾 Página salva. ID=${savedPage.id}`);
 
       const path = await this.routeService.generateAvailablePath(dto.pageTitle, 'materiais_visita_');
       const route = await this.routeService.createRouteWithManager(queryRunner.manager, {
@@ -87,7 +84,6 @@ export class VisitMaterialsPageCreateService {
         public: true,
         current: false
       });
-      this.logger.debug(`🛤️ Rota criada. ID=${route.id}`);
 
       savedPage.route = route;
       await queryRunner.manager.save(savedPage);
@@ -98,7 +94,6 @@ export class VisitMaterialsPageCreateService {
         images: dto.images || [],
         audios: dto.audios || [],
       });
-      this.logger.debug(`Itens de mídia ajustados: ${JSON.stringify(adjustedMediaItems)}`);
 
       mediaItems = await this.mediaItemProcessor.processMediaItemsPolymorphic(
         adjustedMediaItems,
@@ -109,12 +104,11 @@ export class VisitMaterialsPageCreateService {
       );
 
       await queryRunner.commitTransaction();
-      this.logger.debug(`✅ Página criada com sucesso. ID=${savedPage.id}`);
 
       return VisitMaterialsPageResponseDTO.fromEntity(savedPage, mediaItems);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error('❌ Erro ao criar página. Rollback executado.', error);
+      this.logger.error('Error creating page. Rollback executed.', error);
       throw new BadRequestException(`Erro ao criar a página de materiais: ${error.message}`);
     } finally {
       await queryRunner.release();

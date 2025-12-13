@@ -34,7 +34,7 @@ export class AuthContextService {
       process.env.JWT_SECRET ??
       '';
     if (!secret) {
-      throw new UnauthorizedException('JWT secret não configurado');
+      throw new UnauthorizedException('JWT secret not configured');
     }
     const payload = await this.jwt.verifyAsync<JwtPayload>(token, { secret });
     return this.normalizePayload(payload);
@@ -47,7 +47,7 @@ export class AuthContextService {
 
   async getPayloadFromRequest(req: Request): Promise<JwtPayload> {
     const token = this.getTokenFromRequest(req);
-    if (!token) throw new UnauthorizedException('Token ausente');
+    if (!token) throw new UnauthorizedException('Token missing');
     return this.verifyToken(token);
   }
 

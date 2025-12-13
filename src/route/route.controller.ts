@@ -25,22 +25,18 @@ export class RouteController {
 
   @Get()
   async findAll(): Promise<RouteEntity[]> {
-    const routes = await this.routeService.findAllRoutes();
-    this.logger.debug(`📦 Rotas retornadas: ${routes.length}`);
-    return routes;
+    return this.routeService.findAllRoutes();
   }
 
   @Get('orphans/check')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async checkOrphanRoutes() {
-    this.logger.log('🔍 Verificando rotas órfãs...');
     return this.cleanupService.findOrphanRoutes();
   }
 
   @Post('orphans/cleanup')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async cleanupOrphanRoutes() {
-    this.logger.log('🗑️ Iniciando limpeza de rotas órfãs...');
     return this.cleanupService.cleanupOrphanRoutes();
   }
 
@@ -48,8 +44,7 @@ export class RouteController {
   async findOne(@Param('id') id: string): Promise<RouteEntity> {
     const route = await this.routeService.findById(id);
     if (!route) {
-      this.logger.warn(`⚠️ Rota ID=${id} não encontrada`);
-      throw new NotFoundException('Rota não encontrada');
+      throw new NotFoundException('Route not found');
     }
     return route;
   }

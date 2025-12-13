@@ -23,7 +23,6 @@ export class CreateUserService {
   ) { }
 
   async create(dto: CreateUserDto): Promise<UserEntity> {
-    this.logger.debug(`Creating user with email: ${dto.email}`);
     const hashedPassword = await bcrypt.hash(dto.password, 10);
     const user = await this.userRepo.create({
       email: dto.email,
@@ -41,7 +40,6 @@ export class CreateUserService {
     } else if (user.role === UserRole.TEACHER) {
       await this.teacherService.createForUser(user.id);
     }
-    this.logger.log(`User created: ${user.id}`);
     return user;
   }
 }

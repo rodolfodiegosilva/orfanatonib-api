@@ -13,7 +13,6 @@ export class GetVideosPageService {
   ) {}
 
   async findAll(): Promise<VideosPageResponseDto[]> {
-    this.logger.debug('📡 Listando todas as páginas de vídeos...');
     const pages = await this.videosPageRepo.findAll();
     const pageIds = pages.map((page) => page.id);
     const mediaItems = await this.mediaItemProcessor.findManyMediaItemsByTargets(pageIds, 'VideosPage');
@@ -28,9 +27,8 @@ export class GetVideosPageService {
   }
 
   async findOne(id: string): Promise<VideosPageResponseDto> {
-    this.logger.debug(`📡 Buscando página de vídeos ID=${id}...`);
     const page = await this.videosPageRepo.findById(id);
-    if (!page) throw new NotFoundException('Página de vídeos não encontrada.');
+    if (!page) throw new NotFoundException('Videos page not found.');
 
     const mediaItems = await this.mediaItemProcessor.findMediaItemsByTarget(page.id, 'VideosPage');
     return VideosPageResponseDto.fromEntity(page, mediaItems);

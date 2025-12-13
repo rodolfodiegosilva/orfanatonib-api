@@ -46,11 +46,8 @@ export class DocumentsController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('documentData') documentDataRaw?: string,
   ) {
-    this.logger.log('📥 [POST /documents] Criando novo documento');
-
     if (!documentDataRaw) {
-      this.logger.warn('❗ Campo "documentData" não enviado');
-      throw new BadRequestException('Campo "documentData" não enviado.');
+      throw new BadRequestException('Field "documentData" not sent.');
     }
 
     let dto: CreateDocumentDto;
@@ -59,32 +56,24 @@ export class DocumentsController {
       dto = plainToInstance(CreateDocumentDto, parsed);
       await validateOrReject(dto);
     } catch (error) {
-      this.logger.error('❌ Erro ao processar dados do documento', error);
-      throw new BadRequestException('Erro ao processar dados do documento.');
+      this.logger.error('Error processing document data', error);
+      throw new BadRequestException('Error processing document data.');
     }
 
     const file = dto.media?.fileField
       ? files?.find((f) => f.fieldname === dto.media.fileField)
       : undefined;
 
-    if (dto.media?.fileField && !file) {
-      this.logger.warn(`⚠️ Nenhum arquivo encontrado com fieldname: ${dto.media.fileField}`);
-    }
-
-    const result = await this.createService.createDocument(dto, file);
-    this.logger.log('✅ Documento criado com sucesso');
-    return result;
+    return this.createService.createDocument(dto, file);
   }
 
   @Get()
   async findAll() {
-    this.logger.log('📄 [GET /documents] Listando todos os documentos');
     return this.getService.findAll();
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    this.logger.log(`🔍 [GET /documents/${id}] Buscando documento`);
     return this.getService.findOne(id);
   }
 
@@ -96,11 +85,8 @@ export class DocumentsController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('documentData') documentDataRaw?: string,
   ) {
-    this.logger.log(`✏️ [PATCH /documents/${id}] Atualizando documento`);
-
     if (!documentDataRaw) {
-      this.logger.warn('❗ Campo "documentData" não enviado');
-      throw new BadRequestException('Campo "documentData" não enviado.');
+      throw new BadRequestException('Field "documentData" not sent.');
     }
 
     let dto: UpdateDocumentDto;
@@ -110,29 +96,20 @@ export class DocumentsController {
       dto.id = id;
       await validateOrReject(dto);
     } catch (error) {
-      this.logger.error('❌ Erro ao processar dados do documento', error);
-      throw new BadRequestException('Erro ao processar dados do documento.');
+      this.logger.error('Error processing document data', error);
+      throw new BadRequestException('Error processing document data.');
     }
 
     const file = dto.media?.fileField
       ? files?.find((f) => f.fieldname === dto.media.fileField)
       : undefined;
 
-    if (dto.media?.fileField && !file) {
-      this.logger.warn(`⚠️ Nenhum arquivo encontrado com fieldname: ${dto.media.fileField}`);
-    }
-
-    const result = await this.updateService.execute(id, dto, file);
-    this.logger.log(`✅ Documento atualizado com sucesso: ID=${id}`);
-    return result;
+    return this.updateService.execute(id, dto, file);
   }
 
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    this.logger.log(`🗑️ [DELETE /documents/${id}] Removendo documento`);
-    const result = await this.deleteService.execute(id);
-    this.logger.log(`✅ Documento removido com sucesso: ID=${id}`);
-    return result;
+    return this.deleteService.execute(id);
   }
 }

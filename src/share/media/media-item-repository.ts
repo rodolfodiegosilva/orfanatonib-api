@@ -13,12 +13,10 @@ export class MediaItemRepository {
   ) { }
 
   async findByTarget(targetId: string, targetType: string): Promise<MediaItemEntity[]> {
-    this.logger.debug(`🔍 Buscando mídias por targetId=${targetId}, targetType=${targetType}`);
     return this.mediaRepo.find({ where: { targetId, targetType } });
   }
 
   async findManyByTargets(targetIds: string[], targetType: string): Promise<MediaItemEntity[]> {
-    this.logger.debug(`🔍 Buscando mídias para múltiplos targets do tipo ${targetType}`);
     return this.mediaRepo.find({
       where: {
         targetType,
@@ -28,9 +26,7 @@ export class MediaItemRepository {
   }
 
   async save(media: MediaItemEntity): Promise<MediaItemEntity> {
-    const saved = await this.mediaRepo.save(media);
-    this.logger.debug(`💾 Mídia salva: ID=${saved.id}, título=${saved.title}`);
-    return saved;
+    return this.mediaRepo.save(media);
   }
 
   async saveById(id: string, data: Partial<MediaItemEntity>): Promise<MediaItemEntity> {
@@ -39,22 +35,18 @@ export class MediaItemRepository {
       ['id'],
     );
     const updated = await this.mediaRepo.findOneBy({ id });
-    this.logger.debug(`🔁 Mídia upserted (saveById): ID=${id}, título=${updated?.title}`);
     return updated!;
   }
 
   async update(id: string, partial: Partial<MediaItemEntity>): Promise<void> {
     await this.mediaRepo.update(id, partial);
-    this.logger.debug(`✏️ Mídia atualizada: ID=${id}`);
   }
 
   async removeMany(items: MediaItemEntity[]): Promise<void> {
     await this.mediaRepo.remove(items);
-    this.logger.debug(`🧹 ${items.length} mídias removidas do banco de dados.`);
   }
 
   async removeOne(item: MediaItemEntity): Promise<void> {
     await this.mediaRepo.remove(item);
-    this.logger.debug(`🧽 Mídia removida: ID=${item.id}, título=${item.title}`);
   }
 }

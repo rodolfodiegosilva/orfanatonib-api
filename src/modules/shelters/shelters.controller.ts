@@ -82,9 +82,7 @@ export class SheltersController {
     @UploadedFiles() files: Express.Multer.File[] = [],
     @Req() req: Request,
     @Body('shelterData') shelterDataRaw?: string,
-    @Body() body?: any, // Para suportar JSON puro (quando não vem form-data)
   ): Promise<ShelterResponseDto> {
-    // Se veio como form-data, usar shelterDataRaw; senão, usar body completo (JSON puro)
     const bodyToProcess = shelterDataRaw ? { shelterData: shelterDataRaw } : (body || {});
     const entity = await this.createService.createFromRaw(bodyToProcess, files, req);
     return toShelterDto(entity);
@@ -97,19 +95,10 @@ export class SheltersController {
     @UploadedFiles() files: Express.Multer.File[] = [],
     @Req() req: Request,
     @Body('shelterData') shelterDataRaw?: string,
-    @Body() body?: any, // Para suportar JSON puro (quando não vem form-data)
+    @Body() body?: any,
   ): Promise<ShelterResponseDto> {
-    this.logger.log(`🔵 [PUT /shelters/:id] Iniciando atualização do abrigo ID=${id}`);
-    this.logger.debug(`📥 Body recebido - shelterDataRaw: ${shelterDataRaw ? 'presente' : 'ausente'}`);
-    this.logger.debug(`📥 Body recebido - body keys: ${body ? Object.keys(body).join(', ') : 'vazio'}`);
-    this.logger.debug(`📁 Arquivos recebidos: ${files.length} arquivo(s)`);
-    
-    // Se veio como form-data, usar shelterDataRaw; senão, usar body completo (JSON puro)
     const bodyToProcess = shelterDataRaw ? { shelterData: shelterDataRaw } : (body || {});
-    this.logger.debug(`📦 Body processado: ${JSON.stringify(bodyToProcess, null, 2)}`);
-    
     const entity = await this.updateService.updateFromRaw(id, bodyToProcess, files, req);
-    this.logger.log(`✅ [PUT /shelters/:id] Abrigo atualizado com sucesso ID=${id}`);
     return toShelterDto(entity);
   }
 
@@ -120,9 +109,7 @@ export class SheltersController {
     @UploadedFiles() files: Express.Multer.File[] = [],
     @Req() req: Request,
     @Body('mediaData') mediaDataRaw?: string,
-    @Body() body?: any, // Para suportar campos diretos (quando não vem form-data)
   ): Promise<ShelterResponseDto> {
-    // Se veio como form-data, usar mediaDataRaw; senão, usar body completo
     const bodyToProcess = mediaDataRaw ? { mediaData: mediaDataRaw } : (body || {});
     const entity = await this.updateService.updateMediaFromRaw(id, bodyToProcess, files, req);
     return toShelterDto(entity);

@@ -25,27 +25,23 @@ export class ContactService {
   }
 
   async createContact(data: Partial<ContactEntity>): Promise<ContactEntity> {
-    this.logger.debug(`📩 Iniciando processo de criação de contato para: ${data.email}`);
-
     let contact: ContactEntity;
     try {
       contact = await this.contactRepo.saveContact(data);
-      this.logger.log(`✅ Contato salvo no banco: ID=${contact.id}`);
     } catch (error) {
-      this.logger.error(`❌ Erro ao salvar contato no banco: ${error.message}`, error.stack);
-      throw new InternalServerErrorException('Erro ao salvar o contato');
+      this.logger.error(`Error saving contact: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Error saving contact');
     }
 
     const htmlBody = this.generateContactEmailTemplate(contact);
-    const subject = 'Novo contato do site';
+    const subject = 'New site contact';
     const to = process.env.SES_DEFAULT_TO;
 
     try {
       await this.awsService.sendEmailViaSES(to || '', subject, '', htmlBody);
-      this.logger.log(`📧 E-mail enviado com sucesso para: ${to}`);
     } catch (error) {
-      this.logger.error(`❌ Erro ao enviar e-mail: ${error.message}`, error.stack);
-      throw new InternalServerErrorException('Erro ao enviar e-mail de contato');
+      this.logger.error(`Error sending email: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Error sending contact email');
     }
 
     const whatsappFrom = process.env.TWILIO_WHATSAPP_FROM;
@@ -54,14 +50,11 @@ export class ContactService {
     if (whatsappFrom && whatsappTo) {
       const message = this.generateWhatsappMessage(contact);
       try {
-        const result = await this.twilio.messages.create({ body: message, from: whatsappFrom, to: whatsappTo, });
-        this.logger.log(`📲 WhatsApp enviado com sucesso! SID: ${result.sid}`);
+        await this.twilio.messages.create({ body: message, from: whatsappFrom, to: whatsappTo });
       } catch (err) {
-        this.logger.error(`❌ Erro ao enviar WhatsApp: ${err.message}`, err.stack);
-        throw new InternalServerErrorException('Erro ao enviar WhatsApp de contato');
+        this.logger.error(`Error sending WhatsApp: ${err.message}`, err.stack);
+        throw new InternalServerErrorException('Error sending contact WhatsApp');
       }
-    } else {
-      this.logger.warn('⚠️ TWILIO_WHATSAPP_FROM ou TO não estão definidos no .env — WhatsApp não será enviado.');
     }
 
     return contact;
@@ -131,55 +124,49 @@ ${contact.message}
 
   async getAllContacts(): Promise<ContactEntity[]> {
     try {
-      this.logger.log('📥 Buscando todos os contatos...');
-      const contacts = await this.contactRepo.getAll();
-      this.logger.log(`✅ ${contacts.length} contato(s) encontrados`);
-      return contacts;
+      return this.contactRepo.getAll();
     } catch (error) {
-      this.logger.error('❌ Erro ao buscar contatos', error.stack);
-      throw new InternalServerErrorException('Erro ao buscar contatos');
+      this.logger.error('Error fetching contacts', error.stack);
+      throw new InternalServerErrorException('Error fetching contacts');
     }
   }
 
   async setReadOnContact(id: string): Promise<ContactEntity> {
     try {
-      this.logger.log('📥 Buscando contato...');
       const contact = await this.contactRepo.findOneById(id);
 
       if (!contact) {
-        this.logger.warn(`⚠️ Contato não encontrado com id: ${id}`);
-        throw new NotFoundException('Contato não encontrado');
+        throw new NotFoundException('Contact not found');
       }
 
       contact.read = true;
-
-      this.logger.log(`📥 Atualizando contato...`);
       await this.contactRepo.save(contact);
 
       return contact;
     } catch (error) {
-      this.logger.error('❌ Erro ao buscar ou atualizar contato', error.stack);
-      throw new InternalServerErrorException('Erro ao buscar ou atualizar contato');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error('Error updating contact', error.stack);
+      throw new InternalServerErrorException('Error updating contact');
     }
   }
 
   async deleteContact(id: string): Promise<void> {
     try {
-      this.logger.log(`🗑️ Iniciando exclusão do contato ID=${id}`);
-
       const contact = await this.contactRepo.findOneById(id);
 
       if (!contact) {
-        this.logger.warn(`⚠️ Contato não encontrado: ID=${id}`);
-        throw new NotFoundException('Contato não encontrado');
+        throw new NotFoundException('Contact not found');
       }
 
       await this.contactRepo.remove(contact);
-
-      this.logger.log(`✅ Contato excluído com sucesso: ID=${id}`);
     } catch (error) {
-      this.logger.error(`❌ Erro ao excluir contato ID=${id}`, error.stack);
-      throw new InternalServerErrorException('Erro ao excluir contato');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(`Error deleting contact ID=${id}`, error.stack);
+      throw new InternalServerErrorException('Error deleting contact');
     }
   }
 }

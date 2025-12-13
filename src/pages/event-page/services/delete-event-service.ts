@@ -21,25 +21,20 @@ import {
     ) {}
   
     async remove(id: string): Promise<void> {
-      this.logger.log(`🗑️ Removendo evento ID=${id}`);
   
       const event = await this.eventRepo.findById(id);
       if (!event) {
-        this.logger.warn(`⚠️ Evento não encontrado: ID=${id}`);
-        throw new NotFoundException('Evento não encontrado');
+        throw new NotFoundException('Event not found');
       }
   
       const media = await this.mediaItemProcessor.findMediaItemsByTarget(id, MediaTargetType.Event);
       if (media.length > 0) {
         await this.mediaItemProcessor.deleteMediaItems(media, this.s3Service.delete.bind(this.s3Service));
-        this.logger.log(`🎞️ Mídias associadas removidas: ${media.length}`);
       }
   
       await this.routeService.removeRouteByEntity(MediaTargetType.Event, id);
-      this.logger.log(`🛤️ Rota associada removida`);
   
       await this.eventRepo.delete(id);
-      this.logger.log(`✅ Evento excluído com sucesso`);
     }
   }
   

@@ -66,7 +66,6 @@ export class TeacherResponseDto {
   @Expose()
   @Type(() => ShelterMiniWithCoordinatorDto)
   @Transform(({ obj }) => {
-    // Se o professor não tem equipe, não tem abrigo
     if (!obj.team || !obj.team.shelter) {
       return null;
     }

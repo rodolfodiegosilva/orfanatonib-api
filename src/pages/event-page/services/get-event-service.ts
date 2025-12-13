@@ -22,7 +22,6 @@ export class GetEventService {
     const events = await this.eventRepo.findAll();
 
     if (!events.length) {
-      this.logger.log('📭 Nenhum evento encontrado.');
       return [];
     }
 
@@ -32,7 +31,7 @@ export class GetEventService {
       const media = mediaMap.get(event.id)?.[0] ?? null;
 
       if (!media) {
-        this.logger.warn(`⚠️ Evento sem mídia: "${event.title}"`);
+        this.logger.warn(`Event without media: "${event.title}"`);
       }
 
       return EventResponseDto.fromEntity(event, media);
@@ -41,14 +40,14 @@ export class GetEventService {
 
   async findOne(id: string): Promise<EventResponseDto> {
     if (!id || typeof id !== 'string') {
-      throw new BadRequestException('ID inválido fornecido');
+      throw new BadRequestException('Invalid ID provided');
     }
 
     const event = await this.eventRepo.findById(id);
 
     if (!event) {
-      this.logger.warn(`⚠️ Evento não encontrado: ID=${id}`);
-      throw new NotFoundException('Evento não encontrado');
+      this.logger.warn(`Event not found: ID=${id}`);
+      throw new NotFoundException('Event not found');
     }
 
     const media = await this.mediaItemProcessor.findMediaItemByTarget(
@@ -72,7 +71,6 @@ export class GetEventService {
     });
 
     if (!futureEvents.length) {
-      this.logger.log('📭 Nenhum evento futuro ou atual encontrado.');
       return [];
     }
 
@@ -82,7 +80,7 @@ export class GetEventService {
       const media = mediaMap.get(event.id)?.[0] ?? null;
 
       if (!media) {
-        this.logger.warn(`⚠️ Evento sem mídia: "${event.title}"`);
+        this.logger.warn(`Event without media: "${event.title}"`);
       }
 
       return EventResponseDto.fromEntity(event, media);

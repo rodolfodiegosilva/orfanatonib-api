@@ -34,18 +34,16 @@ import { CreateEventDto } from '../dto/create-event.dto';
         });
   
         const savedEvent = await this.eventRepo.save(event);
-        this.logger.log(`✅ Evento salvo: ID=${savedEvent.id}`);
   
         let mediaUrl = dto.media.url?.trim() || '';
         let originalName = dto.media.originalName;
         let size = dto.media.size;
   
         if (dto.media.isLocalFile) {
-          if (!file) throw new BadRequestException('Arquivo não enviado.');
+          if (!file) throw new BadRequestException('File not sent.');
           mediaUrl = await this.s3Service.upload(file);
           originalName = file.originalname;
           size = file.size;
-          this.logger.log(`⬆️ Upload de mídia concluído: ${mediaUrl}`);
         }
   
         const mediaEntity = this.mediaItemProcessor.buildBaseMediaItem(
@@ -66,11 +64,10 @@ import { CreateEventDto } from '../dto/create-event.dto';
         );
   
         await this.mediaItemProcessor.saveMediaItem(mediaEntity);
-        this.logger.log(`🎞️ Mídia salva para evento`);
   
         return savedEvent;
       } catch (error) {
-        this.logger.error('❌ Erro ao criar evento', error.stack);
+        this.logger.error('Error creating event', error.stack);
         throw new BadRequestException(
           error?.message || 'Erro inesperado ao criar evento.',
         );

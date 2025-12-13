@@ -21,7 +21,7 @@ export class IdeasPageGetService {
 
   async findOne(id: string): Promise<IdeasPageEntity> {
     const page = await this.pageRepo.findOnePageById(id);
-    if (!page) throw new NotFoundException('Página não encontrada');
+    if (!page) throw new NotFoundException('Page not found');
     return page;
   }
 

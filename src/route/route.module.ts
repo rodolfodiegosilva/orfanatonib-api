@@ -5,7 +5,7 @@ import { RouteRepository } from './route-page.repository';
 import { DataSource } from 'typeorm';
 import { RouteService } from './route.service';
 import { RouteController } from './route.controller';
-import { MeditationModule } from 'src/meditation/meditation.module';
+import { MeditationModule } from 'src/meditation/meditation.module'; 
 import { CleanupOrphanRoutesService } from './services/cleanup-orphan-routes.service'; 
 
 @Module({

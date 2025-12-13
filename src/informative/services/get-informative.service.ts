@@ -18,22 +18,20 @@ export class GetInformativeService {
   ) {}
 
   async findAll(): Promise<InformativeResponseDto[]> {
-    this.logger.log('📢 Buscando todos os banners informativos');
     try {
       const list = await this.informativeRepo.findAllSorted();
       return list.map((entity) => InformativeResponseDto.fromEntity(entity));
     } catch (error) {
-      this.logger.error('❌ Erro ao buscar banners', error.stack);
+      this.logger.error('Error fetching banners', error.stack);
       throw new InternalServerErrorException('Erro ao buscar banners informativos');
     }
   }
 
   async findOne(id: string): Promise<InformativeResponseDto> {
-    this.logger.log(`🔍 Buscando banner por ID=${id}`);
     const item = await this.informativeRepo.findOneById(id);
     if (!item) {
-      this.logger.warn(`⚠️ Banner não encontrado: ID=${id}`);
-      throw new NotFoundException('Banner informativo não encontrado');
+      this.logger.warn(`Banner not found: ID=${id}`);
+      throw new NotFoundException('Informative banner not found');
     }
 
     return InformativeResponseDto.fromEntity(item);

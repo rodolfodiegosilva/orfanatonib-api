@@ -28,7 +28,7 @@ export class AwsS3Service {
 
     this.bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME') || '';
     if (!this.bucketName) {
-      this.logger.error('❌ AWS_S3_BUCKET_NAME não foi definido!');
+      this.logger.error('AWS_S3_BUCKET_NAME not defined');
     }
 
     this.s3Client = new S3Client({
@@ -61,18 +61,17 @@ export class AwsS3Service {
 
     try {
       await this.s3Client.send(command);
-      this.logger.log(`📤 Upload realizado: ${key}`);
       return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
     } catch (err) {
-      this.logger.error(`❌ Erro ao enviar para o S3: ${err.message}`);
-      throw new Error('Erro ao fazer upload para o S3');
+      this.logger.error(`Error uploading to S3: ${err.message}`);
+      throw new Error('Error uploading to S3');
     }
   }
 
   async delete(url: string): Promise<void> {
     const key = url.split(`${this.bucketName}.s3.amazonaws.com/`)[1];
     if (!key) {
-      this.logger.warn(`⚠️ Não foi possível extrair a chave do S3 da URL: ${url}`);
+      this.logger.warn(`Could not extract S3 key from URL: ${url}`);
       return;
     }
 
@@ -82,10 +81,9 @@ export class AwsS3Service {
     });
 
     try {
-     // await this.s3Client.send(command);
-      this.logger.log(`🗑️ Arquivo removido: ${key}`);
+      await this.s3Client.send(command);
     } catch (err) {
-      this.logger.error(`❌ Erro ao remover do S3: ${err.message}`);
+      this.logger.error(`Error deleting from S3: ${err.message}`);
     }
   }
 
@@ -122,10 +120,9 @@ export class AwsS3Service {
 
     try {
       await this.sesClient.send(command);
-      this.logger.log(`📨 E-mail enviado via SES para ${to}`);
     } catch (error) {
-      this.logger.error(`❌ Erro ao enviar e-mail via SES: ${error.message}`);
-      throw new Error('Erro ao enviar e-mail');
+      this.logger.error(`Error sending email via SES: ${error.message}`);
+      throw new Error('Error sending email');
     }
   }
 

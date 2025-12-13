@@ -30,17 +30,13 @@ export class UpdateDocumentService {
     dto: UpdateDocumentDto & { isLocalFile?: boolean },
     file?: Express.Multer.File,
   ): Promise<DocumentEntity> {
-    this.logger.log(`🛠️ Atualizando documento ID=${id}`);
-
     const existingDocument = await this.documentRepo.findOneWithRelations(id);
     if (!existingDocument) {
-      this.logger.warn(`⚠️ Documento não encontrado: ID=${id}`);
-      throw new NotFoundException('Documento não encontrado.');
+      throw new NotFoundException('Document not found.');
     }
 
     if (!dto.media) {
-      this.logger.error('❌ Dados da mídia são obrigatórios.');
-      throw new BadRequestException('Dados da mídia são obrigatórios.');
+      throw new BadRequestException('Media data is required.');
     }
 
     return await this.dataSource.transaction(async (manager) => {
@@ -49,7 +45,6 @@ export class UpdateDocumentService {
         description: dto.description,
       });
       const savedDocument = await manager.save(DocumentEntity, updatedDocument);
-      this.logger.log(`✅ Documento atualizado: ${savedDocument.id}`);
 
       if (savedDocument.route) {
         const updatedRoute = await this.upsertDocumentRoute(
@@ -72,14 +67,13 @@ export class UpdateDocumentService {
       const isReplacingMedia = !dto.media.id;
 
       if (isReplacingMedia) {
-        this.logger.log(`♻️ Substituindo mídia antiga...`);
         const filesDict = file ? { [dto.media.fileField ?? 'file']: file } : {};
 
         await this.mediaProcessor.cleanAndReplaceMediaItems(
           [
             {
               title: dto.media.title ?? savedDocument.name,
-              description: dto.media.description ?? `Documento: ${savedDocument.name}`,
+              description: dto.media.description ?? `Document: ${savedDocument.name}`,
               mediaType: dto.media.mediaType,
               uploadType: dto.media.uploadType,
               platformType: dto.media.isLocalFile ? undefined : dto.media.platformType,
@@ -98,7 +92,6 @@ export class UpdateDocumentService {
           (file) => this.s3Service.upload(file),
         );
       } else if (existingMedia.length > 0) {
-        this.logger.log(`✏️ Atualizando dados da mídia existente...`);
         const mediaToUpdate = existingMedia[0];
 
         const wasUpload = mediaToUpdate.isLocalFile === true;
@@ -107,19 +100,17 @@ export class UpdateDocumentService {
         const isNowUpload = dto.media.isLocalFile === true;
 
         if (wasUpload && isNowLink && mediaToUpdate.url) {
-          this.logger.log(`🗑️ Deletando arquivo antigo do S3: ${mediaToUpdate.url}`);
           await this.s3Service.delete(mediaToUpdate.url);
         }
 
         if (wasLink && isNowUpload) {
           if (!file) {
-            throw new BadRequestException('Arquivo de upload obrigatório ao mudar para upload.');
+            throw new BadRequestException('Upload file is required when changing to upload.');
           }
           const newUrl = await this.s3Service.upload(file);
           dto.media.url = newUrl;
           dto.media.originalName = file.originalname;
           dto.media.size = file.size;
-          this.logger.log(`⬆️ Arquivo enviado para S3: ${newUrl}`);
         }
 
         mediaToUpdate.title = dto.media.title ?? mediaToUpdate.title;
@@ -134,8 +125,6 @@ export class UpdateDocumentService {
         await manager.save(mediaToUpdate);
       }
 
-      this.logger.log(`📎 Mídia atualizada com sucesso.`);
-
       return savedDocument;
     });
   }
@@ -145,8 +134,6 @@ export class UpdateDocumentService {
     documentData: { name: string; subtitle?: string; description?: string },
     documentId: string,
   ): Promise<RouteEntity> {
-    this.logger.debug(`🔄 Iniciando upsert da rota do documento ID: ${routeId}`);
-
     const routeData: Partial<RouteEntity> = {
       title: documentData.name,
       subtitle: documentData.subtitle ?? documentData.name,
@@ -160,8 +147,6 @@ export class UpdateDocumentService {
       image: 'https://bucket-clubinho-galeria.s3.us-east-2.amazonaws.com/uploads/img_card.jpg',
     };
 
-    const savedRoute = await this.routeService.upsertRoute(routeId, routeData);
-    this.logger.debug(`✅ Rota do documento upsertada: ${savedRoute.id}, path: ${savedRoute.path}`);
-    return savedRoute;
+    return this.routeService.upsertRoute(routeId, routeData);
   }
 }

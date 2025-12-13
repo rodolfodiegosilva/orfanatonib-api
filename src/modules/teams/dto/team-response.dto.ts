@@ -1,8 +1,6 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
 export class TeamLeaderDto {
-  @Expose() id!: string; // ID do perfil do líder
-  @Expose() userId!: string; // ID do usuário
   @Expose() name!: string;
   @Expose() email!: string;
   @Expose() phone!: string;
@@ -10,7 +8,6 @@ export class TeamLeaderDto {
 
 export class TeamTeacherDto {
   @Expose() id!: string; // ID do perfil do professor
-  @Expose() userId!: string; // ID do usuário
   @Expose() name!: string;
   @Expose() email!: string;
   @Expose() phone!: string;

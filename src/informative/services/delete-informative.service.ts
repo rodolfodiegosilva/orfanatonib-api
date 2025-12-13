@@ -21,25 +21,22 @@ export class DeleteInformativeService {
   ) {}
 
   async execute(id: string): Promise<void> {
-    this.logger.log(`🗑️ [DELETE] Iniciando remoção do banner ID=${id}`);
 
     const informative = await this.informativeRepo.findOneWithRelations(id);
 
     if (!informative) {
-      this.logger.warn(`⚠️ Banner não encontrado: ID=${id}`);
-      throw new NotFoundException('Banner informativo não encontrado');
+      this.logger.warn(`Banner not found: ID=${id}`);
+      throw new NotFoundException('Informative banner not found');
     }
 
     try {
       if (informative.route) {
         await this.routeRepo.delete(informative.route.id);
-        this.logger.log(`🧹 Rota associada removida: routeId=${informative.route.id}`);
       }
 
       await this.informativeRepo.remove(informative);
-      this.logger.log(`✅ Banner removido com sucesso: ID=${id}`);
     } catch (error) {
-      this.logger.error(`❌ Erro ao remover banner ID=${id}`, error.stack);
+      this.logger.error(`Error removing banner ID=${id}`, error.stack);
       throw new InternalServerErrorException('Erro ao remover banner.');
     }
   }

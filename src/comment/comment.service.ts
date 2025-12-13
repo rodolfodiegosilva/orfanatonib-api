@@ -11,51 +11,34 @@ export class CommentService {
   constructor(private readonly commentRepo: CommentRepository) {}
 
   async create(dto: CreateCommentDto): Promise<CommentEntity> {
-    this.logger.debug(`📝 Criando novo comentário`);
     const comment = this.commentRepo.create(dto);
-    const saved = await this.commentRepo.save(comment);
-    this.logger.log(`✅ Comentário salvo com ID: ${saved.id}`);
-    return saved;
+    return this.commentRepo.save(comment);
   }
 
   async findAllPublished(): Promise<CommentEntity[]> {
-    this.logger.debug('📄 Buscando comentários publicados');
-    const comments = await this.commentRepo.findAllPublished();
-    this.logger.log(`✅ Comentários publicados encontrados: ${comments.length}`);
-    return comments;
+    return this.commentRepo.findAllPublished();
   }
 
   async findAll(): Promise<CommentEntity[]> {
-    this.logger.debug('📄 Buscando todos os comentários');
-    const comments = await this.commentRepo.findAll();
-    this.logger.log(`✅ Total de comentários encontrados: ${comments.length}`);
-    return comments;
+    return this.commentRepo.findAll();
   }
 
   async findOne(id: string): Promise<CommentEntity> {
-    this.logger.debug(`🔍 Buscando comentário por ID: ${id}`);
     const comment = await this.commentRepo.findOneBy({ id });
     if (!comment) {
-      this.logger.warn(`⚠️ Comentário não encontrado: ID=${id}`);
-      throw new NotFoundException('Comentário não encontrado');
+      throw new NotFoundException('Comment not found');
     }
-    this.logger.log(`✅ Comentário encontrado: ID=${comment.id}`);
     return comment;
   }
 
   async update(id: string, dto: UpdateCommentDto): Promise<CommentEntity> {
-    this.logger.debug(`✏️ Atualizando comentário ID=${id}`);
     const comment = await this.findOne(id);
     Object.assign(comment, dto);
-    const updated = await this.commentRepo.save(comment);
-    this.logger.log(`✅ Comentário atualizado: ID=${updated.id}`);
-    return updated;
+    return this.commentRepo.save(comment);
   }
 
   async remove(id: string): Promise<void> {
-    this.logger.debug(`🗑️ Removendo comentário ID=${id}`);
     const comment = await this.findOne(id);
     await this.commentRepo.remove(comment);
-    this.logger.log(`✅ Comentário removido: ID=${id}`);
   }
 }

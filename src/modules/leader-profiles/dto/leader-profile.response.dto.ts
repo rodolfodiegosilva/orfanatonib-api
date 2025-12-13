@@ -78,7 +78,6 @@ export class LeaderResponseDto {
   @Expose()
   @Type(() => ShelterMiniWithCoordinatorDto)
   @Transform(({ obj }) => {
-    // Se o líder não tem equipes, retornar array vazio
     if (!obj.teams || !Array.isArray(obj.teams) || obj.teams.length === 0) {
       return [];
     }

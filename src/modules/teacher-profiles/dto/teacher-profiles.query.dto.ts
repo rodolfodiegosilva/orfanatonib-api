@@ -1,18 +1,14 @@
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
-// Decorator customizado para boolean que funciona antes da conversão implícita
 const BooleanQuery = () => {
   return Transform(({ value, key, obj }) => {
-    // Intercepta o valor original antes de qualquer conversão
     const originalValue = obj[key];
     
     if (originalValue === undefined || originalValue === null || originalValue === '') return undefined;
     
-    // Se já é boolean, retorna como está
     if (typeof originalValue === 'boolean') return originalValue;
     
-    // Se é string, converte baseado no conteúdo
     const s = String(originalValue).trim().toLowerCase();
     if (['true', '1', 'yes', 'y'].includes(s)) return true;
     if (['false', '0', 'no', 'n'].includes(s)) return false;
@@ -48,7 +44,6 @@ export class TeacherProfilesQueryDto {
   @IsString()
   shelterSearchString?: string;
 
-  // Se está vinculado a algum shelter ou não
   @IsOptional()
   @BooleanQuery()
   hasShelter?: boolean;

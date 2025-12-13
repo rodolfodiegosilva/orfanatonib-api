@@ -101,7 +101,6 @@ export class LeaderProfilesRepository {
 
     // 🔍 FILTROS CONSOLIDADOS
 
-    // Busca pelos dados do líder: nome, email, telefone
     if (leaderSearchString?.trim()) {
       const like = `%${leaderSearchString.trim().toLowerCase()}%`;
       const likeRaw = `%${leaderSearchString.trim()}%`;
@@ -148,8 +147,6 @@ export class LeaderProfilesRepository {
       );
     }
 
-    // Se está vinculado a algum team (e consequentemente a um shelter) ou não
-    // ⚠️ Só aplica o filtro se hasShelter for explicitamente true ou false
     if (hasShelter === true) {
       qb.andWhere(
         `EXISTS (
@@ -163,7 +160,6 @@ export class LeaderProfilesRepository {
         )`
       );
     }
-    // Se hasShelter for undefined, não aplica filtro (retorna todos)
 
     // 🎯 FILTRO: teamId - filtrar por ID da equipe
     if (teamId?.trim()) {
@@ -176,7 +172,6 @@ export class LeaderProfilesRepository {
       );
     }
 
-    // 🎯 FILTRO: teamName - filtrar por número da equipe
     if (teamName?.trim()) {
       const teamNumber = parseInt(teamName.trim(), 10);
       if (!isNaN(teamNumber)) {
@@ -192,7 +187,6 @@ export class LeaderProfilesRepository {
       }
     }
 
-    // 🎯 FILTRO: hasTeam - se está vinculado a alguma equipe
     if (hasTeam === true) {
       qb.andWhere(
         `EXISTS (
@@ -266,15 +260,10 @@ export class LeaderProfilesRepository {
       .addOrderBy('teachers.createdAt', 'ASC')
       .getOne();
 
-    if (!leader) throw new NotFoundException('LeaderProfile não encontrado');
+    if (!leader) throw new NotFoundException('LeaderProfile not found');
     return leader;
   }
 
-  // ❌ REMOVIDO: assignShelterToLeader - Agora feito através de Teams
-  // ❌ REMOVIDO: unassignShelterFromLeader - Agora feito através de Teams
-  // ❌ REMOVIDO: moveShelterBetweenLeaders - Agora feito através de Teams
-  // ❌ REMOVIDO: findAllWithSheltersAndTeachers - Não utilizado
-  // ❌ REMOVIDO: findByShelterIdWithTeachersOrFail - Não utilizado
 
   async createForUser(userId: string): Promise<LeaderProfileEntity> {
     return this.dataSource.transaction(async (manager) => {
@@ -282,7 +271,7 @@ export class LeaderProfilesRepository {
       const txUser = manager.withRepository(this.userRepo);
 
       const user = await txUser.findOne({ where: { id: userId } });
-      if (!user) throw new NotFoundException('User não encontrado');
+      if (!user) throw new NotFoundException('User not found');
 
       const existing = await txLeader.findOne({ where: { user: { id: userId } } });
       if (existing) return existing;
@@ -304,7 +293,6 @@ export class LeaderProfilesRepository {
       if (!leader) return;
 
       if (leader.teams && leader.teams.length > 0) {
-        // Remover todas as vinculações do líder aos teams
         leader.teams = [];
         await txLeader.save(leader);
       }

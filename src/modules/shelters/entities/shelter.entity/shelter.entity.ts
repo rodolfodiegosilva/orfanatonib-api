@@ -34,8 +34,4 @@ export class ShelterEntity extends BaseEntity {
   @JoinColumn()
   route?: RouteEntity | null;
 
-  // Relação polimórfica unilateral com MediaItemEntity (apenas uma imagem)
-  // O mediaItem é buscado usando targetId = shelter.id e targetType = 'ShelterEntity'
-  // Sempre será do tipo MediaType.IMAGE
-  mediaItem?: any; // Será populado via query manual no repository
 }

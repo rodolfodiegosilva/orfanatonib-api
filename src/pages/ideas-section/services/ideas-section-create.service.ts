@@ -26,19 +26,16 @@ export class IdeasSectionCreateService {
     dto: CreateIdeasSectionDto,
     filesDict: Record<string, Express.Multer.File>,
   ): Promise<IdeasSectionResponseDto> {
-    this.logger.verbose(`→ createIdeasSection | title="${dto.title}"`);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    this.logger.debug('▶️  Transaction started');
 
     try {
       const section = await this.persistOrphanSection(queryRunner, dto);
       await this.processOrphanSectionMedia(section, dto, filesDict);
 
       await queryRunner.commitTransaction();
-      this.logger.debug('✅  Transaction committed');
 
       const mediaItems = await queryRunner.manager.find(MediaItemEntity, {
         where: {
@@ -54,7 +51,6 @@ export class IdeasSectionCreateService {
       throw new BadRequestException(`Erro ao criar a seção de ideias: ${error.message}`);
     } finally {
       await queryRunner.release();
-      this.logger.debug('⛔  QueryRunner released');
     }
   }
 
@@ -62,7 +58,6 @@ export class IdeasSectionCreateService {
     queryRunner: QueryRunner,
     dto: CreateIdeasSectionDto,
   ): Promise<IdeasSectionEntity> {
-    this.logger.debug('📝 persistOrphanSection() - Extraído do IdeasPageCreateService');
 
     const sectionRepo = queryRunner.manager.getRepository(IdeasSectionEntity);
 
@@ -74,7 +69,6 @@ export class IdeasSectionCreateService {
     });
 
     const savedSection = await sectionRepo.save(section);
-    this.logger.debug(`   ↳ Orphan section saved (ID=${savedSection.id})`);
 
     return savedSection;
   }
@@ -84,14 +78,11 @@ export class IdeasSectionCreateService {
     dto: CreateIdeasSectionDto,
     filesDict: Record<string, Express.Multer.File>,
   ): Promise<void> {
-    this.logger.debug('🎞️ processOrphanSectionMedia() - Extraído do IdeasPageCreateService');
 
     if (!dto.medias?.length) {
-      this.logger.debug(`   ↳ section (ID=${section.id}) sem itens`);
       return;
     }
 
-    this.logger.debug(`   ↳ section (ID=${section.id}) | items=${dto.medias.length}`);
 
     const normalized = dto.medias.map((item) => ({
       ...item,
@@ -106,7 +97,6 @@ export class IdeasSectionCreateService {
           : undefined,
     }));
 
-    this.logger.debug(`🔄 Normalized items: ${JSON.stringify(normalized.map(item => ({ title: item.title, fileField: item.fileField, fieldKey: item.fieldKey })))}`);
 
     const saved = await this.mediaItemProcessor.processMediaItemsPolymorphic(
       normalized,
@@ -116,7 +106,6 @@ export class IdeasSectionCreateService {
       this.awsS3Service.upload.bind(this.awsS3Service),
     );
 
-    this.logger.debug(`       • ${saved.length} mídias processadas`);
   }
 
   private validateFiles(dto: CreateIdeasSectionDto, filesDict: Record<string, Express.Multer.File>) {

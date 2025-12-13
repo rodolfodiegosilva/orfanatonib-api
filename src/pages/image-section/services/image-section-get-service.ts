@@ -14,7 +14,6 @@ export class ImageSectionGetService {
   ) {}
 
   async findAll(): Promise<ImageSectionResponseDto[]> {
-    this.logger.debug('📡 Listando todas as seções de imagens...');
     
     const sections = await this.sectionRepository.findAllOrfaSections();
     const sectionIds = sections.map((section) => section.id);
@@ -33,7 +32,6 @@ export class ImageSectionGetService {
   }
 
   async findOne(id: string): Promise<ImageSectionResponseDto> {
-    this.logger.debug(`📡 Buscando seção de imagens ID=${id}...`);
     
     const section = await this.sectionRepository.findOneBy({ id });
     if (!section) {

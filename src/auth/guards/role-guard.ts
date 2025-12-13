@@ -18,27 +18,20 @@ export class AdminRoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    this.logger.debug('🔒 AdminRoleGuard: verificando permissões');
-
     if (!user) {
-      this.logger.warn('❌ Acesso negado: usuário não autenticado');
-      throw new ForbiddenException('Usuário não autenticado');
+      throw new ForbiddenException('User not authenticated');
     }
 
-    const { userId, email, role } = user;
-    this.logger.debug(`👤 Usuário recebido: { id: ${userId}, email: ${email}, role: ${role ?? 'undefined'} }`);
+    const { role } = user;
 
     if (!role) {
-      this.logger.warn('❌ Acesso negado: role ausente no token');
-      throw new ForbiddenException('Permissão insuficiente');
+      throw new ForbiddenException('Insufficient permissions');
     }
 
     if (role !== UserRole.ADMIN) {
-      this.logger.warn(`❌ Acesso negado: role '${role}' não autorizado`);
-      throw new ForbiddenException('Acesso restrito a administradores');
+      throw new ForbiddenException('Access restricted to administrators');
     }
 
-    this.logger.log(`✅ Acesso permitido para role '${role}'`);
     return true;
   }
 }

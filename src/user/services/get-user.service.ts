@@ -14,19 +14,16 @@ export class GetUsersService {
   }
 
   async findAlll(): Promise<UserEntity[]> {
-    this.logger.debug('Fetching all users');
     return this.userRepo.findAll();
   }
 
   async findOne(id: string): Promise<UserEntity> {
-    this.logger.debug(`Fetching user by ID: ${id}`);
     const user = await this.userRepo.findById(id);
     if (!user) throw new NotFoundException('UserEntity not found');
     return user;
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
-    this.logger.debug(`Fetching user by email: ${email}`);
     return this.userRepo.findByEmail(email);
   }
 }

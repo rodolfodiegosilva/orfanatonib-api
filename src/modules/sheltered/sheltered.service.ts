@@ -108,7 +108,7 @@ export class ShelteredService {
   async findOne(id: string, request: Request): Promise<ShelteredResponseDto> {
     const ctx = await this.getCtx(request);
     const entity = await this.shelteredRepo.findOneForResponse(id, ctx);
-    if (!entity) throw new NotFoundException('Abrigado não encontrado ou sem acesso');
+    if (!entity) throw new NotFoundException('Sheltered not found or no access');
     return toShelteredResponseDto(entity);
   }
 
@@ -156,7 +156,7 @@ export class ShelteredService {
     }
 
     const entity = await this.shelteredRepo.findOneForResponse(id, ctx);
-    if (!entity) throw new NotFoundException('Abrigado não encontrado ou sem acesso');
+    if (!entity) throw new NotFoundException('Sheltered not found or no access');
 
     if (dto.name !== undefined) entity.name = dto.name;
     if (dto.guardianName !== undefined) entity.guardianName = dto.guardianName;
@@ -200,7 +200,7 @@ export class ShelteredService {
   async updateStatus(id: string, active: boolean, request: Request): Promise<ShelteredResponseDto> {
     const ctx = await this.getCtx(request);
     const entity = await this.shelteredRepo.findOneForResponse(id, ctx);
-    if (!entity) throw new NotFoundException('Abrigado não encontrado ou sem acesso');
+    if (!entity) throw new NotFoundException('Sheltered not found or no access');
     
     entity.active = active;
     await this.shelteredRepo.save(entity);
@@ -212,7 +212,7 @@ export class ShelteredService {
   async remove(id: string, request: Request): Promise<void> {
     const ctx = await this.getCtx(request);
     const entity = await this.shelteredRepo.findOneForResponse(id, ctx);
-    if (!entity) throw new NotFoundException('Abrigado não encontrado ou sem acesso');
+    if (!entity) throw new NotFoundException('Sheltered not found or no access');
     await this.shelteredRepo.delete(id);
   }
 }

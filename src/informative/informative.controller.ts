@@ -35,21 +35,16 @@ export class InformativeController {
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Post()
   async create(@Body() dto: CreateInformativeDto): Promise<InformativeResponseDto> {
-    this.logger.log('📥 [POST /informatives] Criando banner informativo');
-    const result = await this.createService.createInformative(dto);
-    this.logger.log(`✅ Banner criado com ID: ${result.id}`);
-    return result;
+    return this.createService.createInformative(dto);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async findOne(@Param('id') id: string): Promise<InformativeResponseDto> {
-    this.logger.log(`🔎 [GET /informatives/${id}] Buscando banner`);
     const found = await this.getService.findOne(id);
 
     if (!found) {
-      this.logger.warn(`⚠️ [GET /informatives/${id}] Banner não encontrado`);
-      throw new NotFoundException('Banner informativo não encontrado');
+      throw new NotFoundException('Informative banner not found');
     }
 
     return found;
@@ -61,24 +56,18 @@ export class InformativeController {
     @Param('id') id: string,
     @Body() dto: UpdateInformativeDto,
   ): Promise<InformativeResponseDto> {
-    this.logger.log(`✏️ [PATCH /informatives/${id}] Atualizando banner`);
-    const result = await this.updateService.execute(id, dto);
-    this.logger.log(`✅ Banner atualizado com sucesso: ID=${id}`);
-    return result;
+    return this.updateService.execute(id, dto);
   }
 
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<void> {
-    this.logger.log(`🗑️ [DELETE /informatives/${id}] Removendo banner`);
     await this.deleteService.execute(id);
-    this.logger.log(`✅ Banner removido: ID=${id}`);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   async findAll(): Promise<InformativeResponseDto[]> {
-    this.logger.log('📄 [GET /informatives] Listando todos os banners');
     return this.getService.findAll();
   }
 }

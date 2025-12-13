@@ -43,11 +43,10 @@ export class DeleteVideosPageService {
 
       await queryRunner.manager.remove(page);
       await queryRunner.commitTransaction();
-      this.logger.debug(`✅ Página de vídeos removida com sucesso: ID=${id}`);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error('❌ Erro ao remover página de vídeos. Rollback executado.', error);
-      throw new BadRequestException('Erro ao remover a página de vídeos.');
+      this.logger.error('Error removing videos page. Rollback executed.', error);
+      throw new BadRequestException('Error removing videos page.');
     } finally {
       await queryRunner.release();
     }

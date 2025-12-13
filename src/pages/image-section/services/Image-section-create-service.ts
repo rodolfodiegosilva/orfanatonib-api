@@ -25,7 +25,6 @@ export class ImageSectionCreateService {
     dto: CreateImageSectionDto,
     filesDict: Record<string, Express.Multer.File>,
   ): Promise<ImageSectionResponseDto> {
-    this.logger.log('🚀 Iniciando criação de seção órfã (sem página associada)');
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -61,8 +60,8 @@ export class ImageSectionCreateService {
       return ImageSectionResponseDto.fromEntity(savedSection, mediaItems);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error('❌ Erro ao criar seção', error);
-      throw new BadRequestException('Erro ao criar a seção');
+      this.logger.error('Error creating section', error);
+      throw new BadRequestException('Error creating section');
     } finally {
       await queryRunner.release();
     }

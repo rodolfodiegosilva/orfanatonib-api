@@ -123,7 +123,6 @@ export class TeacherProfilesRepository {
       console.log('✅ Filtro aplicado: teacherSearchString');
     }
 
-    // 🔍 FILTRO: shelterSearchString - busca por dados do shelter (através de team)
     if (shelterSearchString?.trim()) {
       const text = shelterSearchString.trim();
       const like = `%${text.toLowerCase()}%`;
@@ -146,7 +145,6 @@ export class TeacherProfilesRepository {
       console.log('✅ Filtro aplicado: shelterSearchString');
     }
 
-    // 🔍 FILTRO: hasShelter - se está vinculado a algum team (e consequentemente a um shelter)
     if (hasShelter !== undefined) {
       if (hasShelter === true) {
         qb.andWhere('teacher.team_id IS NOT NULL');
@@ -163,7 +161,6 @@ export class TeacherProfilesRepository {
       console.log('✅ Filtro aplicado: teamId');
     }
 
-    // 🎯 FILTRO: teamName - filtrar por número da equipe
     if (teamName?.trim()) {
       const teamNumber = parseInt(teamName.trim(), 10);
       if (!isNaN(teamNumber)) {
@@ -172,7 +169,6 @@ export class TeacherProfilesRepository {
       }
     }
 
-    // 🎯 FILTRO: hasTeam - se está vinculado a alguma equipe
     if (hasTeam !== undefined) {
       if (hasTeam === true) {
         qb.andWhere('teacher.team_id IS NOT NULL');
@@ -191,7 +187,7 @@ export class TeacherProfilesRepository {
     this.applyRoleFilter(qb, ctx);
 
     const teacher = await qb.getOne();
-    if (!teacher) throw new NotFoundException('TeacherProfile não encontrado');
+    if (!teacher) throw new NotFoundException('TeacherProfile not found');
     return teacher;
   }
 
@@ -265,8 +261,6 @@ export class TeacherProfilesRepository {
   }
 
 
-  // ❌ REMOVIDO: assignTeacherToShelter - Agora feito através de Teams
-  // ❌ REMOVIDO: unassignTeacherFromShelter - Agora feito através de Teams
 
   async createForUser(userId: string): Promise<TeacherProfileEntity> {
     return this.dataSource.transaction(async (manager) => {
@@ -274,7 +268,7 @@ export class TeacherProfilesRepository {
       const txUser = manager.withRepository(this.userRepo);
 
       const user = await txUser.findOne({ where: { id: userId } });
-      if (!user) throw new NotFoundException('User não encontrado');
+      if (!user) throw new NotFoundException('User not found');
 
       const existing = await txTeacher.findOne({ where: { user: { id: userId } } });
       if (existing) return existing;

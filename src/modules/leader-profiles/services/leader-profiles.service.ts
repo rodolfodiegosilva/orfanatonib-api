@@ -94,13 +94,11 @@ export class LeaderProfilesService {
     const ctx = await this.getCtx(req);
     this.assertAllowed(ctx);
 
-    // Buscar o líder
     const leader = await this.repo.findOneWithSheltersAndTeachersOrFail(leaderId);
 
     // Buscar equipes do abrigo
     const teams = await this.teamsService.findByShelter(dto.shelterId);
 
-    // Buscar ou criar equipe com o número especificado
     let targetTeam = teams.find(t => t.numberTeam === dto.numberTeam);
 
     if (!targetTeam) {
@@ -112,11 +110,9 @@ export class LeaderProfilesService {
       });
       targetTeam = newTeam;
     } else {
-      // Verificar se o líder já está na equipe
       const isAlreadyInTeam = targetTeam.leaders.some(l => l.id === leaderId);
       
       if (!isAlreadyInTeam) {
-        // Adicionar o líder à equipe (sem remover de outras equipes)
         const currentLeaderIds = targetTeam.leaders.map(l => l.id);
         await this.teamsService.update(targetTeam.id, {
           leaderProfileIds: [...currentLeaderIds, leaderId],
@@ -134,19 +130,16 @@ export class LeaderProfilesService {
   async findMyShelters(req: Request): Promise<ShelterWithLeaderStatusDto[]> {
     const ctx = await this.getCtx(req);
     
-    // Verificar se é um líder
     if (!ctx.role || ctx.role !== 'leader' || !ctx.userId) {
-      throw new ForbiddenException('Apenas líderes podem acessar seus abrigos');
+      throw new ForbiddenException('Only leaders can access their shelters');
     }
 
-    // Buscar o perfil do líder logado
     const leader = await this.repo.findByUserId(ctx.userId);
 
     if (!leader) {
-      throw new NotFoundException('Perfil de líder não encontrado');
+      throw new NotFoundException('Leader profile not found');
     }
 
-    // Buscar IDs dos abrigos onde o líder está em pelo menos uma equipe
     const shelterIds = await this.sheltersRepository.findShelterIdsForLeader(ctx.userId);
     
     if (shelterIds.length === 0) {
@@ -168,7 +161,6 @@ export class LeaderProfilesService {
     // Popular media items
     const sheltersWithMedia = await this.populateMediaItems(shelters);
     
-    // Transformar para DTO com status do líder em cada equipe
     return sheltersWithMedia.map(shelter => toShelterWithLeaderStatusDto(shelter, leader.id));
   }
 

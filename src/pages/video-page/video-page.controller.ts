@@ -44,7 +44,6 @@ export class VideosPageController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('videosPageData') raw: string,
   ): Promise<VideosPageResponseDto> {
-    this.logger.debug('📥 [POST /video-pages] Criando nova página de vídeos');
 
     try {
       const parsedData = JSON.parse(raw);
@@ -56,19 +55,18 @@ export class VideosPageController {
       });
 
       if (validationErrors.length > 0) {
-        this.logger.error('❌ Erros de validação:', JSON.stringify(validationErrors, null, 2));
-        throw new BadRequestException('Dados inválidos na requisição');
+        this.logger.error('Validation errors:', JSON.stringify(validationErrors, null, 2));
+        throw new BadRequestException('Invalid data in request');
       }
 
       const filesDict: Record<string, Express.Multer.File> = {};
       files.forEach((file) => (filesDict[file.fieldname] = file));
 
       const result = await this.createService.execute(dto, filesDict);
-      this.logger.log(`✅ Página de vídeos criada com sucesso: ID=${result.id}`);
       return result;
     } catch (error) {
-      this.logger.error('❌ Erro ao criar página de vídeos', error);
-      throw new BadRequestException('Erro ao criar a página de vídeos.');
+      this.logger.error('Error creating videos page', error);
+      throw new BadRequestException('Error creating videos page.');
     }
   }
 
@@ -80,7 +78,6 @@ export class VideosPageController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('videosPageData') raw: string,
   ): Promise<VideosPageResponseDto> {
-    this.logger.debug(`✏️ [PATCH /video-pages/${id}] Atualizando página de vídeos`);
 
     try {
       const parsedData = JSON.parse(raw);
@@ -92,46 +89,41 @@ export class VideosPageController {
       });
 
       if (validationErrors.length > 0) {
-        this.logger.error('❌ Erros de validação:', JSON.stringify(validationErrors, null, 2));
-        throw new BadRequestException('Dados inválidos na requisição');
+        this.logger.error('Validation errors:', JSON.stringify(validationErrors, null, 2));
+        throw new BadRequestException('Invalid data in request');
       }
 
       const filesDict: Record<string, Express.Multer.File> = {};
       files.forEach((file) => (filesDict[file.fieldname] = file));
 
       const result = await this.updateService.execute(id, dto, filesDict);
-      this.logger.log(`✅ Página de vídeos atualizada com sucesso: ID=${result.id}`);
       return result;
     } catch (error) {
-      this.logger.error('❌ Erro ao atualizar página de vídeos', error);
-      throw new BadRequestException('Erro ao atualizar a página de vídeos.');
+      this.logger.error('Error updating videos page', error);
+      throw new BadRequestException('Error updating videos page.');
     }
   }
 
   @Get()
   async findAll(): Promise<VideosPageResponseDto[]> {
-    this.logger.debug('📄 [GET /video-pages] Listando todas as páginas de vídeos');
     return this.getService.findAll();
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<VideosPageResponseDto> {
-    this.logger.debug(`🔍 [GET /video-pages/${id}] Buscando página de vídeos`);
     try {
       return await this.getService.findOne(id);
     } catch (err) {
       if (err instanceof NotFoundException) throw err;
-      this.logger.error('❌ Erro ao buscar página de vídeos', err);
-      throw new BadRequestException('Erro ao buscar página de vídeos.');
+      this.logger.error('Error fetching videos page', err);
+      throw new BadRequestException('Error fetching videos page.');
     }
   }
 
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ message: string }> {
-    this.logger.debug(`🗑️ [DELETE /video-pages/${id}] Removendo página de vídeos`);
     await this.deleteService.execute(id);
-    this.logger.log(`✅ Página de vídeos removida com sucesso: ID=${id}`);
     return { message: 'Página de vídeos removida com sucesso' };
   }
 }

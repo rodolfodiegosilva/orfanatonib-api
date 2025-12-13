@@ -36,10 +36,7 @@ export class UserController {
 
   @Post()
   async create(@Body() dto: CreateUserDto) {
-    this.logger.debug('📥 [POST /users] Criando novo usuário');
-    const result = await this.createUserService.create(dto);
-    this.logger.log(`✅ Usuário criado: ID=${result.id}`);
-    return result;
+    return this.createUserService.create(dto);
   }
 
   @Get()
@@ -49,7 +46,6 @@ export class UserController {
 
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    this.logger.debug(`🔍 [GET /users/${id}] Buscando usuário`);
     return this.getUsersService.findOne(id);
   }
 
@@ -58,17 +54,12 @@ export class UserController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateUserDto
   ): Promise<UserEntity> {
-    this.logger.debug(`✏️ [PUT /users/${id}] Atualizando usuário`);
-    const result = await this.updateUserService.update(id, dto);
-    this.logger.log(`✅ Usuário atualizado: ID=${id}`);
-    return result;
+    return this.updateUserService.update(id, dto);
   }
 
   @Delete(':id')
   async remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    this.logger.debug(`🗑️ [DELETE /users/${id}] Removendo usuário`);
     await this.deleteUserService.remove(id);
-    this.logger.log(`✅ Usuário removido: ID=${id}`);
-    return { message: 'Usuário removido com sucesso' };
+    return { message: 'User removed successfully' };
   }
 }

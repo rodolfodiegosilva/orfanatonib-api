@@ -20,7 +20,6 @@ export class GetDocumentService {
   ) {}
 
   async findAll(): Promise<DocumentDto[]> {
-    this.logger.log('📄 Buscando todos os documentos com mídias');
 
     try {
       const documents = await this.documentRepo.findAllSorted();
@@ -34,18 +33,17 @@ export class GetDocumentService {
 
       return documents.map((doc) => DocumentDto.fromEntity(doc, mediaMap.get(doc.id)));
     } catch (error) {
-      this.logger.error('❌ Erro ao buscar documentos', error.stack);
+      this.logger.error('Error fetching documents', error.stack);
       throw new InternalServerErrorException('Erro ao buscar documentos');
     }
   }
 
   async findOne(id: string): Promise<DocumentDto> {
-    this.logger.log(`🔍 Buscando documento por ID=${id}`);
 
     const doc = await this.documentRepo.findOneById(id);
     if (!doc) {
-      this.logger.warn(`⚠️ Documento não encontrado: ID=${id}`);
-      throw new NotFoundException('Documento não encontrado');
+      this.logger.warn(`Document not found: ID=${id}`);
+      throw new NotFoundException('Document not found');
     }
 
     const media = await this.mediaItemProcessor.findMediaItemsByTarget(id, 'document');

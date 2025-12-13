@@ -46,7 +46,6 @@ export class EventController {
     @UploadedFile() file: Express.Multer.File,
     @Body('eventData') eventDataRaw: string,
   ): Promise<EventEntity> {
-    this.logger.log('📥 [POST /events] Criando novo evento');
 
     try {
       const parsed = JSON.parse(eventDataRaw);
@@ -54,10 +53,9 @@ export class EventController {
       await validateOrReject(dto, { whitelist: true, forbidNonWhitelisted: true });
 
       const result = await this.createService.create(dto, file);
-      this.logger.log(`✅ Evento criado: ID=${result.id}`);
       return result;
     } catch (error) {
-      this.logger.error('❌ Erro ao criar evento', error.stack);
+      this.logger.error('Error creating event', error.stack);
       const message =
         Array.isArray(error)
           ? error.map(e => Object.values(e.constraints || {})).flat().join('; ')
@@ -68,19 +66,16 @@ export class EventController {
 
   @Get()
   async findAll(): Promise<EventResponseDto[]> {
-    this.logger.log('📦 [GET /events] Listando todos os eventos');
     return this.getService.findAll();
   }
 
   @Get('/upcoming')
   async getUpcoming(): Promise<EventResponseDto[]> {
-    this.logger.log('📅 [GET /events/upcoming] Buscando eventos futuros ou do dia');
     return this.getService.getUpcomingOrTodayEvents();
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<EventResponseDto> {
-    this.logger.log(`🔍 [GET /events/${id}] Buscando evento`);
     return this.getService.findOne(id);
   }
 
@@ -92,15 +87,14 @@ export class EventController {
     @Body('eventData') rawEventData: string,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<EventEntity> {
-    this.logger.log(`✏️ [PATCH /events/${id}] Atualizando evento`);
 
     let dto: UpdateEventDto;
     try {
       const parsed = JSON.parse(rawEventData);
       dto = plainToInstance(UpdateEventDto, parsed);
     } catch (err) {
-      this.logger.error(`❌ JSON inválido para evento`, err.stack);
-      throw new BadRequestException('JSON inválido no campo eventData');
+      this.logger.error(`Invalid JSON for event`, err.stack);
+      throw new BadRequestException('Invalid JSON in eventData field');
     }
 
     const errors = validateSync(dto, { whitelist: true, forbidNonWhitelisted: true });
@@ -108,12 +102,11 @@ export class EventController {
       const message = errors
         .map(err => Object.values(err.constraints ?? {}).join(', '))
         .join(' | ');
-      this.logger.warn(`❌ Erros de validação: ${message}`);
+      this.logger.warn(`Validation errors: ${message}`);
       throw new BadRequestException(message);
     }
 
     const result = await this.updateService.update(id, { ...dto, isLocalFile: !!file }, file);
-    this.logger.log(`✅ Evento atualizado: ID=${result.id}`);
     return result;
   }
 
@@ -121,8 +114,6 @@ export class EventController {
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id: string): Promise<void> {
-    this.logger.log(`🗑️ [DELETE /events/${id}] Excluindo evento`);
     await this.deleteService.remove(id);
-    this.logger.log(`✅ Evento excluído: ID=${id}`);
   }
 }

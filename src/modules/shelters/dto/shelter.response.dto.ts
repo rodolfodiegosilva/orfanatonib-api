@@ -19,7 +19,6 @@ class MediaItemResponseDto {
   @Expose() id!: string;
   @Expose() title!: string;
   @Expose() description!: string;
-  @Expose() mediaType!: MediaType; // Sempre será MediaType.IMAGE
   @Expose() uploadType!: UploadType;
   @Expose() url!: string;
   @Expose() isLocalFile!: boolean;
@@ -156,7 +155,6 @@ export class ShelterResponseDto {
     if (obj.teams && Array.isArray(obj.teams)) {
       obj.teams.forEach((team: { leaders?: CoordinatorWithUserDto[] }) => {
         if (team.leaders && Array.isArray(team.leaders)) {
-          // Transformar cada leader usando plainToInstance para garantir que apenas campos expostos sejam incluídos
           team.leaders.forEach((leader: any) => {
             allLeaders.push(plainToInstance(CoordinatorWithUserDto, leader, { excludeExtraneousValues: true }));
           });
@@ -174,7 +172,6 @@ export class ShelterResponseDto {
     if (obj.teams && Array.isArray(obj.teams)) {
       obj.teams.forEach((team: { teachers?: TeacherWithUserDto[] }) => {
         if (team.teachers && Array.isArray(team.teachers)) {
-          // Transformar cada teacher usando plainToInstance para garantir que apenas campos expostos sejam incluídos
           team.teachers.forEach((teacher: any) => {
             allTeachers.push(plainToInstance(TeacherWithUserDto, teacher, { excludeExtraneousValues: true }));
           });
@@ -207,13 +204,11 @@ export function toShelterWithLeaderStatusDto(
 ): ShelterWithLeaderStatusDto {
   const dto = plainToInstance(ShelterWithLeaderStatusDto, entity, { excludeExtraneousValues: true });
   
-  // Marcar quais equipes o líder está inserido
   if (entity.teams && Array.isArray(entity.teams)) {
     dto.teams = entity.teams.map((team: any) => {
       // Primeiro transformar o team para o DTO base
       const teamBase = plainToInstance(TeamWithLeaderStatusDto, team, { excludeExtraneousValues: true });
       
-      // Verificar se o líder está na equipe através da lista de leaders da entidade original
       const isLeaderInTeam = team.leaders?.some((leader: any) => leader.id === leaderId) ?? false;
       teamBase.isLeaderInTeam = isLeaderInTeam;
       

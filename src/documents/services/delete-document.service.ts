@@ -25,28 +25,23 @@ export class DeleteDocumentService {
   ) { }
 
   async execute(id: string): Promise<void> {
-    this.logger.log(`🗑️ [DELETE] Iniciando remoção do documento ID=${id}`);
 
     const document = await this.documentRepo.findOneById(id);
     if (!document) {
-      this.logger.warn(`⚠️ Documento não encontrado: ID=${id}`);
-      throw new NotFoundException('Documento não encontrado');
+      throw new NotFoundException('Document not found');
     }
 
     try {
       const media = await this.mediaItemProcessor.findMediaItemsByTarget(id, 'document');
       if (media.length > 0) {
         await this.mediaItemProcessor.deleteMediaItems(media, this.s3Service.delete.bind(this.s3Service));
-        this.logger.log(`🧹 ${media.length} mídias associadas removidas`);
       }
 
       await this.documentRepo.remove(document);
       await this.routeService.removeRouteByEntity(MediaTargetType.Document, id);
-      this.logger.log(`🛤️ Rota removida`);
 
-      this.logger.log(`✅ Documento removido com sucesso: ID=${id}`);
     } catch (error) {
-      this.logger.error(`❌ Erro ao remover documento ID=${id}`, error.stack);
+      this.logger.error(`Error removing document ID=${id}`, error.stack);
       throw new InternalServerErrorException('Erro ao remover documento.');
     }
   }

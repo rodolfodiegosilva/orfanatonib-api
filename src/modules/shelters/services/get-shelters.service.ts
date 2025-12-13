@@ -81,7 +81,7 @@ export class GetSheltersService {
   async findOne(id: string, req: Request): Promise<ShelterResponseDto> {
     const ctx = await this.getCtx(req);
     const shelter = await this.sheltersRepository.findOneOrFailForResponse(id, ctx);
-    if (!shelter) throw new NotFoundException('Shelter não encontrado');
+    if (!shelter) throw new NotFoundException('Shelter not found');
     
     // Popular media item
     await this.populateMediaItems([shelter]);
@@ -97,7 +97,7 @@ export class GetSheltersService {
   async getTeamsQuantity(id: string, req: Request): Promise<ShelterTeamsQuantityResponseDto> {
     const ctx = await this.getCtx(req);
     const shelter = await this.sheltersRepository.findOneOrFailForResponse(id, ctx);
-    if (!shelter) throw new NotFoundException('Shelter não encontrado');
+    if (!shelter) throw new NotFoundException('Shelter not found');
     
     return {
       id: shelter.id,

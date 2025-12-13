@@ -24,30 +24,25 @@ export class CreateInformativeService {
   async createInformative(
     dto: CreateInformativeDto,
   ): Promise<InformativeEntity> {
-    this.logger.verbose(`→ createInformative | title="${dto.title}"`);
-
     const runner = this.dataSource.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
-    this.logger.debug('▶️  Transaction started');
 
     try {
       const informative = await this.persistInformative(runner, dto);
       await this.attachRoute(runner, informative, dto);
 
       await runner.commitTransaction();
-      this.logger.debug('✅  Transaction committed');
 
       return informative;
     } catch (err) {
       await runner.rollbackTransaction();
-      this.logger.error('💥  Transaction rolled‑back', err.stack);
+      this.logger.error('Transaction rolled back', err.stack);
       throw new BadRequestException(
-        `Erro ao criar o banner informativo: ${err.message}`,
+        `Error creating informative banner: ${err.message}`,
       );
     } finally {
       await runner.release();
-      this.logger.debug('⛔  QueryRunner released');
     }
   }
 
@@ -55,18 +50,13 @@ export class CreateInformativeService {
     runner: QueryRunner,
     dto: CreateInformativeDto,
   ): Promise<InformativeEntity> {
-    this.logger.debug('📝 persistInformative()');
-
     const repo = runner.manager.getRepository(InformativeEntity);
     const entity = repo.create({
       title: dto.title,
       description: dto.description,
       public: dto.public,
     });
-    const saved = await repo.save(entity);
-    this.logger.debug(`   ↳ Informative saved (ID=${saved.id})`);
-
-    return saved;
+    return repo.save(entity);
   }
 
   private async attachRoute(
@@ -74,13 +64,10 @@ export class CreateInformativeService {
     informative: InformativeEntity,
     dto: CreateInformativeDto,
   ): Promise<void> {
-    this.logger.debug('🛤️  attachRoute()');
-
     const path = await this.routeService.generateAvailablePath(
       dto.title,
       'informativo_',
     );
-    this.logger.debug(`   ↳ availablePath="${path}"`);
 
     const route = await this.routeService.createRouteWithManager(
       runner.manager,
@@ -100,6 +87,5 @@ export class CreateInformativeService {
 
     informative.route = route;
     await runner.manager.save(informative);
-    this.logger.verbose(`   ↩  attachRoute() OK | routeID=${route.id}`);
   }
 }

@@ -29,10 +29,9 @@ export class UpdateMeditationService {
     dto: UpdateMeditationDto & { isLocalFile?: boolean },
     file?: Express.Multer.File,
   ): Promise<MeditationEntity> {
-    this.logger.log(`🛠️ Atualizando meditação ID=${id}`);
 
     const existing = await this.meditationRepo.findOneWithRelations(id);
-    if (!existing) throw new NotFoundException('Meditação não encontrada');
+    if (!existing) throw new NotFoundException('Meditation not found');
 
     const startDate = dto.startDate ? parseDateAsLocal(dto.startDate) : existing.startDate;
     const endDate = dto.endDate ? parseDateAsLocal(dto.endDate) : existing.endDate;
@@ -58,7 +57,7 @@ export class UpdateMeditationService {
     });
 
     if (hasConflict) {
-      throw new BadRequestException('Conflito com outra meditação existente.');
+      throw new BadRequestException('Conflict with another existing meditation.');
     }
 
     return await this.dataSource.transaction(async (manager) => {
@@ -69,7 +68,6 @@ export class UpdateMeditationService {
       });
 
       const savedMeditation = await manager.save(MeditationEntity, updatedMeditation);
-      this.logger.log(`✅ Meditação atualizada: ${savedMeditation.id}`);
 
       if (dto.days) {
         await manager.remove(DayEntity, existing.days);
@@ -114,7 +112,6 @@ export class UpdateMeditationService {
           (file) => this.s3Service.upload(file),
         );
 
-        this.logger.log(`📎 Mídia atualizada: ${mediaEntity.title}`);
       }
 
       return savedMeditation;

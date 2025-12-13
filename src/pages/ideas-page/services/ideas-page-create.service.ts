@@ -31,12 +31,10 @@ export class IdeasPageCreateService {
     dto: CreateIdeasPageDto,
     filesDict: Record<string, Express.Multer.File>,
   ): Promise<IdeasPageResponseDto> {
-    this.logger.verbose(`→ createIdeasPage | title="${dto.title}"`);
 
     const runner = this.dataSource.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
-    this.logger.debug('▶️  Transaction started');
 
     try {
       const page = await this.persistPageWithSections(runner, dto);
@@ -44,7 +42,6 @@ export class IdeasPageCreateService {
       await this.processMediaPerSection(page, dto, filesDict);
 
       await runner.commitTransaction();
-      this.logger.debug('✅  Transaction committed');
 
       return plainToInstance(IdeasPageResponseDto, page);
     } catch (err) {
@@ -55,7 +52,6 @@ export class IdeasPageCreateService {
       );
     } finally {
       await runner.release();
-      this.logger.debug('⛔  QueryRunner released');
     }
   }
 
@@ -63,7 +59,6 @@ export class IdeasPageCreateService {
     runner: QueryRunner,
     dto: CreateIdeasPageDto,
   ): Promise<IdeasPageEntity> {
-    this.logger.debug('📝 persistPageWithSections()');
 
     const pageRepo = runner.manager.getRepository(IdeasPageEntity);
     const sectionRepo = runner.manager.getRepository(IdeasSectionEntity);
@@ -74,7 +69,6 @@ export class IdeasPageCreateService {
       description: dto.description,
     });
     const savedPage = await pageRepo.save(page);
-    this.logger.debug(`   ↳ Page saved (ID=${savedPage.id})`);
 
     for (const s of dto.sections) {
       const section = sectionRepo.create({
@@ -83,7 +77,6 @@ export class IdeasPageCreateService {
         page: savedPage,
       });
       const savedSection = await sectionRepo.save(section);
-      this.logger.debug(`     ↳ Section saved (ID=${savedSection.id})`);
     }
 
     return (await pageRepo.findOne({
@@ -97,13 +90,11 @@ export class IdeasPageCreateService {
     page: IdeasPageEntity,
     dto: CreateIdeasPageDto,
   ): Promise<void> {
-    this.logger.debug('🛤️  attachRoute()');
 
     const path = await this.routeService.generateAvailablePath(
       dto.title,
       'galeria_ideias_',
     );
-    this.logger.debug(`   ↳ availablePath="${path}"`);
 
     const route = await this.routeService.createRouteWithManager(
       runner.manager,
@@ -123,7 +114,6 @@ export class IdeasPageCreateService {
 
     page.route = route;
     await runner.manager.save(page);
-    this.logger.verbose(`   ↩  attachRoute() OK | routeID=${route.id}`);
   }
 
   private async processMediaPerSection(
@@ -131,21 +121,13 @@ export class IdeasPageCreateService {
     dto: CreateIdeasPageDto,
     filesDict: Record<string, Express.Multer.File>,
   ): Promise<void> {
-    this.logger.debug('🎞️  processMediaPerSection()');
 
     for (const [idx, secDto] of dto.sections.entries()) {
       const dbSection = page.sections[idx];
 
       if (!secDto.medias?.length) {
-        this.logger.debug(
-          `   ↳ section[${idx}] (ID=${dbSection.id}) sem itens`,
-        );
         continue;
       }
-
-      this.logger.debug(
-        `   ↳ section[${idx}] (ID=${dbSection.id}) | items=${secDto.medias.length}`,
-      );
 
       const normalized = secDto.medias.map((item) => ({
         ...item,
@@ -166,9 +148,7 @@ export class IdeasPageCreateService {
         this.s3.upload.bind(this.s3),
       );
 
-      this.logger.debug(`       • ${saved.length} mídias processadas`);
     }
 
-    this.logger.verbose('   ↩  processMediaPerSection() completo');
   }
 }

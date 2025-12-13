@@ -51,7 +51,6 @@ export class PagelasRepository {
       qb.andWhere('p.present = :present', { present: f.present });
     }
 
-    // 🔍 Busca unificada: número da visita, ano, observação ou nome do professor que lançou a pagela
     if (f.searchString?.trim()) {
       const like = `%${f.searchString.trim()}%`;
       qb.andWhere(
@@ -92,7 +91,7 @@ export class PagelasRepository {
   async findOneOrFail(id: string): Promise<PagelaEntity> {
     const qb = this.baseQB().where('p.id = :id', { id });
     const item = await qb.getOne();
-    if (!item) throw new NotFoundException('Pagela não encontrada');
+    if (!item) throw new NotFoundException('Pagela not found');
     return item;
   }
 
@@ -121,14 +120,14 @@ export class PagelasRepository {
         txSheltered.findOne({ where: { id: data.shelteredId } }),
         txTeacher.findOne({ where: { id: data.teacherProfileId } }),
       ]);
-      if (!sheltered) throw new NotFoundException('Sheltered não encontrado');
-      if (!teacher) throw new NotFoundException('TeacherProfile não encontrado');
+      if (!sheltered) throw new NotFoundException('Sheltered not found');
+      if (!teacher) throw new NotFoundException('TeacherProfile not found');
 
       const existing = await txPagela.findOne({
         where: { sheltered: { id: data.shelteredId }, year: data.year, visit: data.visit },
       });
       if (existing) {
-        throw new BadRequestException('Já existe Pagela para este abrigado nesta visita/ano');
+        throw new BadRequestException('Pagela already exists for this sheltered in this visit/year');
       }
 
       const entity = txPagela.create({
@@ -151,7 +150,7 @@ export class PagelasRepository {
         where: { id },
         relations: { sheltered: true, teacher: true },
       });
-      if (!entity) throw new NotFoundException('Pagela não encontrada');
+      if (!entity) throw new NotFoundException('Pagela not found');
 
       if (data.teacher) {
       }
@@ -161,7 +160,7 @@ export class PagelasRepository {
         return await txPagela.save(entity);
       } catch (e: any) {
         if (e?.code === 'ER_DUP_ENTRY') {
-          throw new BadRequestException('Já existe Pagela para este abrigado nesta visita/ano');
+          throw new BadRequestException('Pagela already exists for this sheltered in this visit/year');
         }
         throw e;
       }

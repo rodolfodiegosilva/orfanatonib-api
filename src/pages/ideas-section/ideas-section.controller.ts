@@ -44,11 +44,6 @@ export class IdeasSectionController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('sectionData') raw: string | Buffer,
   ): Promise<IdeasSectionResponseDto> {
-    this.logger.debug('🚀 Criando nova seção de ideias órfã');
-    this.logger.debug(`📁 Arquivos recebidos: ${files?.length || 0}`);
-    this.logger.debug(`📋 Arquivos: ${JSON.stringify(files?.map(f => ({ fieldname: f.fieldname, originalname: f.originalname })) || [])}`);
-    this.logger.debug(`📄 Raw data type: ${typeof raw}`);
-    this.logger.debug(`📄 Raw data: ${Buffer.isBuffer(raw) ? raw.toString() : raw}`);
 
     const parsedData = JSON.parse(Buffer.isBuffer(raw) ? raw.toString() : raw);
     const dto = plainToInstance(CreateIdeasSectionDto, parsedData);
@@ -58,16 +53,14 @@ export class IdeasSectionController {
     });
 
     if (validationErrors.length > 0) {
-      this.logger.error('❌ Erros de validação:', JSON.stringify(validationErrors, null, 2));
-      throw new BadRequestException('Dados inválidos na requisição');
+      this.logger.error('Validation errors:', JSON.stringify(validationErrors, null, 2));
+      throw new BadRequestException('Invalid data in request');
     }
 
     const filesDict: Record<string, Express.Multer.File> = {};
     files.forEach((file) => (filesDict[file.fieldname] = file));
-    this.logger.debug(`🗂️ FilesDict: ${JSON.stringify(Object.keys(filesDict))}`);
     const result = await this.createService.createSection(dto, filesDict);
 
-    this.logger.log(`✅ Seção de ideias criada com ID=${result.id}`);
     return result;
   }
 
@@ -79,7 +72,6 @@ export class IdeasSectionController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('sectionData') raw: string | Buffer,
   ): Promise<IdeasSectionResponseDto> {
-    this.logger.debug(`🚀 Atualizando seção de ideias ID=${id}`);
 
     const parsedData = JSON.parse(Buffer.isBuffer(raw) ? raw.toString() : raw);
     const dto = plainToInstance(UpdateIdeasSectionDto, parsedData);
@@ -89,15 +81,14 @@ export class IdeasSectionController {
     });
 
     if (validationErrors.length > 0) {
-      this.logger.error('❌ Erros de validação:', JSON.stringify(validationErrors, null, 2));
-      throw new BadRequestException('Dados inválidos na requisição');
+      this.logger.error('Validation errors:', JSON.stringify(validationErrors, null, 2));
+      throw new BadRequestException('Invalid data in request');
     }
 
     const filesDict: Record<string, Express.Multer.File> = {};
     files.forEach((file) => (filesDict[file.fieldname] = file));
     const result = await this.updateService.updateSection(id, dto, filesDict);
 
-    this.logger.log(`✅ Seção de ideias atualizada com ID=${result.id}`);
     return result;
   }
 
@@ -110,10 +101,9 @@ export class IdeasSectionController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('sectionData') raw: string,
   ): Promise<IdeasSectionResponseDto> {
-    this.logger.debug(`🚀 [PATCH /ideas-sections/${sectionId}/attach/${pageId}] Editando e vinculando seção`);
 
     try {
-      if (!raw) throw new BadRequestException('sectionData é obrigatório.');
+      if (!raw) throw new BadRequestException('sectionData is required.');
 
       const parsedData = JSON.parse(Buffer.isBuffer(raw) ? raw.toString() : raw);
       const dto = plainToInstance(UpdateIdeasSectionDto, parsedData);
@@ -123,52 +113,45 @@ export class IdeasSectionController {
       });
 
       if (validationErrors.length > 0) {
-        this.logger.error('❌ Erros de validação:', JSON.stringify(validationErrors, null, 2));
-        throw new BadRequestException('Dados inválidos na requisição');
+        this.logger.error('Validation errors:', JSON.stringify(validationErrors, null, 2));
+        throw new BadRequestException('Invalid data in request');
       }
 
       const filesDict: Record<string, Express.Multer.File> = {};
       files.forEach((file) => (filesDict[file.fieldname] = file));
 
       const result = await this.updateService.editAndAttachSectionToPage(sectionId, pageId, dto, filesDict);
-      this.logger.log(`✅ Seção editada e vinculada com sucesso: ID=${result.id}`);
       return result;
     } catch (error) {
-      this.logger.error('❌ Erro ao editar e vincular seção', error);
-      throw new BadRequestException('Erro ao editar e vincular a seção de ideias.');
+      this.logger.error('Error editing and linking section', error);
+      throw new BadRequestException('Error editing and linking ideas section.');
     }
   }
 
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Delete(':id')
   async delete(@Param('id') id: string) {
-    this.logger.debug(`🚀 Removendo seção de ideias ID=${id}`);
 
     await this.deleteService.deleteSection(id);
-    this.logger.log(`✅ Seção de ideias removida com ID=${id}`);
 
     return { message: 'Seção de ideias removida com sucesso.' };
   }
 
   @Get(':id')
   async getById(@Param('id') id: string): Promise<IdeasSectionResponseDto> {
-    this.logger.debug(`🚀 Buscando seção de ideias ID=${id}`);
 
     const result = await this.getService.findOne(id);
     if (!result) {
       throw new NotFoundException(`Seção de ideias com id=${id} não encontrada`);
     }
 
-    this.logger.log(`✅ Seção de ideias encontrada ID=${id}`);
     return result;
   }
 
   @Get()
   async getAll(): Promise<IdeasSectionResponseDto[]> {
-    this.logger.debug('🚀 Listando todas as seções de ideias órfãs');
 
     const result = await this.getService.findAll();
-    this.logger.log(`✅ ${result.length} seções de ideias encontradas`);
     return result;
   }
 

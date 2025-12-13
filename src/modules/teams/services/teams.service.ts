@@ -49,14 +49,12 @@ export class TeamsService {
       shelterId: entity.shelter?.id || '',
       leaders: (entity.leaders || []).map(leader => ({
         id: leader.id || '', // ID do perfil
-        userId: leader.user?.id || '', // ID do usuário
         name: leader.user?.name || '',
         email: leader.user?.email || '',
         phone: leader.user?.phone || '',
       })),
       teachers: (entity.teachers || []).map(teacher => ({
         id: teacher.id || '', // ID do perfil
-        userId: teacher.user?.id || '', // ID do usuário
         name: teacher.user?.name || '',
         email: teacher.user?.email || '',
         phone: teacher.user?.phone || '',

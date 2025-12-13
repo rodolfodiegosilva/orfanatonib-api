@@ -31,15 +31,13 @@ export class CreateMeditationService {
     file?: Express.Multer.File,
   ): Promise<MeditationEntity> {
     try {
-      this.logger.log('🟡 Criando nova meditação semanal');
-
       const startDate = parseDateAsLocal(dto.startDate);
       const endDate = parseDateAsLocal(dto.endDate);
 
       if (startDate.getDay() !== 1)
-        throw new BadRequestException('startDate deve ser uma segunda-feira');
+        throw new BadRequestException('startDate must be a Monday');
       if (endDate.getDay() !== 5)
-        throw new BadRequestException('endDate deve ser uma sexta-feira');
+        throw new BadRequestException('endDate must be a Friday');
 
       const existing = await this.meditationRepo.findAllWithRelations();
       const hasConflict = existing.some((m) => {
@@ -53,7 +51,7 @@ export class CreateMeditationService {
       });
 
       if (hasConflict) {
-        throw new BadRequestException('Conflito com datas de uma meditação existente.');
+        throw new BadRequestException('Conflict with dates of an existing meditation.');
       }
 
       const meditation = this.meditationRepo.create({
@@ -64,18 +62,16 @@ export class CreateMeditationService {
       });
 
       const savedMeditation = await this.meditationRepo.save(meditation);
-      this.logger.log(`✅ Meditação salva: ID=${savedMeditation.id}`);
 
       let mediaUrl = dto.media.url?.trim() || '';
       let originalName = dto.media.originalName;
       let size = dto.media.size;
 
       if (dto.media.isLocalFile) {
-        if (!file) throw new BadRequestException('Arquivo não enviado.');
+        if (!file) throw new BadRequestException('File not sent.');
         mediaUrl = await this.s3Service.upload(file);
         originalName = file.originalname;
         size = file.size;
-        this.logger.log(`⬆️ Upload de mídia concluído: ${mediaUrl}`);
       }
 
       const mediaEntity = this.mediaItemProcessor.buildBaseMediaItem(
@@ -95,15 +91,14 @@ export class CreateMeditationService {
         MediaTargetType.Meditation,
       );
 
-      const savedMedia = await this.mediaItemProcessor.saveMediaItem(mediaEntity);
-      this.logger.log(`🎞️ Mídia salva: ID=${savedMedia.id}`);
+      await this.mediaItemProcessor.saveMediaItem(mediaEntity);
 
-      const route = await this.routeService.createRoute({
+      await this.routeService.createRoute({
         title: savedMeditation.topic,
         subtitle: '',
         idToFetch: savedMeditation.id,
         entityType:  MediaTargetType.Meditation,
-        description: `Meditação semanal de ${dto.startDate} a ${dto.endDate}`,
+        description: `Weekly meditation from ${dto.startDate} to ${dto.endDate}`,
         entityId: savedMeditation.id,
         type: RouteType.DOC,
         prefix: 'meditacao_',
@@ -111,14 +106,11 @@ export class CreateMeditationService {
         public: false,
       });
 
-      this.logger.log(`🛤️ Rota criada com path: ${route.path}`);
-      this.logger.log(`🎉 Meditação criada com sucesso`);
-
       return savedMeditation;
     } catch (error) {
-      this.logger.error('❌ Erro ao criar meditação', error.stack);
+      this.logger.error('Error creating meditation', error.stack);
       throw new BadRequestException(
-        error?.message || 'Erro inesperado ao criar meditação.',
+        error?.message || 'Unexpected error creating meditation.',
       );
     }
   }

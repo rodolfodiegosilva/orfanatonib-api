@@ -9,13 +9,11 @@ export class DatabaseLoggerService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     try {
-      if (this.dataSource.isInitialized) {
-        this.logger.debug('✅ Conexão com o banco de dados estabelecida com sucesso!');
-      } else {
-        this.logger.warn('⚠️ Banco de dados ainda não está inicializado');
+      if (!this.dataSource.isInitialized) {
+        this.logger.warn('Database not initialized');
       }
     } catch (error) {
-      this.logger.error('❌ Erro ao verificar conexão com o banco:', error);
+      this.logger.error('Error checking database connection:', error);
     }
   }
 }

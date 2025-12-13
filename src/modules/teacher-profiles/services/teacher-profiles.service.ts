@@ -88,7 +88,6 @@ export class TeacherProfilesService {
     // Buscar equipes do abrigo
     const teams = await this.teamsService.findByShelter(dto.shelterId);
 
-    // Buscar ou criar equipe com o número especificado
     let targetTeam = teams.find(t => t.numberTeam === dto.numberTeam);
 
     if (!targetTeam) {
@@ -100,7 +99,6 @@ export class TeacherProfilesService {
       });
       targetTeam = newTeam;
     } else {
-      // Se o professor já está em outra equipe, remover primeiro
       if (teacher.team && teacher.team.id !== targetTeam.id) {
         const currentTeam = await this.teamsService.findOne(teacher.team.id);
         if (currentTeam) {
@@ -111,7 +109,6 @@ export class TeacherProfilesService {
         }
       }
 
-      // Adicionar à equipe (se já não estiver nela)
       if (!teacher.team || teacher.team.id !== targetTeam.id) {
         const currentTeacherIds = targetTeam.teachers.map(t => t.id).filter(id => id !== teacherId);
         await this.teamsService.update(targetTeam.id, {

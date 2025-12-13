@@ -25,7 +25,7 @@ export class DeleteSheltersService {
 
     if (ctx.role === 'leader') {
       const allowed = await this.sheltersRepository.userHasAccessToShelter(id, ctx);
-      if (!allowed) throw new NotFoundException('Shelter não encontrado');
+      if (!allowed) throw new NotFoundException('Shelter not found');
     }
 
     await this.sheltersRepository.deleteById(id);

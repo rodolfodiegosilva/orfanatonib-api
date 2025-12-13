@@ -17,35 +17,24 @@ export class ContactController {
     phone: string;
     message: string;
   }): Promise<ContactEntity> {
-    this.logger.debug(`📩 Recebendo nova mensagem de contato de: ${body.name} <${body.email}>`);
-    const result = await this.contactService.createContact(body);
-    this.logger.log(`✅ Contato criado com sucesso para: ${body.email}`);
-    return result;
+    return this.contactService.createContact(body);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async getAll(): Promise<ContactEntity[]> {
-    this.logger.debug('📥 Requisição para listar todos os contatos');
-    const contacts = await this.contactService.getAllContacts();
-    this.logger.log(`📄 ${contacts.length} contato(s) retornado(s)`);
-    return contacts;
+    return this.contactService.getAllContacts();
   }
 
   @Patch(':id/read')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async setRead(@Param('id') id: string): Promise<ContactEntity> {
-    this.logger.debug(`📥 Marcando contato como lido: ID=${id}`);
-    const contact = await this.contactService.setReadOnContact(id);
-    this.logger.log(`✅ Contato marcado como lido: ID=${id}`);
-    return contact;
+    return this.contactService.setReadOnContact(id);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async delete(@Param('id') id: string): Promise<void> {
-    this.logger.debug(`🗑️ Requisição para deletar contato ID=${id}`);
     await this.contactService.deleteContact(id);
-    this.logger.log(`✅ Contato deletado com sucesso ID=${id}`);
   }
 }

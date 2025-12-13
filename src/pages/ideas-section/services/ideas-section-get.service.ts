@@ -16,14 +16,12 @@ export class IdeasSectionGetService {
   ) { }
 
   async findOne(id: string): Promise<IdeasSectionResponseDto | null> {
-    this.logger.debug(`🔍 Buscando seção de ideias ID=${id}`);
 
     const section = await this.ideasSectionRepository.findOne({
       where: { id },
     });
 
     if (!section) {
-      this.logger.warn(`⚠️ Seção de ideias ID=${id} não encontrada`);
       return null;
     }
 
@@ -32,17 +30,14 @@ export class IdeasSectionGetService {
       MediaTargetType.IdeasSection,
     );
 
-    this.logger.debug(`✅ Seção de ideias encontrada: ID=${id}, title="${section.title}"`);
     return IdeasSectionResponseDto.fromEntity(section, medias);
   }
 
   async findAll(): Promise<IdeasSectionResponseDto[]> {
-    this.logger.debug('🔍 Buscando todas as seções de ideias órfãs');
 
     const sections = await this.ideasSectionRepository.findAllOrphanSections();
 
     if (!sections || sections.length === 0) {
-      this.logger.debug('📭 Nenhuma seção de ideias órfã encontrada');
       return [];
     }
 
@@ -59,7 +54,6 @@ export class IdeasSectionGetService {
       return IdeasSectionResponseDto.fromEntity(section, sectionMedias);
     });
 
-    this.logger.debug(`✅ ${result.length} seções de ideias órfãs encontradas`);
     return result;
   }
 

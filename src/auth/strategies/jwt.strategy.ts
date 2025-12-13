@@ -19,20 +19,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
     });
-
-    this.logger.debug('✅ JwtStrategy inicializada com sucesso');
   }
 
   async validate(payload: JwtPayload) {
-    this.logger.debug('🔑 Payload recebido do JWT');
-    this.logger.debug(`📦 Payload: ${JSON.stringify(payload)}`);
-
     const { sub: userId, email, role } = payload;
 
     if (!role) {
-      this.logger.warn(`⚠️ Atenção: Role ausente no payload do JWT (userId: ${userId})`);
-    } else {
-      this.logger.log(`✅ Payload válido: userId=${userId}, role=${role}`);
+      this.logger.warn(`Missing role in JWT payload (userId: ${userId})`);
     }
 
     return { userId, email, role };

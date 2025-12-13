@@ -34,7 +34,6 @@ export class ImageSectionUpdateService {
     dto: UpdateImageSectionDto,
     filesDict: Record<string, Express.Multer.File>,
   ): Promise<ImageSectionResponseDto> {
-    this.logger.log(`🚀 Iniciando atualização da seção com ID: ${id}`);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -42,13 +41,13 @@ export class ImageSectionUpdateService {
     try {
       const section = await this.sectionRepo.findOneBy({ id });
       if (!section) {
-        throw new NotFoundException('Seção não encontrada');
+        throw new NotFoundException('Section not found');
       }
 
       const pageIdFromEnv = this.configService.get<string>('FEED_ORFANATO_PAGE_ID');
       const page = await this.pageRepo.findOneBy({ id: pageIdFromEnv });
       if (!page) {
-        throw new NotFoundException('Página padrão não encontrada');
+        throw new NotFoundException('Default page not found');
       }
 
       const existingMedia = await this.mediaItemProcessor.findManyMediaItemsByTargets(
@@ -68,8 +67,8 @@ export class ImageSectionUpdateService {
       return ImageSectionResponseDto.fromEntity(savedSection, processedMedia);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error('❌ Erro ao atualizar a seção', error);
-      throw new BadRequestException('Erro ao atualizar a seção');
+      this.logger.error('Error updating section', error);
+      throw new BadRequestException('Error updating section');
     } finally {
       await queryRunner.release();
     }
@@ -125,7 +124,7 @@ export class ImageSectionUpdateService {
     if (mediaInput.uploadType === UploadType.UPLOAD && mediaInput.isLocalFile) {
       const file = filesDict[mediaInput.fieldKey ?? ''];
       if (!file) {
-        throw new BadRequestException('Arquivo não encontrado para upload');
+        throw new BadRequestException('File not found for upload');
       }
       media.url = await this.awsS3Service.upload(file);
       media.isLocalFile = true;

@@ -77,13 +77,6 @@ import { TeamEntity } from 'src/modules/teams/entities/team.entity';
           synchronize,
         };
 
-        logger.debug(`Tentando conectar ao banco de dados MySQL:
-           → Host: ${dbConfig.host}
-           → Porta: ${dbConfig.port}
-           → DB: ${dbConfig.database}
-           → Usuário: ${dbConfig.username}
-           → Synchronize: ${synchronize} (ambiente: ${environment})`);
-
         return dbConfig;
       },
     }),

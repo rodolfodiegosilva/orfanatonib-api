@@ -28,10 +28,9 @@ import { UpdateEventDto } from '../dto/update-event.dto';
       dto: UpdateEventDto & { isLocalFile?: boolean },
       file?: Express.Multer.File,
     ): Promise<EventEntity> {
-      this.logger.log(`🛠️ Atualizando evento ID=${id}`);
   
       const existing = await this.eventRepo.findById(id);
-      if (!existing) throw new NotFoundException('Evento não encontrado');
+      if (!existing) throw new NotFoundException('Event not found');
   
       return await this.dataSource.transaction(async (manager) => {
         const updatedEvent = manager.merge(EventEntity, existing, {
@@ -42,7 +41,6 @@ import { UpdateEventDto } from '../dto/update-event.dto';
         });
   
         const savedEvent = await manager.save(EventEntity, updatedEvent);
-        this.logger.log(`✅ Evento atualizado: ${savedEvent.id}`);
   
         if (dto.media) {
           const mediaItemsInput = [
@@ -78,7 +76,6 @@ import { UpdateEventDto } from '../dto/update-event.dto';
             (file) => this.s3Service.upload(file),
           );
   
-          this.logger.log(`📎 Mídia atualizada: ${mediaEntity.title}`);
         }
   
         return savedEvent;

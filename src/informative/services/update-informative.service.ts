@@ -22,12 +22,11 @@ export class UpdateInformativeService {
   ) { }
 
   async execute(id: string, dto: UpdateInformativeDto): Promise<InformativeEntity> {
-    this.logger.log(`🛠️ Atualizando banner informativo ID=${id}`);
 
     const existing = await this.informativeRepo.findOneWithRelations(id);
     if (!existing) {
-      this.logger.warn(`⚠️ Banner informativo não encontrado: ID=${id}`);
-      throw new NotFoundException('Informativo não encontrado.');
+      this.logger.warn(`Informative banner not found: ID=${id}`);
+      throw new NotFoundException('Informative not found.');
     }
 
     return await this.dataSource.transaction(async (manager) => {
@@ -38,7 +37,6 @@ export class UpdateInformativeService {
       });
 
       const saved = await manager.save(InformativeEntity, updated);
-      this.logger.log(`✅ Informativo atualizado: ${saved.id}`);
 
       if (saved.route) {
         const updatedRoute = await this.updateRoute(
@@ -58,7 +56,6 @@ export class UpdateInformativeService {
     dto: UpdateInformativeDto,
     informativeId: string,
   ): Promise<RouteEntity> {
-    this.logger.debug(`🔄 Atualizando rota do banner informativo ID: ${routeId}`);
 
     const routeData: Partial<RouteEntity> = {
       title: dto.title,
@@ -74,7 +71,6 @@ export class UpdateInformativeService {
     };
 
     const route = await this.routeService.upsertRoute(routeId, routeData);
-    this.logger.debug(`✅ Rota atualizada: ${route.id}, path: ${route.path}`);
     return route;
   }
 }
