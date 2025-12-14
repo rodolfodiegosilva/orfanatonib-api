@@ -49,7 +49,7 @@ export class GetSheltersService {
 
     // Popular o mediaItem em cada shelter
     shelters.forEach(shelter => {
-      shelter.mediaItem = mediaMap.get(shelter.id) || null;
+      (shelter as any).mediaItem = mediaMap.get(shelter.id) || null;
     });
 
     return shelters;

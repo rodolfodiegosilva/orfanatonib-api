@@ -83,7 +83,7 @@ export class SheltersController {
     @Req() req: Request,
     @Body('shelterData') shelterDataRaw?: string,
   ): Promise<ShelterResponseDto> {
-    const bodyToProcess = shelterDataRaw ? { shelterData: shelterDataRaw } : (body || {});
+    const bodyToProcess = shelterDataRaw ? { shelterData: shelterDataRaw } : {};
     const entity = await this.createService.createFromRaw(bodyToProcess, files, req);
     return toShelterDto(entity);
   }
@@ -109,6 +109,7 @@ export class SheltersController {
     @UploadedFiles() files: Express.Multer.File[] = [],
     @Req() req: Request,
     @Body('mediaData') mediaDataRaw?: string,
+    @Body() body?: any,
   ): Promise<ShelterResponseDto> {
     const bodyToProcess = mediaDataRaw ? { mediaData: mediaDataRaw } : (body || {});
     const entity = await this.updateService.updateMediaFromRaw(id, bodyToProcess, files, req);

@@ -1,6 +1,7 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
 export class TeamLeaderDto {
+  @Expose() id!: string;
   @Expose() name!: string;
   @Expose() email!: string;
   @Expose() phone!: string;

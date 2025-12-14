@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthService } from './services/auth.service';
 import { AuthContextService } from './services/auth-context.service';
 import { UserModule } from 'src/user/user.module';
+import { MediaModule } from 'src/share/media/media.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UserModule } from 'src/user/user.module';
       }),
     }),
     forwardRef(() => UserModule),
+    MediaModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthContextService, AuthRepository, JwtStrategy],

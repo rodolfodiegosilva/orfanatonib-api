@@ -13,6 +13,7 @@ import { CompleteUserDto } from '../dto/complete-register.dto';
 import { RegisterUserDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { UserRole } from '../auth.types';
+import { MediaItemProcessor } from 'src/share/media/media-item-processor';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +27,8 @@ export class AuthService {
     private readonly createUserService: CreateUserService,
     private readonly updateUserService: UpdateUserService,
     private readonly getUsersService: GetUsersService,
-    private readonly userRepo: UserRepository
+    private readonly userRepo: UserRepository,
+    private readonly mediaItemProcessor: MediaItemProcessor,
   ) {
     this.googleClient = new OAuth2Client(
       configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
@@ -139,7 +141,7 @@ export class AuthService {
     return { message: 'User logged out' };
   }
 
-  private buildMeResponse(user: UserEntity) {
+  private buildMeResponse(user: UserEntity, imageMedia?: any) {
     return {
       id: user.id,
       email: user.email,
@@ -151,14 +153,56 @@ export class AuthService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       role: user.role,
+      image: imageMedia ? {
+        id: imageMedia.id,
+        title: imageMedia.title,
+        description: imageMedia.description,
+        url: imageMedia.url,
+        uploadType: imageMedia.uploadType,
+        mediaType: imageMedia.mediaType,
+        isLocalFile: imageMedia.isLocalFile,
+        platformType: imageMedia.platformType,
+        originalName: imageMedia.originalName,
+        size: imageMedia.size,
+        createdAt: imageMedia.createdAt,
+        updatedAt: imageMedia.updatedAt,
+      } : null,
       teacherProfile: user.teacherProfile
         ? {
           id: user.teacherProfile.id,
           active: user.teacherProfile.active,
-          shelter: user.teacherProfile.team?.shelter
+          createdAt: user.teacherProfile.createdAt,
+          updatedAt: user.teacherProfile.updatedAt,
+          team: user.teacherProfile.team
             ? {
-              id: user.teacherProfile.team.shelter.id,
-              name: user.teacherProfile.team.shelter.name,
+              id: user.teacherProfile.team.id,
+              numberTeam: user.teacherProfile.team.numberTeam,
+              description: user.teacherProfile.team.description,
+              createdAt: user.teacherProfile.team.createdAt,
+              updatedAt: user.teacherProfile.team.updatedAt,
+              shelter: user.teacherProfile.team.shelter
+                ? {
+                  id: user.teacherProfile.team.shelter.id,
+                  name: user.teacherProfile.team.shelter.name,
+                  description: user.teacherProfile.team.shelter.description,
+                  teamsQuantity: user.teacherProfile.team.shelter.teamsQuantity,
+                  createdAt: user.teacherProfile.team.shelter.createdAt,
+                  updatedAt: user.teacherProfile.team.shelter.updatedAt,
+                  address: user.teacherProfile.team.shelter.address
+                    ? {
+                      id: user.teacherProfile.team.shelter.address.id,
+                      street: user.teacherProfile.team.shelter.address.street,
+                      number: user.teacherProfile.team.shelter.address.number,
+                      district: user.teacherProfile.team.shelter.address.district,
+                      city: user.teacherProfile.team.shelter.address.city,
+                      state: user.teacherProfile.team.shelter.address.state,
+                      postalCode: user.teacherProfile.team.shelter.address.postalCode,
+                      createdAt: user.teacherProfile.team.shelter.address.createdAt,
+                      updatedAt: user.teacherProfile.team.shelter.address.updatedAt,
+                    }
+                    : null,
+                }
+                : null,
             }
             : null,
         }
@@ -167,16 +211,39 @@ export class AuthService {
         ? {
           id: user.leaderProfile.id,
           active: user.leaderProfile.active,
-          shelters: user.leaderProfile.teams && user.leaderProfile.teams.length > 0
-            ? user.leaderProfile.teams
-                .map(team => team.shelter)
-                .filter((shelter, index, self) => 
-                  shelter && self.findIndex(s => s?.id === shelter.id) === index
-                )
-                .map(shelter => ({
-                  id: shelter!.id,
-                  name: shelter!.name,
-                }))
+          createdAt: user.leaderProfile.createdAt,
+          updatedAt: user.leaderProfile.updatedAt,
+          teams: user.leaderProfile.teams && user.leaderProfile.teams.length > 0
+            ? user.leaderProfile.teams.map(team => ({
+              id: team.id,
+              numberTeam: team.numberTeam,
+              description: team.description,
+              createdAt: team.createdAt,
+              updatedAt: team.updatedAt,
+              shelter: team.shelter
+                ? {
+                  id: team.shelter.id,
+                  name: team.shelter.name,
+                  description: team.shelter.description,
+                  teamsQuantity: team.shelter.teamsQuantity,
+                  createdAt: team.shelter.createdAt,
+                  updatedAt: team.shelter.updatedAt,
+                  address: team.shelter.address
+                    ? {
+                      id: team.shelter.address.id,
+                      street: team.shelter.address.street,
+                      number: team.shelter.address.number,
+                      district: team.shelter.address.district,
+                      city: team.shelter.address.city,
+                      state: team.shelter.address.state,
+                      postalCode: team.shelter.address.postalCode,
+                      createdAt: team.shelter.address.createdAt,
+                      updatedAt: team.shelter.address.updatedAt,
+                    }
+                    : null,
+                }
+                : null,
+            }))
             : [],
         }
         : null,
@@ -189,7 +256,13 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return this.buildMeResponse(user);
+    // Buscar imagem do usuário
+    const imageMedia = await this.mediaItemProcessor.findMediaItemByTarget(
+      userId,
+      'UserEntity',
+    );
+
+    return this.buildMeResponse(user, imageMedia || undefined);
   }
 
   async completeRegister(data: CompleteUserDto) {
